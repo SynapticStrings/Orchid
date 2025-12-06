@@ -10,7 +10,7 @@ QyCore 是一个基于 Elixir 的，灵感源于个人企划的工作流编排�
 
 #### `QyCore.Param`
 
-#### `QyCore.Recipe.Step`
+#### `QyCore.Step`
 
 #### `QyCore.Recipe`
 
@@ -65,9 +65,26 @@ end
 
 需要运行额外的 Hook ，需要在 step 的 `opts[:extra_hooks_stack]` 中予以配置。
 
-#### Recipe 层面（Pipeline）
+#### Recipe 层面（Pipeline & Operon）
 
 和 hooks 类似，也是按照洋葱一般的数据流程处理。
+
+起了个比较怪的名字——操纵子，可能后面会改。
+
+负责运行的部分是 `QyCore.Pipeline` ，其调用一系列遵循 `QyCore.Operon` 协议的中间件。
+
+但是不同的是，我们定义了两类结构体 `QyCore.Operon.Request` 以及 `QyCore.Operon.Responce` 。
+
+负责转变的模块就是包装了 Executor 的 `QyCore.Opeon.Execute` 。
+
+暂时还没有引入额外的中间件，但后面会增加。
+
+### 运行时上下文传递
+
+- Pipeline 层级
+- Executor 层级
+- Runner Hooks 层级
+- Step 层级
 
 ### 遍历注入
 

@@ -8,13 +8,15 @@ defmodule QyCore do
   @doc """
   运行。
   """
-  def run(recipe, input_params, maybe_options_with_executor \\ [])
+  def run(recipe, input_params, _opts \\ []) do
+    operons = [QyCore.Operon.Execute]
 
-  def run(recipe, input_params, {adapter, adapter_options}) when is_atom(adapter) do
-    adapter.execute(recipe, input_params, adapter_options)
+    req = %QyCore.Operon.Request{
+      recipe: recipe,
+      inital_param: input_params,
+    }
+
+    QyCore.Pipeline.run(operons, req).payload
   end
 
-  def run(recipe, input_params, adapter_options) do
-    QyCore.Executor.Serial.execute(recipe, input_params, adapter_options)
-  end
 end
