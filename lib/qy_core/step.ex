@@ -59,6 +59,13 @@ defmodule QyCore.Step do
   def extract_schema({impl, in_keys, out_keys}), do: {impl, in_keys, out_keys}
   def extract_schema({impl, in_keys, out_keys, _opts}), do: {impl, in_keys, out_keys}
 
+  @doc """
+  辅助：规范化 Step 结构，支持多种形式的 Step 定义。
+  """
+  @spec ensure_full_step(step_schema() | step_with_options()) :: step_with_options()
+  def ensure_full_step({impl, in_k, out_k}), do: {impl, in_k, out_k, []}
+  def ensure_full_step({impl, in_k, out_k, opts}), do: {impl, in_k, out_k, opts}
+
   defmacro __using__(_opts) do
     quote do
       @behaviour QyCore.Step

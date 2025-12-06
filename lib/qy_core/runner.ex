@@ -1,5 +1,6 @@
 defmodule QyCore.Runner do
-  import QyCore.Utilities, only: [ensure_full_step: 1]
+  @moduledoc """
+  """
 
   @spec run(
           QyCore.Step.t(),
@@ -7,7 +8,7 @@ defmodule QyCore.Runner do
           keyword()
         ) :: {:ok, QyCore.Step.output()} | {:error, term()}
   def run(step, ctx_params, recipe_opts) do
-    {impl, in_keys, out_keys, step_opts} = ensure_full_step(step)
+    {impl, in_keys, out_keys, step_opts} = QyCore.Step.ensure_full_step(step)
 
     initial_ctx = %{
       step_implementation: impl,

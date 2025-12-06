@@ -9,7 +9,6 @@ defmodule QyCore.Recipe do
 
   alias QyCore.{Recipe, Step}
   alias QyCore.Step.NestedStep
-  import QyCore.Utilities, only: [ensure_full_step: 1]
 
   @type t :: %__MODULE__{
           steps: [Step.t()],
@@ -48,7 +47,7 @@ defmodule QyCore.Recipe do
           walk(recipe.steps, fn step ->
             step
             |> do_match(selector)
-            |> if(do: Step.inject_options(ensure_full_step(step), new_opts), else: step)
+            |> if(do: Step.inject_options(Step.ensure_full_step(step), new_opts), else: step)
           end)
     }
   end
@@ -85,7 +84,7 @@ defmodule QyCore.Recipe do
   end
 
   defp process_nested(step, func, mode) do
-    {impl, in_k, out_k, opts} = ensure_full_step(step)
+    {impl, in_k, out_k, opts} = Step.ensure_full_step(step)
 
     with true <- NestedStep.nested?(step),
          %__MODULE__{} = inner_recipe <- Keyword.get(opts, :recipe) do
@@ -110,7 +109,7 @@ defmodule QyCore.Recipe do
   end
 
   defp do_match(step, selector) when is_atom(selector) or is_function(selector, 2) do
-    {impl, _in_k, _out_k, _current_opts} = ensure_full_step(step)
+    {impl, _in_k, _out_k, _current_opts} = Step.ensure_full_step(step)
 
     case selector do
       :all -> true

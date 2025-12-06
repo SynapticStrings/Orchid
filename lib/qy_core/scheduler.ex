@@ -4,7 +4,6 @@ defmodule QyCore.Scheduler do
   """
   alias QyCore.Scheduler.Context
   alias QyCore.{Recipe, Param, Step}
-  import QyCore.Utilities, only: [normalize_keys_to_set: 1]
 
   @doc """
   初始化执行上下文。
@@ -144,7 +143,7 @@ defmodule QyCore.Scheduler do
   defp dependencies_met?(step, available_keys) do
     {_impl, in_keys, _out} = QyCore.Step.extract_schema(step)
 
-    needed = normalize_keys_to_set(in_keys)
+    needed = QyCore.Recipe.Graph.normalize_keys_to_set(in_keys)
 
     MapSet.subset?(needed, available_keys)
   end

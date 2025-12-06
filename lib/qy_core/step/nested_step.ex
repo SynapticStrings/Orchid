@@ -26,7 +26,6 @@ defmodule QyCore.Step.NestedStep do
   """
 
   use QyCore.Step
-  import QyCore.Utilities, only: [ensure_full_step: 1]
 
   def nested?, do: true
 
@@ -82,7 +81,7 @@ defmodule QyCore.Step.NestedStep do
   end
 
   def nested?(step) do
-    {impl, _, _, _} = ensure_full_step(step)
+    {impl, _, _, _} = Step.ensure_full_step(step)
 
     is_atom(impl) and function_exported?(impl, :nested?, 0) and impl.nested?()
   end
