@@ -3,7 +3,7 @@ defmodule QyCore.Recipe.Graph do
   负责分析 Recipe 的拓扑结构，计算执行顺序，并进行静态检查。
   """
 
-  alias QyCore.Recipe.Step
+  alias QyCore.Step
   import QyCore.Utilities, only: [normalize_keys_to_set: 1]
 
   @spec validate([Step.t()], Step.input_keys()) ::

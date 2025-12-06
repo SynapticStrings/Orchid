@@ -7,8 +7,8 @@ defmodule QyCore.Recipe do
   关于分配参数：TBD
   """
 
-  alias QyCore.Recipe.NestedStep
-  alias QyCore.Recipe.Step
+  alias QyCore.{Recipe, Step}
+  alias QyCore.Step.NestedStep
   import QyCore.Utilities, only: [ensure_full_step: 1]
 
   @type t :: %__MODULE__{
@@ -58,38 +58,55 @@ defmodule QyCore.Recipe do
 
   因为 QyCore.Scheduler.update_pending_steps_options/3 的存在，要考虑列表的存在。
 
-  func 会被应用到树中的每一个 Step 上。
+  func 会被应用到树中的每一个 Step 或 Recipe 上。
   如果 Step 是 NestedStep ，会自动递归进入其内部的 step 列表。
   """
-  @spec walk([[Step.t()]], (Step.t() -> Step.t())) :: [[Step.t()]]
-  def walk(steps, func) when is_function(func, 1) do
+  @spec walk(
+          [Step.t()],
+          (Step.t() -> Step.t()) | (Recipe.t() -> Recipe.t()),
+          :step | :inner_recipe
+        ) :: [Step.t()]
+  def walk(steps, func, mode \\ :step)
+
+  def walk(steps, func, :step) when is_function(func, 1) do
     Enum.map(steps, fn step ->
       modified_step = func.(step)
 
-      process_nested(modified_step, func)
+      process_nested(modified_step, func, :step)
     end)
   end
 
-  defp process_nested(step, func) do
+  def walk(steps, func, :inner_recipe) when is_function(func, 1) do
+    Enum.map(steps, fn step ->
+      modified_step = func.(step)
+
+      process_nested(modified_step, func, :inner_recipe)
+    end)
+  end
+
+  defp process_nested(step, func, mode) do
     {impl, in_k, out_k, opts} = ensure_full_step(step)
 
-    if NestedStep.nested?(step) do
-      case Keyword.get(opts, :recipe) do
-        %__MODULE__{} = inner_recipe ->
-          new_inner_recipe = %{
-            inner_recipe
-            | steps: walk(inner_recipe.steps, func)
-          }
-
-          new_opts = Keyword.put(opts, :recipe, new_inner_recipe)
-          {impl, in_k, out_k, new_opts}
-
-        _ ->
-          step
-      end
+    with true <- NestedStep.nested?(step),
+         %__MODULE__{} = inner_recipe <- Keyword.get(opts, :recipe) do
+      new_opts = Keyword.put(opts, :recipe, replace_nested_steps(inner_recipe, func, mode))
+      {impl, in_k, out_k, new_opts}
     else
-      step
+      _ -> step
     end
+  end
+
+  defp replace_nested_steps(inner_recipe, func, :step) do
+    %{
+      inner_recipe
+      | steps: walk(inner_recipe.steps, func, :step)
+    }
+  end
+
+  defp replace_nested_steps(inner_recipe, func, :inner_recipe) do
+    new_inner_recipe = func.(inner_recipe)
+
+    %{new_inner_recipe | steps: walk(new_inner_recipe.steps, func, :inner_recipe)}
   end
 
   defp do_match(step, selector) when is_atom(selector) or is_function(selector, 2) do

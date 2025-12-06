@@ -3,7 +3,7 @@ defmodule QyCore.Scheduler do
   调度器模块，负责管理和调度 Recipe 中的步骤执行顺序。
   """
   alias QyCore.Scheduler.Context
-  alias QyCore.{Recipe, Param}
+  alias QyCore.{Recipe, Param, Step}
   import QyCore.Utilities, only: [normalize_keys_to_set: 1]
 
   @doc """
@@ -54,7 +54,7 @@ defmodule QyCore.Scheduler do
   @doc """
   核心调度函数：找出所有“原料已就绪”且“未执行”的步骤。
   """
-  @spec next_ready_steps(QyCore.Scheduler.Context.t()) :: [{Recipe.Step.t(), non_neg_integer()}]
+  @spec next_ready_steps(QyCore.Scheduler.Context.t()) :: [{Step.t(), non_neg_integer()}]
   def next_ready_steps(%Context{} = ctx) do
     Enum.filter(ctx.pending_steps, fn {step, idx} ->
       # 看谁的 needed 是 available 的子集
@@ -114,7 +114,7 @@ defmodule QyCore.Scheduler do
   """
   @spec update_pending_steps_options(
           QyCore.Scheduler.Context.t(),
-          (Recipe.Step.t() -> boolean()),
+          (Step.t() -> boolean()),
           any()
         ) ::
           QyCore.Scheduler.Context.t()
@@ -123,7 +123,7 @@ defmodule QyCore.Scheduler do
       ctx
       | pending_steps:
           Recipe.walk(ctx.pending_steps, fn step ->
-            if(selector.(step), do: Recipe.Step.inject_options(step, new_opts), else: step)
+            if(selector.(step), do: Step.inject_options(step, new_opts), else: step)
           end)
     }
   end
@@ -142,7 +142,7 @@ defmodule QyCore.Scheduler do
       |> Enum.reject(&is_nil/1)
 
   defp dependencies_met?(step, available_keys) do
-    {_impl, in_keys, _out} = QyCore.Recipe.Step.extract_schema(step)
+    {_impl, in_keys, _out} = QyCore.Step.extract_schema(step)
 
     needed = normalize_keys_to_set(in_keys)
 

@@ -1,4 +1,4 @@
-defmodule QyCore.Recipe.NestedStep do
+defmodule QyCore.Step.NestedStep do
   @moduledoc """
   将一个完整的 Recipe 封装为一个独立的 Step 以实现嵌套操作。
 
@@ -13,7 +13,7 @@ defmodule QyCore.Recipe.NestedStep do
 
   ## Examples
 
-      nested_step = {QyCore.Recipe.NestedStep,
+      nested_step = {QyCore.Step.NestedStep,
         :parent_param, :parent_result_param,
         [
           recipe: inner_recipe,  # Options for recipe wrote in here!!
@@ -25,7 +25,7 @@ defmodule QyCore.Recipe.NestedStep do
       }
   """
 
-  use QyCore.Recipe.Step
+  use QyCore.Step
   import QyCore.Utilities, only: [ensure_full_step: 1]
 
   def nested?, do: true

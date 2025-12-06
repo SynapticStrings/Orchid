@@ -15,9 +15,9 @@ defmodule QyCore.Utilities do
   辅助：规范化 Step 结构，支持多种形式的 Step 定义。
   """
   @spec ensure_full_step(
-          QyCore.Recipe.Step.step_schema()
-          | QyCore.Recipe.Step.step_with_options()
-        ) :: QyCore.Recipe.Step.step_with_options()
+          QyCore.Step.step_schema()
+          | QyCore.Step.step_with_options()
+        ) :: QyCore.Step.step_with_options()
   def ensure_full_step({impl, in_k, out_k}), do: {impl, in_k, out_k, []}
   def ensure_full_step({impl, in_k, out_k, opts}), do: {impl, in_k, out_k, opts}
 end

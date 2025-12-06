@@ -29,7 +29,7 @@ defmodule QyCore.Param do
 
   ## 函数
 
-  @spec new(name(), param_type(), payload(), %{}) :: QyCore.Param.t()
+  @spec new(name(), param_type(), payload(), %{}) :: t()
   def new(name, type, payload \\ nil, metadata \\ %{}) do
     %__MODULE__{
       name: name,
@@ -39,7 +39,7 @@ defmodule QyCore.Param do
     }
   end
 
-  @spec get_payload(QyCore.Param.t()) :: raw_payload
+  @spec get_payload(t()) :: raw_payload
   def get_payload(%__MODULE__{payload: payload}) when is_list(payload), do: payload
 
   def get_payload(%__MODULE__{payload: {:ref, repo, id}}) do
@@ -47,7 +47,7 @@ defmodule QyCore.Param do
   end
 
   # TODO 确定进 Repo 的大小阈值（e.g. 长度超过一千或巴拉巴拉）
-  @spec set_payload(QyCore.Param.t(), payload()) :: QyCore.Param.t()
+  @spec set_payload(t(), payload()) :: t()
   def set_payload(%__MODULE__{} = param, new_payload) do
     %__MODULE__{param | payload: new_payload}
   end

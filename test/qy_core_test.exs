@@ -1,5 +1,5 @@
 defmodule QySynth.Steps.Denoise do
-  use QyCore.Recipe.Step
+  use QyCore.Step
   alias QyCore.Param
 
   def run(input_param, _opts) do
@@ -11,7 +11,7 @@ defmodule QySynth.Steps.Denoise do
 end
 
 defmodule QySynth.Steps.PitchFix do
-  use QyCore.Recipe.Step
+  use QyCore.Step
   alias QyCore.Param
 
   def run(input_param, _opts) do
@@ -23,7 +23,7 @@ defmodule QySynth.Steps.PitchFix do
 end
 
 defmodule QySynth.Steps.Mix do
-  use QyCore.Recipe.Step
+  use QyCore.Step
   alias QyCore.Param
 
   # 注意：这里接收两个参数的 List
@@ -36,7 +36,7 @@ defmodule QySynth.Steps.Mix do
   end
 end
 
-alias QyCore.{Param, Recipe}
+alias QyCore.{Param, Recipe, Step}
 alias QySynth.Steps.{Denoise, PitchFix, Mix}
 
 vocal_chain_steps = [
@@ -49,7 +49,7 @@ _vocal_chain_recipe = Recipe.new(vocal_chain_steps, name: :vocal_chain)
 main_steps = [
   # --- 嵌套步骤 ---
   {
-    Recipe.NestedStep,
+    Step.NestedStep,
     :microphone_input,
     :ready_vocal,
     # Options
@@ -131,7 +131,7 @@ end
 
 defmodule QyCore.NestedTest do
   use ExUnit.Case
-  alias QyCore.Recipe.NestedStep, as: Nested
+  alias QyCore.Step.NestedStep, as: Nested
 
   test "executes nested recipe correctly with param mapping" do
     # 1. 准备子 Recipe
@@ -190,7 +190,7 @@ end
 
 defmodule QyCore.WalkTest do
   use ExUnit.Case
-  alias QyCore.Recipe.NestedStep
+  alias QyCore.Step.NestedStep
   alias QySynth.Steps.Mix
 
   test "assign_options penetrates into nested recipes" do
@@ -244,7 +244,7 @@ defmodule QyCore.TelemetryTest do
   use ExUnit.Case
 
   defmodule ReportingStep do
-    use QyCore.Recipe.Step
+    use QyCore.Step
 
     def run(_in, opts) do
       report(opts, 50, "Halfway")

@@ -1,4 +1,4 @@
-defmodule QyCore.Recipe.Step do
+defmodule QyCore.Step do
   @moduledoc """
   定义配方步骤（Step）的行为规范和类型。
 
@@ -14,7 +14,7 @@ defmodule QyCore.Recipe.Step do
   @typedoc """
   目前包括三类实现：
 
-  * 模块实现：直接指定一个模块名，要求该模块实现 `QyCore.Recipe.Step` 行为。
+  * 模块实现：直接指定一个模块名，要求该模块实现 `QyCore.Step` 行为。
   * 单函数实现：指定一个函数，等同于只实现 `run/2` 回调。
   """
   @type implementation ::
@@ -61,8 +61,8 @@ defmodule QyCore.Recipe.Step do
 
   defmacro __using__(_opts) do
     quote do
-      @behaviour QyCore.Recipe.Step
-      alias QyCore.Recipe.Step
+      @behaviour QyCore.Step
+      alias QyCore.Step
 
       @impl true
       def nested?(), do: false

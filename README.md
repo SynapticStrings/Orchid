@@ -33,8 +33,6 @@ Step 层面的执行由 `QyCore.Runner.run/3` 负责。
 
 ### 分层钩子
 
-#### Recipe 层面
-
 #### Step 层面（Hook）
 
 在负责运行 step 的 `QyCore.Runner` 中，数据如洋葱一般从外层经由内层再回到外层。
@@ -66,6 +64,16 @@ end
 因此从宏观层面，Hooks 的顺序以及定义需要仔细考虑这点。
 
 需要运行额外的 Hook ，需要在 step 的 `opts[:extra_hooks_stack]` 中予以配置。
+
+#### Recipe 层面（Pipeline）
+
+和 hooks 类似，也是按照洋葱一般的数据流程处理。
+
+### 遍历注入
+
+#### step 的修改
+
+#### recipe 的修改
 
 ## 安装
 
