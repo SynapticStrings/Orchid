@@ -19,6 +19,7 @@ defmodule QyCore.Runner.Hooks.Telemetry do
           {:error, reason}
       end
     rescue
+      # 开发时记得注册 Linster
       e ->
         stack = __STACKTRACE__
         duration = System.monotonic_time() - start_time

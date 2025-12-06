@@ -24,7 +24,7 @@ defmodule QyCore.Runner do
 
     hook_stack =
       [QyCore.Runner.Hooks.Telemetry] ++
-        Keyword.get(step_opts, :extra_hook_stack, []) ++
+        Keyword.get(step_opts, :extra_hooks_stack, []) ++
         [QyCore.Runner.Hooks.Core]
 
     run_pipeline(hook_stack, initial_ctx)
@@ -47,4 +47,20 @@ defmodule QyCore.Runner do
 
   # Let it crash.
   defp prepare_inputs(key, params) when is_map(params), do: Map.fetch!(params, key)
+end
+
+defmodule QyCore.Runner.Hook do
+  @type context :: %{
+          step_implementation: QyCore.Recipe.Step.implementation(),
+          in_keys: QyCore.Recipe.Step.input_keys(),
+          out_keys: QyCore.Recipe.Step.output_keys(),
+          step_default_opts: QyCore.Recipe.Step.step_options(),
+          inputs: [QyCore.Param.t()],
+          recipe_opts: keyword(),
+          telemetry_meta: %{},
+          assigns: %{}
+        }
+  @type next_fn :: (context -> {:ok, QyCore.Recipe.Step.output()} | {:error, term()})
+
+  @callback call(context, next_fn) :: {:ok, QyCore.Recipe.Step.output()} | {:error, term()}
 end
