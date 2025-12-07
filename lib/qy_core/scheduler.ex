@@ -40,15 +40,27 @@ defmodule QyCore.Scheduler do
   end
 
   def validate_step_option(steps) do
-    steps
-    |> Enum.map(&Step.ensure_full_step/1)
-    |> Enum.map(fn {impl, _, _, opts} = step -> {step, impl.validate_options(opts)} end)
-    |> Enum.filter(fn res ->
-      case res do
-        {_, :ok} -> false
-        _ -> true
-      end
-    end)
+    errors =
+      steps
+      |> Enum.with_index()
+      |> Enum.reduce([], fn {step, idx}, acc ->
+        {impl, _, _, opts} = QyCore.Step.ensure_full_step(step)
+
+        # 检查模块是否导出了 validate/1
+        if is_atom(impl) and Code.ensure_loaded?(impl) and function_exported?(impl, :validate_options, 1) do
+          case impl.validate_options(opts) do
+            :ok -> acc
+            {:error, reason} -> [{:error, {:invalid_step_option, idx, impl, reason}} | acc]
+          end
+        else
+          acc
+        end
+      end)
+
+    case errors do
+      [] -> []
+      _ -> {:error, {:option_validation_failed, errors}}
+    end
   end
 
   defp do_build(recipe, initial_map) do
