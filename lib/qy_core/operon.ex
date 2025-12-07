@@ -12,7 +12,7 @@ defmodule QyCore.Operon do
       :inital_param,
       :assigns,
       :operon_options,
-      executor_and_opts: {QyCore.Executor.Serial, []}
+      executor_and_opts: {QyCore.Executor.Async, []}
     ]
   end
 

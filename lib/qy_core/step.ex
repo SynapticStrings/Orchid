@@ -60,6 +60,8 @@ defmodule QyCore.Step do
 
   @callback nested?() :: boolean()
 
+  @callback validate_options(step_options()) :: :ok | {:error, term()}
+
   ## public API
 
   def inject_options({impl, in_keys, out_keys, opts}, new_opts) when is_map(new_opts) do
@@ -89,6 +91,9 @@ defmodule QyCore.Step do
       @impl true
       def nested?(), do: false
 
+      @impl true
+      def validate_options(_opts), do: :ok
+
       @doc """
       向 Executor 汇报状态，通过查找 opts 中的 :__reporter__ 闭包并调用它。
       """
@@ -102,7 +107,7 @@ defmodule QyCore.Step do
         end
       end
 
-      defoverridable nested?: 0
+      defoverridable nested?: 0, validate_options: 1
     end
   end
 end

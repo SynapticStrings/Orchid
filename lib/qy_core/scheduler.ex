@@ -28,11 +28,27 @@ defmodule QyCore.Scheduler do
 
     initial_keys = Map.keys(initial_map)
 
-    # 预检步骤依赖关系是否有环或输入缺如
-    case Recipe.Graph.validate(recipe.steps, initial_keys) do
-      :ok -> do_build(recipe, initial_map)
+    with [] <- validate_step_option(recipe.steps),
+         # 预检输入缺如
+         :ok <- Recipe.Graph.validate(recipe.steps, initial_keys),
+         # 步骤依赖关系是否有环
+         {:ok, context} <- do_build(recipe, initial_map) do
+      {:ok, context}
+    else
       {:error, reason} -> {:error, reason}
     end
+  end
+
+  def validate_step_option(steps) do
+    steps
+    |> Enum.map(&Step.ensure_full_step/1)
+    |> Enum.map(fn {impl, _, _, opts} = step -> {step, impl.validate_options(opts)} end)
+    |> Enum.filter(fn res ->
+      case res do
+        {_, :ok} -> false
+        _ -> true
+      end
+    end)
   end
 
   defp do_build(recipe, initial_map) do
@@ -124,10 +140,10 @@ defmodule QyCore.Scheduler do
       ctx
       | pending_steps:
           Recipe.walk(ctx.pending_steps, fn step ->
-              if(selector.(step),
-                do: step |> Step.ensure_full_step() |> Step.inject_options(new_opts),
-                else: step
-              )
+            if(selector.(step),
+              do: step |> Step.ensure_full_step() |> Step.inject_options(new_opts),
+              else: step
+            )
           end)
     }
   end
