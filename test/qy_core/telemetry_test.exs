@@ -7,7 +7,7 @@ defmodule QyCore.TelemetryTest do
 
     def run(_in, opts) do
       report(opts, 50, "Halfway")
-      {:ok, Param.new(:out, :string, "Done")}
+      {:ok, QyCore.Param.new(:out, :string, "Done")}
     end
   end
 
@@ -33,8 +33,8 @@ defmodule QyCore.TelemetryTest do
     )
 
     # 2. 运行
-    recipe = Recipe.new([{ReportingStep, :in, :out}])
-    initial = [Param.new(:in, :string, "Hi")]
+    recipe = QyCore.Recipe.new([{ReportingStep, :in, :out}])
+    initial = [QyCore.Param.new(:in, :string, "Hi")]
     QyCore.run(recipe, initial)
 
     # 3. 验证收到的消息

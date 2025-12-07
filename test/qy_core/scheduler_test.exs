@@ -23,10 +23,11 @@ defmodule QyCore.SchedulerTest do
       assert ctx.params[:input].payload == "data"
     end
 
-    test "detects missing inputs" do
-      steps = [{DummyStep, :missing, :output}]
-      recipe = Recipe.new(steps)
-      {:error, {:missing_inputs, 0, [:missing]}} = Scheduler.build(recipe, [])
+    test "detects cycle detect" do
+      steps = [{DummyStep, :a, :b}, {DummyStep, :b, :a}]
+      recipe = Recipe.new(steps, [%Param{name: :a}])
+      {:error, {:cyclic, [{DummyStep, _, _}, {DummyStep, _, _}]}} =
+        Scheduler.build(recipe, [])
     end
   end
 
@@ -37,6 +38,7 @@ defmodule QyCore.SchedulerTest do
         {DummyStep, :b, :c},
         {DummyStep, [:a, :c], :d}
       ]
+
       recipe = Recipe.new(steps)
       initial = [%Param{name: :a, payload: 1}]
       {:ok, ctx} = Scheduler.build(recipe, initial)
@@ -64,7 +66,8 @@ defmodule QyCore.SchedulerTest do
       {:ok, ctx} = Scheduler.build(recipe, [%Param{name: :in, payload: nil}])
       selector = fn {impl, _, _, _} -> impl == DummyStep end
 
-      new_ctx = Scheduler.update_pending_steps_options(ctx, selector, extra_hooks_stack: [ExtraHook])
+      new_ctx =
+        Scheduler.update_pending_steps_options(ctx, selector, extra_hooks_stack: [ExtraHook])
 
       {_, _, _, opts} = hd(new_ctx.pending_steps) |> elem(0)
       assert opts[:extra_hooks_stack] == [ExtraHook]

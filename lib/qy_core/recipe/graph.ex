@@ -10,9 +10,6 @@ defmodule QyCore.Recipe.Graph do
           | {:error, {:missing_inputs, non_neg_integer(), [Step.input_keys()]}}
           | {:error, {:cyclic, [Step.step_schema()]}}
   def validate(steps, initial_keys) do
-    # 确保 initial_keys 是 MapSet
-    available = MapSet.new(initial_keys)
-
     # 预处理 Steps，规范化 Keys
     indexed_steps =
       steps
@@ -28,16 +25,44 @@ defmodule QyCore.Recipe.Graph do
         }
       end)
 
-    case simulate_run(indexed_steps, available) do
-      :ok -> :ok
-      {:error, reason} -> {:error, reason}
+    all_produced_keys =
+      Enum.reduce(indexed_steps, MapSet.new(initial_keys), fn s, acc ->
+        MapSet.union(acc, s.provides)
+      end)
+
+    missing_inputs =
+      Enum.reduce(indexed_steps, %{}, fn step, acc ->
+        missing = MapSet.difference(step.needed, all_produced_keys)
+        if MapSet.size(missing) > 0 do
+          Map.put(acc, step.index, MapSet.to_list(missing))
+        else
+          acc
+        end
+      end)
+
+    if map_size(missing_inputs) > 0 do
+      {:error, {:missing_inputs, missing_inputs}}
+    else
+      check_cycles(indexed_steps, MapSet.new(initial_keys))
     end
   end
 
-  defp simulate_run([], _available), do: :ok
+  defp check_cycles(steps, available) do
+    # 这里的逻辑类似 Kahn 算法
+    # 只要能找到依赖满足的节点，就将其移出列表，并将其产出加入 available
+    # 如果列表不为空但找不到可运行节点，剩下的就是环
+    case run_simulation(steps, available) do
+      [] -> :ok
+      remaining_steps ->
+        # 剩下的步骤构成了环（或者互相等待）
+        cyclic_indices = Enum.map(remaining_steps, & &1.step)
+        {:error, {:cyclic, cyclic_indices}}
+    end
+  end
 
-  defp simulate_run(pending, available) do
-    # 核心逻辑：找出所有需求被满足的步骤
+  defp run_simulation([], _available), do: []
+
+  defp run_simulation(pending, available) do
     {ready, not_ready} =
       Enum.split_with(pending, fn %{needed: needed} ->
         MapSet.subset?(needed, available)
@@ -45,9 +70,8 @@ defmodule QyCore.Recipe.Graph do
 
     case ready do
       [] ->
-        first_stuck = hd(pending)
-        missing = MapSet.difference(first_stuck.needed, available) |> MapSet.to_list()
-        {:error, {:missing_inputs, first_stuck.index, missing}}
+        # 没有任何步骤准备好，死锁
+        pending
 
       _ ->
         newly_produced =
@@ -56,7 +80,7 @@ defmodule QyCore.Recipe.Graph do
           |> Enum.reduce(MapSet.new(), &MapSet.union/2)
 
         new_available = MapSet.union(available, newly_produced)
-        simulate_run(not_ready, new_available)
+        run_simulation(not_ready, new_available)
     end
   end
 

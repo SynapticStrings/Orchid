@@ -123,9 +123,8 @@ defmodule QyCoreTest do
     recipe = Recipe.new(steps)
 
     # 预期报错
-    {:error, {:missing_inputs, idx, missing_values}} = QyCore.run(recipe, initial_params)
-    assert idx == 0
-    assert :bgm in missing_values
+    {:error, {:missing_inputs, missing_map}} = QyCore.run(recipe, initial_params)
+    assert Map.get(missing_map, 0) == [:bgm]
   end
 end
 

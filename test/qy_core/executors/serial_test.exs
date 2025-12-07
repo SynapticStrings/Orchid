@@ -34,6 +34,8 @@ defmodule QyCore.Executor.SerialTest do
   test "handles missing" do
     steps = [{SuccessStep, :missing, :output}]
     recipe = Recipe.new(steps)
-    {:error, {:missing_inputs, 0, [:missing]}} = Serial.execute(recipe, [])
+    {:error, {:missing_inputs, missing_map}} = Serial.execute(recipe, [])
+
+    assert missing_map[0] == [:missing]
   end
 end
