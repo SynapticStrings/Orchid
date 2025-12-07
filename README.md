@@ -65,6 +65,11 @@ end
 
 需要运行额外的 Hook ，需要在 step 的 `opts[:extra_hooks_stack]` 中予以配置。
 
+目前 Runner 有两个 hooks：
+
+- `QyCore.Runner.Hooks.Telemetry` 通信
+- `QyCore.Runner.Hooks.Core` 执行 step
+
 #### Recipe 层面（Pipeline & Operon）
 
 和 hooks 类似，也是按照洋葱一般的数据流程处理。
