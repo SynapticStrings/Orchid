@@ -107,6 +107,10 @@ end
   - [ ] recipe 配置
   - [ ] operon 堆修改
   - [ ] hook 堆修改
+- [ ] 运行前检查
+  - [x] Recipe 缺失检查
+  - [ ] Recipe 循环检查
+  - [ ] Step option 检查（step 层面）
 - [ ] 运行时修改
   - *仅针对尚未运行的 steps*
   - [x] step 配置（`QyCore.Scheduler.update_pending_steps_options/3` ）

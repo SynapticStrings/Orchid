@@ -6,7 +6,9 @@ defmodule QyCore.Recipe.Graph do
   alias QyCore.Step
 
   @spec validate([Step.t()], Step.input_keys()) ::
-          :ok | {:error, {:missing_inputs, non_neg_integer(), [Step.input_keys()]}}
+          :ok
+          | {:error, {:missing_inputs, non_neg_integer(), [Step.input_keys()]}}
+          | {:error, {:cyclic, [Step.step_schema()]}}
   def validate(steps, initial_keys) do
     # 确保 initial_keys 是 MapSet
     available = MapSet.new(initial_keys)
