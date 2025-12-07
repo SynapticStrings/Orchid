@@ -8,13 +8,16 @@ defmodule QyCore.Scheduler do
   @doc """
   初始化执行上下文。
   """
-  @spec build(QyCore.Recipe.t(), maybe_improper_list()) ::
+  @spec build(QyCore.Recipe.t(), [Param.t()] | QyCore.Scheduler.Context.param_map()) ::
           {:error, {:missing_inputs, any(), list()}}
           | {:ok, QyCore.Scheduler.Context.t()}
   def build(%Recipe{} = recipe, initial_params) do
     # 1. 构建 initial_map
     initial_map =
       case initial_params do
+        [] ->
+          %{}
+
         [_ | _] ->
           Map.new(initial_params, fn param ->
             # 兼容 Struct 或 Map，只要有 name 字段即可
@@ -57,8 +60,9 @@ defmodule QyCore.Scheduler do
   def next_ready_steps(%Context{} = ctx) do
     Enum.filter(ctx.pending_steps, fn {step, idx} ->
       # 看谁的 needed 是 available 的子集
+      # 不考虑运行的
       dependencies_met?(step, ctx.available_keys) and
-        not MapSet.member?(ctx.running_steps, idx)  # 不考虑运行的
+        not MapSet.member?(ctx.running_steps, idx)
     end)
   end
 
@@ -122,7 +126,10 @@ defmodule QyCore.Scheduler do
       ctx
       | pending_steps:
           Recipe.walk(ctx.pending_steps, fn step ->
-            if(selector.(step), do: Step.inject_options(step, new_opts), else: step)
+              if(selector.(step),
+                do: step |> Step.ensure_full_step() |> Step.inject_options(new_opts),
+                else: step
+              )
           end)
     }
   end

@@ -61,7 +61,7 @@ defmodule QyCore.Recipe do
   如果 Step 是 NestedStep ，会自动递归进入其内部的 step 列表。
   """
   @spec walk(
-          [Step.t()],
+          [Step.t()] | [{Step.t(), non_neg_integer()}],
           (Step.t() -> Step.t()) | (Recipe.t() -> Recipe.t()),
           :step | :inner_recipe
         ) :: [Step.t()]
@@ -69,17 +69,32 @@ defmodule QyCore.Recipe do
 
   def walk(steps, func, :step) when is_function(func, 1) do
     Enum.map(steps, fn step ->
-      modified_step = func.(step)
+      case step do
+      {old_step, idx} when is_integer(idx) ->
+        modified_step = func.(old_step)
 
-      process_nested(modified_step, func, :step)
+        {process_nested(modified_step, func, :step), idx}
+
+      _ ->
+        modified_step = func.(step)
+
+        process_nested(modified_step, func, :step)
+      end
     end)
   end
 
   def walk(steps, func, :inner_recipe) when is_function(func, 1) do
     Enum.map(steps, fn step ->
-      modified_step = func.(step)
+      case step do
+        {old_step, idx} when is_integer(idx) ->
+          modified_step = func.(old_step)
 
-      process_nested(modified_step, func, :inner_recipe)
+          {process_nested(modified_step, func, :inner_recipe), idx}
+        _ ->
+          modified_step = func.(step)
+
+          process_nested(modified_step, func, :inner_recipe)
+      end
     end)
   end
 
