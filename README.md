@@ -92,6 +92,28 @@ end
 
 #### recipe 的修改
 
+## Roadmap
+
+- [x] 声明式步骤
+- [x] 流程编排
+- [x] 嵌套 recipe
+- [x] executor 协议与实现
+- [x] 钩子
+  - [x] step 层
+  - [x] recipe 层
+- [ ] 运行前修改
+  - [x] step 配置（通过 `QyCore.Recipe.assign_options/3`）
+  - [ ] recipe 层面的修改 step （注入、删除）
+  - [ ] recipe 配置
+  - [ ] operon 堆修改
+  - [ ] hook 堆修改
+- [ ] 运行时修改
+  - *仅针对未运行的 steps*
+  - [x] step 配置（`QyCore.Scheduler.update_pending_steps_options/3` ）
+  - [ ] executor 配置
+  - [ ] recipe 配置
+  - [ ] runner hooks
+
 ## 安装
 
 在 `mix.exs` 中添加：

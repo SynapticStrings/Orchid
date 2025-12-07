@@ -114,7 +114,7 @@ defmodule QyCore.Scheduler do
   @spec update_pending_steps_options(
           QyCore.Scheduler.Context.t(),
           (Step.t() -> boolean()),
-          any()
+          keyword()
         ) ::
           QyCore.Scheduler.Context.t()
   def update_pending_steps_options(%Context{} = ctx, selector, new_opts) do
