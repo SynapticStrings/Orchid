@@ -104,8 +104,6 @@ end
 - [x] 嵌套 recipe
 - [x] executor 协议与实现
 - [x] 钩子
-  - [x] step 层
-  - [x] recipe 层
 - [ ] 运行前修改
   - [x] step 配置（通过 `QyCore.Recipe.assign_options/3`）
   - [ ] recipe 层面的修改 step （注入、删除）
@@ -122,6 +120,10 @@ end
   - [ ] executor 配置
   - [ ] recipe 配置
   - [ ] runner hooks
+- [ ] API 固化
+  - [ ] 梳理逻辑
+  - [ ] 编写文档
+  - [ ] 100% coverage
 
 ## 安装
 

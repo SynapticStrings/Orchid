@@ -7,7 +7,7 @@ defmodule QyCore.Recipe.Graph do
 
   @spec validate([Step.t()], Step.input_keys()) ::
           :ok
-          | {:error, {:missing_inputs, non_neg_integer(), [Step.input_keys()]}}
+          | {:error, {:missing_inputs, %{non_neg_integer() => Step.input_keys()}}}
           | {:error, {:cyclic, [Step.step_schema()]}}
   def validate(steps, initial_keys) do
     # 预处理 Steps，规范化 Keys

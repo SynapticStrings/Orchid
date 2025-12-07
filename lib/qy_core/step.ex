@@ -2,6 +2,21 @@ defmodule QyCore.Step do
   @moduledoc """
   定义配方步骤（Step）的行为规范和类型。
 
+  ### 规范
+
+  执行 step 的代码参见 `QyCore.Runner.Hooks.Core` 以及
+  `QyCore.Runner` 。
+
+  用例参见测试以及 /examples 下面的文件。
+
+  需要特别说明的是，对于单个输入参数，在 `c:run/2` 的定义端只需要写：
+
+      def run(%Param{} = param, opts), do: ...
+
+  就可以了。
+
+  更多输入输出，使用列表与元组都是 OK 的。
+
   ### Step options
 
   关于 step 的选项，除了用户自定义以及插件注入外，还包括了：

@@ -26,7 +26,9 @@ defmodule QyCore.MixProject do
   defp deps do
     [
       # 实现分布式追踪，hook 的底层实现
-      {:telemetry, "~> 1.3"}
+      {:telemetry, "~> 1.3"},
+      ## 开发用
+      {:dialyxir, "~> 1.0", only: [:dev], runtime: false, optional: true}
     ]
   end
 end

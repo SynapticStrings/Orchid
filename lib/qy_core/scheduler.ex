@@ -8,19 +8,17 @@ defmodule QyCore.Scheduler do
   @doc """
   初始化执行上下文。
   """
-  @spec build(QyCore.Recipe.t(), [Param.t()] | QyCore.Scheduler.Context.param_map()) ::
-          {:error, {:missing_inputs, any(), list()}}
-          | {:ok, QyCore.Scheduler.Context.t()}
+  @spec build(Recipe.t(), [Param.t()] | Context.param_map()) ::
+          {:ok, Context.t()} | {:error, term()}
   def build(%Recipe{} = recipe, initial_params) do
-    # 1. 构建 initial_map
     initial_map =
       case initial_params do
+        # 照理说空列表是有问题的，但还是把问题抛给后面的 validate 处理
         [] ->
           %{}
 
         [_ | _] ->
           Map.new(initial_params, fn param ->
-            # 兼容 Struct 或 Map，只要有 name 字段即可
             {Map.get(param, :name), param}
           end)
 
