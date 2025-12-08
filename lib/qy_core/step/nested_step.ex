@@ -30,7 +30,7 @@ defmodule QyCore.Step.NestedStep do
   def nested?, do: true
 
   @spec run(Step.input(), Step.step_options()) ::
-          {:error, {:nested_execution_failed, any()}} | {:ok, Step.output()}
+          {:error, {:nested_execution_failed, term()}} | {:ok, Step.output()}
   def run(input_params, opts) do
     inner_recipe = Keyword.fetch!(opts, :recipe)
     executor = Keyword.get(opts, :executor, QyCore.Executor.Serial)

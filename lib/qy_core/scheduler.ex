@@ -5,10 +5,12 @@ defmodule QyCore.Scheduler do
   alias QyCore.Scheduler.Context
   alias QyCore.{Recipe, Param, Step}
 
+  @type initial_params :: [Param.t()] | Context.param_map()
+
   @doc """
   初始化执行上下文。
   """
-  @spec build(Recipe.t(), [Param.t()] | Context.param_map()) ::
+  @spec build(Recipe.t(), initial_params()) ::
           {:ok, Context.t()} | {:error, term()}
   def build(%Recipe{} = recipe, initial_params) do
     initial_map =

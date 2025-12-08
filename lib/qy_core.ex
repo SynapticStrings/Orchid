@@ -8,15 +8,16 @@ defmodule QyCore do
   @doc """
   运行。
   """
+  @spec run(QyCore.Recipe.t(), QyCore.Scheduler.initial_params(), keyword()) ::
+          QyCore.Operon.Responce.payload()
   def run(recipe, input_params, _opts \\ []) do
     operons = [QyCore.Operon.Execute]
 
     req = %QyCore.Operon.Request{
       recipe: recipe,
-      inital_param: input_params,
+      inital_param: input_params
     }
 
     QyCore.Pipeline.run(operons, req).payload
   end
-
 end
