@@ -6,7 +6,7 @@ defmodule QySynth.Steps.Denoise do
     # 模拟降噪
     raw_data = Param.get_payload(input_param)
     processed = Enum.map(raw_data, &(&1 <> "_denoised"))
-    {:ok, Param.new(:clean_vocal, :audio, processed)}
+    {:ok, Param.new(:clean_vocal, :audio) |> Param.set_payload(processed)}
   end
 end
 
@@ -18,7 +18,7 @@ defmodule QySynth.Steps.PitchFix do
     # 模拟修音
     data = Param.get_payload(input_param)
     processed = Enum.map(data, &(&1 <> "_tuned"))
-    {:ok, Param.new(:tuned_vocal, :audio, processed)}
+    {:ok, Param.new(:tuned_vocal, :audio) |> Param.set_payload(processed)}
   end
 end
 
@@ -32,7 +32,7 @@ defmodule QySynth.Steps.Mix do
     bgm = Param.get_payload(bgm_param)
 
     mixed = Enum.zip_with(vocal, bgm, fn v, b -> "Mix[#{v} + #{b}]" end)
-    {:ok, Param.new(:final_track, :audio, mixed)}
+    {:ok, Param.new(:final_track, :audio) |> Param.set_payload(mixed)}
   end
 end
 

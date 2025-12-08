@@ -64,6 +64,13 @@ defmodule QyCore.Step do
 
   ## public API
 
+  @spec inject_options(t(), keyword()) :: step_with_options()
+  def inject_options(step, options)
+
+  def inject_options({_, _, _} = step_schema, new_opts) do
+    step_schema |> ensure_full_step() |> inject_options(new_opts)
+  end
+
   def inject_options({impl, in_keys, out_keys, opts}, new_opts) when is_map(new_opts) do
     merged_opts = new_opts |> Enum.map(& &1) |> Keyword.merge(opts)
     {impl, in_keys, out_keys, merged_opts}
@@ -73,13 +80,14 @@ defmodule QyCore.Step do
     {impl, in_keys, out_keys, Keyword.merge(opts, new_opts)}
   end
 
+  @spec extract_schema(t()) :: step_schema()
   def extract_schema({impl, in_keys, out_keys}), do: {impl, in_keys, out_keys}
   def extract_schema({impl, in_keys, out_keys, _opts}), do: {impl, in_keys, out_keys}
 
   @doc """
   辅助：规范化 Step 结构，支持多种形式的 Step 定义。
   """
-  @spec ensure_full_step(step_schema() | step_with_options()) :: step_with_options()
+  @spec ensure_full_step(t()) :: step_with_options()
   def ensure_full_step({impl, in_k, out_k}), do: {impl, in_k, out_k, []}
   def ensure_full_step({impl, in_k, out_k, opts}), do: {impl, in_k, out_k, opts}
 
