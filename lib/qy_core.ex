@@ -2,22 +2,31 @@ defmodule QyCore do
   @moduledoc """
   编辑器的核心代码以及业务逻辑。
 
-  旨在实现一个通用的编辑器框架的基础设施，以便于扩展和定制。
+  旨在实现一个便于扩展和定制的任务执行框架。
   """
 
   @doc """
-  运行。
+  执行。
   """
   @spec run(QyCore.Recipe.t(), QyCore.Scheduler.initial_params(), keyword()) ::
-          QyCore.Operon.Responce.payload()
-  def run(recipe, input_params, _opts \\ []) do
-    operons = [QyCore.Operon.Execute]
+          QyCore.Operon.Responce.payload() | QyCore.Operon.Responce.t()
+  def run(recipe, input_params, opts \\ []) do
+    responce? = Keyword.get(opts, :return_responce, false)
+    operons_stack = Keyword.get(opts, :operons_stack, [])
 
-    req = %QyCore.Operon.Request{
-      recipe: recipe,
-      inital_param: input_params
-    }
+    responce =
+      QyCore.Pipeline.run(
+        operons_stack ++ [QyCore.Operon.Execute],
+        %QyCore.Operon.Request{
+          recipe: recipe,
+          inital_param: input_params
+        }
+      )
 
-    QyCore.Pipeline.run(operons, req).payload
+    if responce? do
+      responce
+    else
+      responce.payload
+    end
   end
 end

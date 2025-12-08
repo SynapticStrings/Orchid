@@ -5,9 +5,9 @@ defmodule QyCore.Step.NestedStep do
   需要的选项:
 
   - :recipe -> 要运行的内部 Recipe 结构体
-  - :executor (可选) -> 指定运行子流程的执行器模块 (默认 QyCore.Executor.Serial)
-  - :input_map (可选) -> %{parent_name => child_name} 参数名映射（用于两级 step 名称不一样的情形）
-  - :output_map (可选) -> %{child_name => parent_name} 结果名映射
+  - :executor (可选) -> 指定运行子流程的执行器模块 (默认 `QyCore.Executor.Serial`)
+  - :input_map (可选) -> `%{parent_name => child_name}` 参数名映射（用于两级 step 名称不一样的情形）
+  - :output_map (可选) -> `%{child_name => parent_name}` 结果名映射
 
   io mapper 的顺序可以理解为按照数据流的顺序进行。
 
@@ -17,7 +17,7 @@ defmodule QyCore.Step.NestedStep do
         :parent_param, :parent_result_param,
         [
           recipe: inner_recipe,  # Options for recipe wrote in here!!
-          executor: QyCore.Executor.Parallel,
+          executor: QyCore.Executor.Async,
           input_map: %{parent_param: :child_input},
           output_map: %{child_output: :parent_result_param},
           ...

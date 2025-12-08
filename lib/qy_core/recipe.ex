@@ -55,10 +55,15 @@ defmodule QyCore.Recipe do
   @doc """
   对 step 列表进行深度遍历。
 
-  因为 QyCore.Scheduler.update_pending_steps_options/3 的存在，要考虑列表的存在。
+  因为 QyCore.Scheduler.update_pending_steps_options/3 的存在，要考虑附带索引的列表的存在。
 
   func 会被应用到树中的每一个 Step 或 Recipe 上。
-  如果 Step 是 NestedStep ，会自动递归进入其内部的 step 列表。
+  如果 Step 是 NestedStep ，会自动递归进入其内部的 step 列表或对该 recipe 本体进行修改。
+
+  ### 模式
+
+  * `:step` - 对 Step 进行修改
+  * `:inner_recipe` - 内部的 NestedStep 的 Recipe 结构体进行修改
   """
   @spec walk(
           [Step.t()] | [{Step.t(), non_neg_integer()}],

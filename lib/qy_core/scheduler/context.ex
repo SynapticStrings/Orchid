@@ -10,7 +10,6 @@ defmodule QyCore.Scheduler.Context do
           history: [{non_neg_integer(), param_map() | [Param.t()] | Param.t()}]
         }
   defstruct [
-    ## 调度
     # 还未执行的步骤列表
     :pending_steps,
     # 当前已有的数据 keys

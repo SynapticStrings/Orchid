@@ -22,7 +22,7 @@ defmodule QyCore.Step do
   关于 step 的选项，除了用户自定义以及插件注入外，还包括了：
 
   * `:__report__`：源于本模块关于 `report/3` 的定义，便于主动汇报进度/状态
-  * `:extra_hooks_stack`：中间件堆栈，源于`QyCore.Runner`
+  * `:extra_hooks_stack`：中间件堆栈，源于`QyCore.Runner` ，用户修改
   """
   alias QyCore.Param
 
