@@ -128,8 +128,8 @@ defmodule QyCoreTest do
   end
 
   test "function step can also running" do
-    step1 = fn {_, _} -> {:ok, Param.new(:mid, :string) |> Param.set_payload("Mid")} end
-    step2 = fn {_, _} -> {:ok, Param.new(:fin, :string) |> Param.set_payload("Fin")} end
+    step1 = fn _, _ -> {:ok, Param.new(:mid, :string) |> Param.set_payload("Mid")} end
+    step2 = fn _, _ -> {:ok, Param.new(:fin, :string) |> Param.set_payload("Fin")} end
     recipe = Recipe.new([{step1, :in, :mid}, {step2, :mid, :fin}])
 
     {:ok, _res} = QyCore.run(recipe, [Param.new(:in, :string) |> Param.set_payload("In")])
