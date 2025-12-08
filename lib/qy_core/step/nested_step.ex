@@ -23,6 +23,17 @@ defmodule QyCore.Step.NestedStep do
           ...
         ]
       }
+
+  如果你需要自定义的具备嵌套功能的 step ，请将内部的 recipe 内容放到 `:recipe`
+  参属下且如下设置：
+
+      defmodule MyNested do
+        use QyCore.Step
+
+        def nested?(), do: true
+
+        def run(..), do: ..
+      end
   """
 
   use QyCore.Step

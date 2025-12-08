@@ -109,10 +109,10 @@ end
   - [ ] recipe 层面的修改 step （注入、删除）
   - [ ] recipe 配置
   - [ ] operon 堆修改
-  - [ ] hook 堆修改
-- [ ] 运行前检查
+  - [ ] hook 堆修改（可以通过修改 step 配置完成）
+- [x] 运行前检查
   - [x] Recipe 缺失检查
-  - [ ] Recipe 循环检查
+  - [x] Recipe 循环检查
   - [x] Step option 检查（step 层面）
 - [ ] 运行时修改
   - *仅针对尚未运行的 steps*

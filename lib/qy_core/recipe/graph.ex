@@ -91,6 +91,6 @@ defmodule QyCore.Recipe.Graph do
   # def normalize_keys_to_set(nil), do: MapSet.new()
   def normalize_keys_to_set(atom) when is_atom(atom), do: MapSet.new([atom])
   def normalize_keys_to_set(list) when is_list(list), do: MapSet.new(list)
-  # def normalize_keys_to_set(tuple) when is_tuple(tuple), do: MapSet.new(Tuple.to_list(tuple))
+  def normalize_keys_to_set(tuple) when is_tuple(tuple), do: MapSet.new(Tuple.to_list(tuple))
   # def normalize_keys_to_set(mapset), do: mapset
 end

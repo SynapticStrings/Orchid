@@ -4,7 +4,7 @@ defmodule QyCore.Recipe do
 
   ### Recipe options
 
-  关于分配参数：TBD
+  * `:recipe` （需要是模块且回调的 nested? 为真）
   """
 
   alias QyCore.{Recipe, Step}
@@ -92,13 +92,11 @@ defmodule QyCore.Recipe do
     Enum.map(steps, fn step ->
       case step do
         {old_step, idx} when is_integer(idx) ->
-          modified_step = func.(old_step)
 
-          {process_nested(modified_step, func, :inner_recipe), idx}
+          {process_nested(old_step, func, :inner_recipe), idx}
         _ ->
-          modified_step = func.(step)
 
-          process_nested(modified_step, func, :inner_recipe)
+          process_nested(step, func, :inner_recipe)
       end
     end)
   end
