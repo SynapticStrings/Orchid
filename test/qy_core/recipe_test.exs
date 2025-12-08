@@ -27,15 +27,16 @@ defmodule QyCore.RecipeTest do
         {TestStepA, :in, :out},
         {TestStepB, :in, :out}
       ]
+
       recipe = Recipe.new(steps)
 
-      updated_recipe = Recipe.assign_options(recipe, :all, [trace_id: "global"])
+      updated_recipe = Recipe.assign_options(recipe, :all, trace_id: "global")
 
       # 验证所有步骤都被注入了选项
       assert Enum.all?(updated_recipe.steps, fn step ->
-        {_, _, _, opts} = Step.ensure_full_step(step)
-        opts[:trace_id] == "global"
-      end)
+               {_, _, _, opts} = Step.ensure_full_step(step)
+               opts[:trace_id] == "global"
+             end)
     end
 
     test "applies options using a function selector" do
@@ -44,6 +45,7 @@ defmodule QyCore.RecipeTest do
         {TestStepA, :in, :out, [tag: :keep]},
         {TestStepB, :in, :out, [tag: :ignore]}
       ]
+
       recipe = Recipe.new(steps)
 
       # 自定义选择器：只选择 tag 为 :keep 的步骤
@@ -52,7 +54,7 @@ defmodule QyCore.RecipeTest do
         opts[:tag] == :keep
       end
 
-      updated_recipe = Recipe.assign_options(recipe, selector, [injected: true])
+      updated_recipe = Recipe.assign_options(recipe, selector, injected: true)
 
       [step1, step2] = updated_recipe.steps
       {_, _, _, opts1} = Step.ensure_full_step(step1)
@@ -67,12 +69,13 @@ defmodule QyCore.RecipeTest do
     test "recursively modifies ONLY inner recipes, leaving enclosing steps untouched" do
       inner_recipe = Recipe.new([{TestStepA, :child_in, :child_out}], name: :original_child)
 
-      nested_step = {NestedStep, :parent_in, :parent_out, [recipe: inner_recipe, tag: :outer_step]}
+      nested_step =
+        {NestedStep, :parent_in, :parent_out, [recipe: inner_recipe, tag: :outer_step]}
 
       outer_recipe = Recipe.new([nested_step], name: :original_parent)
 
       recipe_transform = fn %Recipe{} = r ->
-          %{r | name: String.to_atom("modified_#{r.name}")}
+        %{r | name: String.to_atom("modified_#{r.name}")}
       end
 
       modified_steps = Recipe.walk(outer_recipe.steps, recipe_transform, :inner_recipe)
@@ -105,6 +108,40 @@ defmodule QyCore.RecipeTest do
       {_, _, _, opts} = Step.ensure_full_step(modified_step)
 
       assert opts[:recipe].name == :changed
+    end
+  end
+
+  describe "assign_options/3 use walk/3" do
+    test "assign_options penetrates into nested recipes" do
+      inner_recipe =
+        Recipe.new([
+          {TestStepB, :in, :out}
+        ])
+
+      middle_steps = [
+        {NestedStep, :a, :b, [recipe: inner_recipe]}
+      ]
+
+      middle_recipe = Recipe.new(middle_steps)
+
+      outer_steps = [
+        {NestedStep, :x, :y, [recipe: middle_recipe]}
+      ]
+
+      outer_recipe = Recipe.new(outer_steps)
+
+      updated_recipe = Recipe.assign_options(outer_recipe, TestStepB, sample_rate: 48000)
+
+      {_, _, _, opts1} = hd(updated_recipe.steps)
+      middle = opts1[:recipe]
+
+      {_, _, _, opts2} = hd(middle.steps)
+      inner = opts2[:recipe]
+
+      {impl, _, _, final_opts} = hd(inner.steps)
+
+      assert impl == TestStepB
+      assert final_opts[:sample_rate] == 48000
     end
   end
 end
