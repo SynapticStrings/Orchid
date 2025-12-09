@@ -1,5 +1,6 @@
 defmodule SleepStep do
   use QyCore.Step
+
   def run(param, _opts) do
     Process.sleep(1000)
     {:ok, %QyCore.Param{name: param.name, payload: param.payload + 1}}
@@ -15,6 +16,7 @@ defmodule QyCore.Executor.AsyncTest do
       {SleepStep, :a, :b},
       {SleepStep, :c, :d}
     ]
+
     recipe1 = Recipe.new(steps1)
     initial1 = [%Param{name: :a, payload: 1}, %Param{name: :c, payload: 2}]
     start1 = System.monotonic_time()
@@ -25,6 +27,7 @@ defmodule QyCore.Executor.AsyncTest do
       {SleepStep, :input, :mid},
       {SleepStep, :mid, :output}
     ]
+
     recipe2 = Recipe.new(steps2)
     initial2 = [%Param{name: :input, payload: 1}]
     start2 = System.monotonic_time()

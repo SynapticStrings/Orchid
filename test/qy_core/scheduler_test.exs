@@ -26,6 +26,7 @@ defmodule QyCore.SchedulerTest do
     test "detects cycle detect" do
       steps = [{DummyStep, :a, :b}, {DummyStep, :b, :a}]
       recipe = Recipe.new(steps, [%Param{name: :a}])
+
       {:error, {:cyclic, [{DummyStep, _, _}, {DummyStep, _, _}]}} =
         Scheduler.build(recipe, [])
     end

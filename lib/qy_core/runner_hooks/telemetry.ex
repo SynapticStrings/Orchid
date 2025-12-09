@@ -1,6 +1,8 @@
 defmodule QyCore.Runner.Hooks.Telemetry do
   @behaviour QyCore.Runner.Hook
 
+  @spec call(QyCore.Runner.context(), QyCore.Runner.Hook.next_fn()) ::
+          {:ok, QyCore.Step.output()} | {:error, term()}
   def call(ctx, next) do
     meta = ctx.telemetry_meta
     :telemetry.execute([:qy_core, :step, :start], %{system_time: System.system_time()}, meta)

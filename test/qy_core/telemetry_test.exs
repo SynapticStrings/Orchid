@@ -1,4 +1,3 @@
-
 defmodule QyCore.TelemetryTest do
   use ExUnit.Case
 

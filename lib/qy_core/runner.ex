@@ -1,6 +1,18 @@
 defmodule QyCore.Runner do
   @moduledoc """
+  Run step.
   """
+
+  @type context :: %{
+          step_implementation: QyCore.Step.implementation(),
+          in_keys: QyCore.Step.input_keys(),
+          out_keys: QyCore.Step.output_keys(),
+          step_default_opts: QyCore.Step.step_options(),
+          inputs: [QyCore.Param.t()],
+          recipe_opts: keyword(),
+          telemetry_meta: %{},
+          assigns: %{}
+        }
 
   @spec run(
           QyCore.Step.t(),
@@ -51,17 +63,8 @@ defmodule QyCore.Runner do
 end
 
 defmodule QyCore.Runner.Hook do
-  @type context :: %{
-          step_implementation: QyCore.Step.implementation(),
-          in_keys: QyCore.Step.input_keys(),
-          out_keys: QyCore.Step.output_keys(),
-          step_default_opts: QyCore.Step.step_options(),
-          inputs: [QyCore.Param.t()],
-          recipe_opts: keyword(),
-          telemetry_meta: %{},
-          assigns: %{}
-        }
-  @type next_fn :: (context -> {:ok, QyCore.Step.output()} | {:error, term()})
+  @type next_fn :: (QyCore.Runner.context() -> {:ok, QyCore.Step.output()} | {:error, term()})
 
-  @callback call(context, next_fn) :: {:ok, QyCore.Step.output()} | {:error, term()}
+  @callback call(QyCore.Runner.context(), next_fn) ::
+              {:ok, QyCore.Step.output()} | {:error, term()}
 end

@@ -19,9 +19,9 @@ defmodule QyCore.Operon do
   defmodule Responce do
     @type payload :: QyCore.Executor.responce()
     @type t :: %__MODULE__{
-      payload: payload(),
-      assigns: %{}
-    }
+            payload: payload(),
+            assigns: %{}
+          }
     defstruct [
       :payload,
       assigns: %{}

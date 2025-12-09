@@ -3,6 +3,11 @@ defmodule QyCore do
   编辑器的核心代码以及业务逻辑。
 
   旨在实现一个便于扩展和定制的任务执行框架。
+
+  ### Options
+
+  * `:return_responce` - 以 `QyCore.Operon.Responce` 返回，默认为 false
+  * `:operons_stack` - 其他操作子（Recipe 层面的 hook）的堆栈，有先后顺序
   """
 
   @doc """

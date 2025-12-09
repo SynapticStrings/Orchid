@@ -41,7 +41,7 @@ defmodule QyCore.Scheduler do
     end
   end
 
-  def validate_step_option(steps) do
+  defp validate_step_option(steps) do
     errors =
       steps
       |> Enum.with_index()
@@ -49,7 +49,8 @@ defmodule QyCore.Scheduler do
         {impl, _, _, opts} = QyCore.Step.ensure_full_step(step)
 
         # 检查模块是否导出了 validate/1
-        if is_atom(impl) and Code.ensure_loaded?(impl) and function_exported?(impl, :validate_options, 1) do
+        if is_atom(impl) and Code.ensure_loaded?(impl) and
+             function_exported?(impl, :validate_options, 1) do
           case impl.validate_options(opts) do
             :ok -> acc
             {:error, reason} -> [{:error, {:invalid_step_option, idx, impl, reason}} | acc]
@@ -66,10 +67,6 @@ defmodule QyCore.Scheduler do
   end
 
   defp do_build(recipe, initial_map) do
-    # TODO: 实现注入 step options 的任务
-    # 准确地讲，在 Operons 的最里边实现这个任务
-    # 但是也需要考虑到在 Recipe 创建就需要注入以在某个外层 Operon 用到
-    # injector = Keyword.get(recipe.opts, :injector, &(&1))
     step_with_options = Enum.map(recipe.steps, & &1)
 
     context = %Context{
@@ -99,6 +96,8 @@ defmodule QyCore.Scheduler do
   @doc """
   标记那些开始运行的。
   """
+  @spec mark_running(QyCore.Scheduler.Context.t(), Step.t() | [Step.t()]) ::
+          QyCore.Scheduler.Context.t()
   def mark_running(%Context{} = ctx, step_indices) do
     new_running = MapSet.union(ctx.running_steps, MapSet.new(step_indices))
     %{ctx | running_steps: new_running}

@@ -3,6 +3,8 @@ defmodule QyCore.Runner.Hooks.Core do
 
   alias QyCore.Param
 
+  @spec call(QyCore.Runner.context(), function()) ::
+          {:ok, QyCore.Step.output()} | {:error, term()}
   def call(ctx, _next) do
     # 构造 Reporter
     reporter_fn = fn progress, payload ->

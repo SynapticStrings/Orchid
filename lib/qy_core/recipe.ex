@@ -19,7 +19,6 @@ defmodule QyCore.Recipe do
 
   @spec new([Step.t()], keyword()) :: t()
   def new(steps, opts \\ []) do
-    # TODO: 这里可以做更多的验证和预处理
     %__MODULE__{
       steps: steps,
       name: Keyword.get(opts, :name),
@@ -75,15 +74,15 @@ defmodule QyCore.Recipe do
   def walk(steps, func, :step) when is_function(func, 1) do
     Enum.map(steps, fn step ->
       case step do
-      {old_step, idx} when is_integer(idx) ->
-        modified_step = func.(old_step)
+        {old_step, idx} when is_integer(idx) ->
+          modified_step = func.(old_step)
 
-        {process_nested(modified_step, func, :step), idx}
+          {process_nested(modified_step, func, :step), idx}
 
-      _ ->
-        modified_step = func.(step)
+        _ ->
+          modified_step = func.(step)
 
-        process_nested(modified_step, func, :step)
+          process_nested(modified_step, func, :step)
       end
     end)
   end
@@ -92,10 +91,9 @@ defmodule QyCore.Recipe do
     Enum.map(steps, fn step ->
       case step do
         {old_step, idx} when is_integer(idx) ->
-
           {process_nested(old_step, func, :inner_recipe), idx}
-        _ ->
 
+        _ ->
           process_nested(step, func, :inner_recipe)
       end
     end)

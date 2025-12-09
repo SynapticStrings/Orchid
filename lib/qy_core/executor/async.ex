@@ -3,10 +3,12 @@ defmodule QyCore.Executor.Async do
   alias QyCore.Scheduler
 
   defstruct [
-    :tasks,          # Map: %{ref => step_idx}
+    # Map: %{ref => step_idx}
+    :tasks,
     :max_concurrency,
     :recipe,
-    :trap_exit?      # 记录是否需要清理
+    # 记录是否需要清理
+    :trap_exit?
   ]
 
   @impl true
@@ -25,7 +27,8 @@ defmodule QyCore.Executor.Async do
           :exit, reason -> {:error, {:executor_crashed, reason}}
         end
 
-      error -> error
+      error ->
+        error
     end
   end
 
@@ -66,9 +69,11 @@ defmodule QyCore.Executor.Async do
       Enum.reduce(steps, state.tasks, fn {step, idx}, acc_tasks ->
         # 使用 Task.async 启动，它会链接当前进程
         # 但需要确定 Executor 进程可能因为运行 step 的进程崩溃而宕机的可能性
-        task = Task.async(fn ->
-          QyCore.Runner.run(step, ctx.params, state.recipe.opts)
-        end)
+        task =
+          Task.async(fn ->
+            QyCore.Runner.run(step, ctx.params, state.recipe.opts)
+          end)
+
         Map.put(acc_tasks, task.ref, {step, idx})
       end)
 

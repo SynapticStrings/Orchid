@@ -104,29 +104,32 @@ end
 - [x] 嵌套 recipe
 - [x] executor 协议与实现
 - [x] 钩子
-- [ ] 运行前修改
+- [o] 运行前修改
   - [x] step 配置（通过 `QyCore.Recipe.assign_options/3`）
-  - [ ] recipe 配置
-  - [ ] operon 堆修改
-  - [ ] hook 堆修改（可以通过修改 step 配置完成）
+  - [x] recipe 配置
+  - [o] operon 堆修改（通过修改配置）
+  - [o] step 内部的 hook 堆修改（可以通过修改 step 配置完成）
 - [x] 运行前检查
   - [x] Recipe 缺失检查
   - [x] Recipe 循环检查
-  - [x] Step option 检查（step 层面）
-- [ ] 运行时修改
+  - [x] Step option 检查（step 层面来实现）
+- [o] 运行时修改
   - *仅针对尚未运行的 steps*
   - [x] step 配置（`QyCore.Scheduler.update_pending_steps_options/3` ）
-  - [ ] executor 配置
-  - [ ] recipe 配置
-  - [ ] runner hooks
+  - ~~ executor 配置~~（需要看 executor 的具体实现，但考虑到 QyCore 保持精简，加之 operon 也可实现，放弃）
+  - [o] recipe 配置（`Recipe.walk/3` 的 `:inner_recipe` 模式 + 自定义函数）
+  - [o] runner hooks（本质上还是 step 配置）
 - [ ] API 固化
   - [ ] 梳理逻辑
+    - 解耦 Scheduler 、Execute operon 以及 Executor 具体实现的关系
+    - 关键的上下文文档化
   - [ ] 编写文档
+    - use English
   - [ ] 100% coverage
 - [ ] 动态图重写（对 steps 的增删）
   - *这是可选的高阶功能，不实现这个也可以通过 hooks 实现类似的效果*
   - 修改 Recipe 的 steps（运行前修改，主要是增删）
-  - 修改 Scheduler.Contest 的 panding_steps（运行时修改，可以包括增删改）
+  - 修改 Scheduler.Context 的 panding_steps（运行时修改，可以包括增删改）
 
 ## 安装
 

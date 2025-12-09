@@ -33,6 +33,7 @@ defmodule QyCore.Recipe.Graph do
     missing_inputs =
       Enum.reduce(indexed_steps, %{}, fn step, acc ->
         missing = MapSet.difference(step.needed, all_produced_keys)
+
         if MapSet.size(missing) > 0 do
           Map.put(acc, step.index, MapSet.to_list(missing))
         else
@@ -52,7 +53,9 @@ defmodule QyCore.Recipe.Graph do
     # 只要能找到依赖满足的节点，就将其移出列表，并将其产出加入 available
     # 如果列表不为空但找不到可运行节点，剩下的就是环
     case run_simulation(steps, available) do
-      [] -> :ok
+      [] ->
+        :ok
+
       remaining_steps ->
         # 剩下的步骤构成了环（或者互相等待）
         cyclic_indices = Enum.map(remaining_steps, & &1.step)
