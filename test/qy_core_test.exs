@@ -44,8 +44,6 @@ vocal_chain_steps = [
   {PitchFix, :clean_audio, :tuned_audio}
 ]
 
-_vocal_chain_recipe = Recipe.new(vocal_chain_steps, name: :vocal_chain)
-
 main_steps = [
   # --- 嵌套步骤 ---
   {

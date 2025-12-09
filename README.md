@@ -120,6 +120,10 @@ end
   - [ ] executor 配置
   - [ ] recipe 配置
   - [ ] runner hooks
+  - [ ] 动态图重写（对 steps 的增删）
+    - *这是可选的高阶功能，不实现这个也可以通过 hooks 实现类似的效果*
+    - 修改 Recipe 的 steps
+    - 修改 Scheduler.Contest 的 panding_steps
 - [ ] API 固化
   - [ ] 梳理逻辑
   - [ ] 编写文档
