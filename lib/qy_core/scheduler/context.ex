@@ -7,9 +7,11 @@ defmodule QyCore.Scheduler.Context do
           available_keys: MapSet.t(Step.io_key()),
           params: param_map(),
           running_steps: MapSet.t(Step.t()),
-          history: [{non_neg_integer(), param_map() | [Param.t()] | Param.t()}]
+          history: [{non_neg_integer(), param_map() | [Param.t()] | Param.t()}],
+          ctx: %{any() => any()}
         }
   defstruct [
+    ## 原始 QyCore
     # 还未执行的步骤列表
     :pending_steps,
     # 当前已有的数据 keys
@@ -19,6 +21,8 @@ defmodule QyCore.Scheduler.Context do
     # 正在运行中的 steps
     :running_steps,
     # 执行历史
-    :history
+    :history,
+    ## 可能的其他上下文
+    :ctx
   ]
 end

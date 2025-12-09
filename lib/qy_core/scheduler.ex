@@ -30,7 +30,7 @@ defmodule QyCore.Scheduler do
 
     initial_keys = Map.keys(initial_map)
 
-    with [] <- validate_step_option(recipe.steps),
+    with :ok <- validate_step_option(recipe.steps),
          # 预检输入缺如
          :ok <- Recipe.Graph.validate(recipe.steps, initial_keys),
          # 步骤依赖关系是否有环
@@ -42,32 +42,30 @@ defmodule QyCore.Scheduler do
   end
 
   defp validate_step_option(steps) do
-    errors =
-      steps
-      |> Enum.with_index()
-      |> Enum.reduce([], fn {step, idx}, acc ->
-        {impl, _, _, opts} = QyCore.Step.ensure_full_step(step)
+    steps
+    |> Enum.with_index()
+    |> Enum.reduce([], fn {step, idx}, acc ->
+      {impl, _, _, opts} = QyCore.Step.ensure_full_step(step)
 
-        # 检查模块是否导出了 validate/1
-        if is_atom(impl) and Code.ensure_loaded?(impl) and
-             function_exported?(impl, :validate_options, 1) do
-          case impl.validate_options(opts) do
-            :ok -> acc
-            {:error, reason} -> [{:error, {:invalid_step_option, idx, impl, reason}} | acc]
-          end
-        else
-          acc
+      # 检查模块是否导出了 validate/1
+      if is_atom(impl) and Code.ensure_loaded?(impl) and
+           function_exported?(impl, :validate_options, 1) do
+        case impl.validate_options(opts) do
+          :ok -> acc
+          {:error, reason} -> [{:invalid_step_option, idx, impl, reason} | acc]
         end
-      end)
-
-    case errors do
-      [] -> []
-      _ -> {:error, {:option_validation_failed, errors}}
+      else
+        acc
+      end
+    end)
+    |> case do
+      [] -> :ok
+      errors -> {:error, {:option_validation_failed, errors}}
     end
   end
 
   defp do_build(recipe, initial_map) do
-    step_with_options = Enum.map(recipe.steps, & &1)
+    step_with_options = Enum.map(recipe.steps, &Step.ensure_full_step/1)
 
     context = %Context{
       pending_steps: Enum.with_index(step_with_options),
