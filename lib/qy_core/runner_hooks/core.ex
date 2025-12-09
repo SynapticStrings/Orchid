@@ -29,21 +29,37 @@ defmodule QyCore.Runner.Hooks.Core do
     end
   end
 
+  ## 囊括单体、列表元组
+  # 单体 + 单体
   defp align_output_names(%Param{} = param, out_key) when is_atom(out_key) do
     %{param | name: out_key}
   end
 
-  defp align_output_names(params, out_keys) when is_list(params) do
+  defp align_output_names(%Param{} = param, [out_key]) when is_atom(out_key) do
+    %{param | name: out_key}
+  end
+
+  defp align_output_names([%Param{} = param], out_key) when not is_tuple(out_key) do
+    %{param | name: out_key}
+  end
+
+  # 列表 + 列表
+  defp align_output_names(params, out_keys) when is_list(params) and not is_tuple(out_keys) do
     keys = List.wrap(out_keys)
     Enum.zip_with(params, keys, fn param, key -> %{param | name: key} end)
   end
 
-  defp align_output_names(%Param{} = param, [out_key]) do
-    [%{param | name: out_key}]
+  # 包含元组
+  defp align_output_names(param, out_key) when is_tuple(param) and is_tuple(out_key) do
+    align_output_names(Tuple.to_list(param), Tuple.to_list(out_key))
   end
 
   defp align_output_names(param, out_key) when is_tuple(param) do
-    align_output_names(Tuple.to_list(param), Tuple.to_list(out_key))
+    align_output_names(Tuple.to_list(param), out_key)
+  end
+
+  defp align_output_names(param, out_key) when is_tuple(out_key) do
+    align_output_names(param, Tuple.to_list(out_key))
   end
 
   defp run_step(impl, inputs, opts) when is_atom(impl) do
