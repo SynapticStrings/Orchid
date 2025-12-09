@@ -18,8 +18,7 @@ defmodule QyCore.MixProject do
   # 想要获得更多信息可运行 `mix help compile.app` 。
   def application do
     [
-      extra_applications: [:logger],
-      mod: {QyCore.Application, []}
+      # extra_applications: [:logger, :telemetry],
     ]
   end
 
