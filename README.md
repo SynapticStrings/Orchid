@@ -125,8 +125,8 @@ end
   - [ ] 100% coverage
 - [ ] 动态图重写（对 steps 的增删）
   - *这是可选的高阶功能，不实现这个也可以通过 hooks 实现类似的效果*
-  - 修改 Recipe 的 steps（运行前修改）
-  - 修改 Scheduler.Contest 的 panding_steps（运行时修改）
+  - 修改 Recipe 的 steps（运行前修改，主要是增删）
+  - 修改 Scheduler.Contest 的 panding_steps（运行时修改，可以包括增删改）
 
 ## 安装
 

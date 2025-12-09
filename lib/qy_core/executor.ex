@@ -1,4 +1,6 @@
 defmodule QyCore.Executor do
+  # TODO: 解耦 Scheduler 和 Executor 具体实现的关系。
+
   @type executor :: module()
   @type executor_opts :: keyword()
 

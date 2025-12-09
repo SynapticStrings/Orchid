@@ -67,6 +67,8 @@ defmodule QyCore.Scheduler do
 
   defp do_build(recipe, initial_map) do
     # TODO: 实现注入 step options 的任务
+    # 准确地讲，在 Operons 的最里边实现这个任务
+    # 但是也需要考虑到在 Recipe 创建就需要注入以在某个外层 Operon 用到
     # injector = Keyword.get(recipe.opts, :injector, &(&1))
     step_with_options = Enum.map(recipe.steps, & &1)
 

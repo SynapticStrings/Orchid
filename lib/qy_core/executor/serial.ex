@@ -12,7 +12,6 @@ defmodule QyCore.Executor.Serial do
           {:error, any()} | {:ok, [QyCore.Param.t()]}
   def execute(recipe, initial_params, _executor_opts \\ []) do
     case Scheduler.build(recipe, initial_params) do
-      # TODO: 将来确定相关关系后 merge 下
       {:ok, ctx} -> loop(ctx, recipe.opts)
       {:error, reason} -> {:error, reason}
     end
