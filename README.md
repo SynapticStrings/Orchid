@@ -106,7 +106,6 @@ end
 - [x] 钩子
 - [ ] 运行前修改
   - [x] step 配置（通过 `QyCore.Recipe.assign_options/3`）
-  - [ ] recipe 层面的修改 step （注入、删除）
   - [ ] recipe 配置
   - [ ] operon 堆修改
   - [ ] hook 堆修改（可以通过修改 step 配置完成）
@@ -120,14 +119,14 @@ end
   - [ ] executor 配置
   - [ ] recipe 配置
   - [ ] runner hooks
-  - [ ] 动态图重写（对 steps 的增删）
-    - *这是可选的高阶功能，不实现这个也可以通过 hooks 实现类似的效果*
-    - 修改 Recipe 的 steps
-    - 修改 Scheduler.Contest 的 panding_steps
 - [ ] API 固化
   - [ ] 梳理逻辑
   - [ ] 编写文档
   - [ ] 100% coverage
+- [ ] 动态图重写（对 steps 的增删）
+  - *这是可选的高阶功能，不实现这个也可以通过 hooks 实现类似的效果*
+  - 修改 Recipe 的 steps（运行前修改）
+  - 修改 Scheduler.Contest 的 panding_steps（运行时修改）
 
 ## 安装
 
