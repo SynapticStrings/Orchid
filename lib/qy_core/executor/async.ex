@@ -65,6 +65,7 @@ defmodule QyCore.Executor.Async do
     new_tasks =
       Enum.reduce(steps, state.tasks, fn {step, idx}, acc_tasks ->
         # 使用 Task.async 启动，它会链接当前进程
+        # 但需要确定 Executor 进程可能因为运行 step 的进程崩溃而宕机的可能性
         task = Task.async(fn ->
           QyCore.Runner.run(step, ctx.params, state.recipe.opts)
         end)
@@ -94,6 +95,8 @@ defmodule QyCore.Executor.Async do
 
       {:DOWN, ref, :process, _pid, reason} ->
         # 捕获 Task crash
+        # 需考虑极端情况下的 Race condition 可能对 Executor 带来影响
+        # （虽然按照目前的项目会一并崩掉返回 {:error, blabla} 罢了）
         {{_step, step_idx}, remaining_tasks} = Map.pop(state.tasks, ref)
         cleanup_tasks(remaining_tasks)
         {:error, {:step_crashed, step_idx, reason}}
@@ -104,7 +107,7 @@ defmodule QyCore.Executor.Async do
   defp cleanup_tasks(tasks) do
     tasks
     |> Enum.each(fn {_ref, {task, _idx}} ->
-      Task.shutdown(task, :brutal_kill)
+      Task.shutdown(task, :brutal_kill) |> IO.inspect()
 
       :ok
     end)
