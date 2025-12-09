@@ -36,33 +36,8 @@ defmodule QySynth.Steps.Mix do
   end
 end
 
-alias QyCore.{Param, Recipe, Step}
+alias QyCore.{Param, Recipe}
 alias QySynth.Steps.{Denoise, PitchFix, Mix}
-
-vocal_chain_steps = [
-  {Denoise, :raw_audio, :clean_audio},
-  {PitchFix, :clean_audio, :tuned_audio}
-]
-
-main_steps = [
-  # --- 嵌套步骤 ---
-  {
-    Step.NestedStep,
-    :microphone_input,
-    :ready_vocal,
-    # Options
-    [
-      recipe: Recipe.new(vocal_chain_steps, name: :vocal_chain),
-      # 映射: 主流程名 => 子流程名
-      input_map: %{microphone_input: :raw_audio},
-      # 映射: 子流程名 => 主流程名
-      output_map: %{tuned_audio: :ready_vocal}
-    ]
-  },
-  {Mix, [:ready_vocal, :bgm], :final_track}
-]
-
-main_recipe = Recipe.new(main_steps, name: :main_mix)
 
 defmodule QyCoreTest do
   use ExUnit.Case

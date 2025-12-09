@@ -87,7 +87,7 @@ defmodule QyCore.Recipe.Graph do
   @doc """
   标准化步骤的输入输出键为 MapSet。
   """
-  @spec normalize_keys_to_set(nil | atom() | list() | tuple() | MapSet.t()) :: MapSet.t()
+  @spec normalize_keys_to_set(atom() | list() | tuple()) :: MapSet.t()
   # def normalize_keys_to_set(nil), do: MapSet.new()
   def normalize_keys_to_set(atom) when is_atom(atom), do: MapSet.new([atom])
   def normalize_keys_to_set(list) when is_list(list), do: MapSet.new(list)
