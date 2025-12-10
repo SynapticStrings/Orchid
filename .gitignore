@@ -24,3 +24,7 @@ qy_core-*.tar
 
 # 临时文件，例如测试过程中生成的。
 /tmp/
+
+# 编辑器与 LS
+.vscode/
+.elixir_ls/

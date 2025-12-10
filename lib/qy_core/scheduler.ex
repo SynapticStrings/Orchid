@@ -41,24 +41,31 @@ defmodule QyCore.Scheduler do
     end
   end
 
+  @spec validate_step_option([Step.t()]) ::
+          :ok
+          | {:error,
+             {:option_validation_failed,
+              [{:invalid_step_option, non_neg_integer(), Step.implementation(), term()}]}}
   defp validate_step_option(steps) do
-    steps
-    |> Enum.with_index()
-    |> Enum.reduce([], fn {step, idx}, acc ->
-      {impl, _, _, opts} = QyCore.Step.ensure_full_step(step)
+    errors =
+      steps
+      |> Enum.with_index()
+      |> Enum.reduce([], fn {step, idx}, acc ->
+        {impl, _, _, opts} = QyCore.Step.ensure_full_step(step)
 
-      # 检查模块是否导出了 validate/1
-      if is_atom(impl) and Code.ensure_loaded?(impl) and
-           function_exported?(impl, :validate_options, 1) do
-        case impl.validate_options(opts) do
-          :ok -> acc
-          {:error, reason} -> [{:invalid_step_option, idx, impl, reason} | acc]
+        # 检查模块是否导出了 validate/1
+        if is_atom(impl) and Code.ensure_loaded?(impl) and
+             function_exported?(impl, :validate_options, 1) do
+          case impl.validate_options(opts) do
+            :ok -> acc
+            {:error, reason} -> [{:invalid_step_option, idx, impl, reason} | acc]
+          end
+        else
+          acc
         end
-      else
-        acc
-      end
-    end)
-    |> case do
+      end)
+
+    case errors do
       [] -> :ok
       errors -> {:error, {:option_validation_failed, errors}}
     end
