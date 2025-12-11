@@ -2,7 +2,7 @@
 
 Orchid is an Elixir-based workflow orchestration engine inspired by a [personal project](https://ges233.github.io/2023/06/Qy-project/)(written in Chinese).
 
-It is primarily designed for scenarios requiring complex processing of time series (or sequences related to time series) with low real-time demands, providing a relevant protocol or interface for subsequent development.
+It is primarily designed for scenarios requiring complex processing of data(time series limited originally) with low real-time demands, providing a relevant protocol or interface for subsequent development.
 
 ## Features
 
@@ -25,7 +25,9 @@ end
 
 ## Quick Start
 
-Here is a simple example of how to define steps, create a recipe, and run the workflow.
+Well, let's make a cup of coffee to see how Orchid works.
+
+We will define a process where beans are ground into powder, and then brewed with water. Notice how we can control the brewing style using opts.
 
 ### Definate Steps
 
@@ -64,7 +66,10 @@ end
 
 ### Build Recipe
 
-Define the data flow. Note that we don't strictly specify the order; Orchid resolves it based on inputs/outputs.
+Define the workflow. Key features demonstrated here:
+
+- **Out of Order**: We define Brew before Grind, but Orchid will figure it out.
+- **Options**: We pass style: :latte to the brewing step.
 
 ```elixir
 alias Orchid.{Recipe, Param}
@@ -89,8 +94,10 @@ recipe = Recipe.new(steps, name: :morning_routine)
 
 ### Run
 
+Execute the recipe. Orchid automatically resolves dependencies: `Grind` runs first, then `Brew`.
+
 ```elixir
-{:ok, results} = Orchid.run(recipe, [])
+{:ok, results} = Orchid.run(recipe, inputs)
 # Output:
 # ⚙️  Grinding 20g beans...
 # 💧 Brewing latte coffee with 20g powder and 200ml water...
@@ -140,7 +147,11 @@ Currently, orchid includes two executors:
 - `Orchid.Executor.Serial`: Runs steps one by one. Good for debugging.
 - `Orchid.Executor.Async`: Runs independent steps in parallel based on the dependency graph.
 
-Due to the atomic nature of Step operations, no further behavior-adapter design has been implemented. However, considering business complexity, a hook mechanism has been introduced.
+Due to the atomic nature of Step operations, no further behavior-adapter design has been implemented.
+
+As business complexity increases dramatically (e.g., external resource monitoring, more fault-tolerant business environments), custom Executors are encouraged.
+
+However, in some cases, considering business complexity, a hook mechanism has been introduced.
 
 ### Layered Hooks
 
@@ -210,6 +221,6 @@ The transformation module is `Orchid.Operon.Execute`, which wraps the Executor.
 
 No additional middleware has been introduced yet, but it will be added later.
 
-## NextStep
+## Next Step
 
 Let me take a rest, increase test coverage, consolidate API and **To Be Determined**.
