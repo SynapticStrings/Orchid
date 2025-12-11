@@ -32,7 +32,34 @@ Here is a simple example of how to define steps, create a recipe, and run the wo
 Create modules that use `Orchid.Step`, or simply function with 2 arities.
 
 ```elixir
-...
+defmodule Barista.Grind do
+  use Orchid.Step
+  alias Orchid.Param
+
+  # Simple 1-to-1 transformation
+  def run(beans, opts) do
+    amount = Param.get_payload(beans)
+    IO.puts("⚙️  Grinding #{amount}g beans...")
+    {:ok, Param.new(:powder, :solid, amount * Keyword.get(opts, :ratio, 1))}
+  end
+end
+
+defmodule Barista.Brew do
+  use Orchid.Step
+  alias Orchid.Param
+
+  # Multi-input step with options
+  def run([powder, water], opts) do
+    # Get configuration from opts, default is :espresso
+    style = Keyword.get(opts, :style, :espresso)
+    
+    p_amount = Param.get_payload(powder)
+    w_amount = Param.get_payload(water)
+    
+    IO.puts("💧 Brewing #{style} coffee with #{p_amount}g powder and #{w_amount}ml water...")
+    {:ok, Param.new(:coffee, :liquid, "Cup of #{style}")}
+  end
+end
 ```
 
 ### Build Recipe
@@ -40,16 +67,36 @@ Create modules that use `Orchid.Step`, or simply function with 2 arities.
 Define the data flow. Note that we don't strictly specify the order; Orchid resolves it based on inputs/outputs.
 
 ```elixir
-steps = [
-  ...
+alias Orchid.{Recipe, Param}
+
+# Initial Ingredients
+inputs = [
+  Param.new(:beans, :raw, 20),    # 20g beans
+  Param.new(:water, :raw, 200)    # 200ml water
 ]
-recipe = Orchid.Recipe.new(steps, name: :demo_recipe)
+
+steps = [
+  # Step 2: Brew (Depends on :powder and :water)
+  # We want a Latte, so we pass options here.
+  {Barista.Brew, [:powder, :water], :coffee, [style: :latte]},
+
+  # Step 1: Grind (Depends on :beans, Provides :powder)
+  {Barista.Grind, :beans, :powder}
+]
+
+recipe = Recipe.new(steps, name: :morning_routine)
 ```
 
 ### Run
 
 ```elixir
 {:ok, results} = Orchid.run(recipe, [])
+# Output:
+# ⚙️  Grinding 20g beans...
+# 💧 Brewing latte coffee with 20g powder and 200ml water...
+
+IO.inspect(Param.get_payload(results[:coffee]))
+# => "Cup of latte"
 ```
 
 ## Core Components
