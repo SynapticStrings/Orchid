@@ -1,9 +1,10 @@
 defmodule Orchid.Param do
   @moduledoc """
-  关于序列参数的相关模块。
+  Defines the standard data unit for sequence parameters.
 
-  设计该模块的目的是实现一系列和参数有关的逻辑以及定义一系列的接口以帮助或约束其他使用 `orchid`
-  的开发者使其更专注业务逻辑。
+  The purpose of this module is to abstract parameter handling and define a consistent
+  interface for data exchange. This standardization allows developers using `Orchid`
+  to focus on their business logic rather than the details of data flow management.
   """
 
   @type t :: %__MODULE__{
@@ -19,7 +20,7 @@ defmodule Orchid.Param do
     metadata: %{}
   ]
 
-  ## 类型
+  ## Types
 
   @type name :: term()
   @type param_type :: atom() | module()
@@ -27,7 +28,7 @@ defmodule Orchid.Param do
   @type raw_payload :: any() | nil
   @type payload :: raw_payload() | ref_payload()
 
-  ## 函数
+  ## API
 
   @spec new(name(), param_type(), payload(), %{}) :: t()
   def new(name, type, payload \\ nil, metadata \\ %{}) do
@@ -46,5 +47,5 @@ defmodule Orchid.Param do
     %__MODULE__{param | payload: new_payload}
   end
 
-  # metadata 相关函数后续添加
+  # TBD metadata related
 end

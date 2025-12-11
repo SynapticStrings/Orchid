@@ -1,10 +1,24 @@
 defmodule Orchid.Recipe do
   @moduledoc """
-  定义一个处理流程（菜谱）。
+  Defines a processing workflow (Recipe).
 
-  ### Recipe options
+  A `Recipe` is essentially a collection of `Orchid.Step`s that describes a
+  Directed Acyclic Graph (DAG) of data processing.
 
-  * `:recipe` （需要是模块且回调的 nested? 为真）
+  It holds the definition of *what* needs to be done, but not the execution state.
+
+  ### Example
+
+      steps = [
+        {MySteps.Download, :url, :raw_html},
+        {MySteps.Parse, :raw_html, :data}
+      ]
+
+      recipe = Orchid.Recipe.new(steps, name: :scraper_flow)
+
+  ### Options
+
+  * `:name` - The name of the recipe (atom).
   """
 
   alias Orchid.{Recipe, Step}
@@ -17,6 +31,14 @@ defmodule Orchid.Recipe do
         }
   defstruct steps: [], name: nil, opts: []
 
+  @doc """
+  Creates a new Recipe.
+
+  ## Arguments
+
+  * `steps` - A list of `Orchid.Step` definitions.
+  * `opts` - Keyword options (e.g., `name: :my_recipe`).
+  """
   @spec new([Step.t()], keyword()) :: t()
   def new(steps, opts \\ []) do
     %__MODULE__{
@@ -26,6 +48,14 @@ defmodule Orchid.Recipe do
     }
   end
 
+  @doc """
+  Statically validates the steps within a recipe.
+
+  It performs the following checks:
+  1. **Option Validation**: Calls `Step.validate_options/1` for each step.
+  2. **Missing Inputs**: Checks if all steps have their required input keys satisfied (either by initial params or previous steps).
+  3. **Cyclic Dependencies**: Checks if the graph contains any cycles.
+  """
   @spec validate_steps([Step.t()], [atom()]) :: :ok | {:error, term()}
   def validate_steps(steps, initial_keys) do
     with [] <- get_step_errors(steps),
@@ -73,12 +103,19 @@ defmodule Orchid.Recipe do
   end
 
   @doc """
-  全局注入选项 (支持深度注入以及更新配置)。
+  Injects options into steps globally (supports deep traversal).
 
-  ### selector 的选项
+  This function allows you to modify the configuration of specific steps
+  within a recipe, including steps inside nested recipes.
 
-  * 模块或函数本体 => 匹配就可以
-  * 检查函数 => 输入 step ，自定义具体逻辑
+  ### Selectors
+
+  The `selector` determines which steps will receive the `new_opts`:
+
+  * `:all` - Matches every step.
+  * `module` (atom) - Matches steps implemented by this specific module.
+  * `function` (arity 2) - Matches steps implemented by this specific function reference.
+  * `predicate function` (`fn step -> boolean()`) - A custom function that receives the step and returns `true` if it should be modified.
   """
   @spec assign_options(
           Orchid.Recipe.t(),
@@ -98,17 +135,17 @@ defmodule Orchid.Recipe do
   end
 
   @doc """
-  对 step 列表进行深度遍历。
+  Performs a deep traversal on a list of steps.
 
-  因为 Orchid.Scheduler.inject_opts/3 的存在，要考虑附带索引的列表的存在。
+  This function applies `func` to every step in the tree. If a step is a `NestedStep`
+  (contains an inner recipe), it recursively traverses the inner steps as well.
 
-  func 会被应用到树中的每一个 Step 或 Recipe 上。
-  如果 Step 是 NestedStep ，会自动递归进入其内部的 step 列表或对该 recipe 本体进行修改。
+  It supports both standard step lists and indexed step lists (used by `Orchid.Scheduler`).
 
-  ### 模式
+  ### Modes
 
-  * `:step` - 对 Step 进行修改
-  * `:inner_recipe` - 内部的 NestedStep 的 Recipe 结构体进行修改
+  * `:step` (Default) - The `func` receives and modifies the **Step** definition.
+  * `:inner_recipe` - The `func` receives and modifies the **Inner Recipe** struct of a nested step.
   """
   @spec walk(
           [Step.t()] | [{Step.t(), non_neg_integer()}],
@@ -171,7 +208,7 @@ defmodule Orchid.Recipe do
 
     case selector do
       :all -> true
-      # 匹配模块
+      # Match by implementation module or function ref
       ^impl -> true
       _ -> false
     end

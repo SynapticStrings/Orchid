@@ -1,4 +1,8 @@
 defmodule Orchid.Executor do
+  @moduledoc """
+  Executor behavoir.
+  """
+
   @type executor :: module()
   @type executor_opts :: keyword()
 

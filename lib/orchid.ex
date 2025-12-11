@@ -1,18 +1,31 @@
 defmodule Orchid do
   @moduledoc """
-  编辑器的核心代码以及业务逻辑。
+  The core entry point for the Orchid workflow engine.
 
-  旨在实现一个便于扩展和定制的任务执行框架。
-
+  This module provides the primary interface (`run/3`) to execute defined Recipes.
+  It is designed to be a flexible and extensible framework for task orchestration.
   """
 
   @doc """
-  执行。
+  Executes a workflow Recipe.
+
+  It initializes the pipeline, injects any configured middleware (Operons), and
+  starts the execution process.
 
   ### Options
 
-  * `:return_response` - 以 `Orchid.Operon.Response` 返回，默认为 false
-  * `:operons_stack` - 其他操作子（Recipe 层面的 hook）的堆栈，有先后顺序
+  * `:return_response` - (boolean) If `true`, returns the full `Orchid.Operon.Response` struct
+    (which includes assigns and metadata) instead of just the result payload. Defaults to `false`.
+  * `:operons_stack` - (list) A list of additional middleware modules (Recipe-level hooks)
+    to run before the execution phase. They are executed in the order provided.
+
+  ### Examples
+
+      # Normal execution returning {:ok, results}
+      Orchid.run(my_recipe, initial_params)
+
+      # Execution returning the full Response struct
+      Orchid.run(my_recipe, initial_params, return_response: true)
   """
   @spec run(Orchid.Recipe.t(), Orchid.Scheduler.initial_params(), keyword()) ::
           Orchid.Operon.Response.payload() | Orchid.Operon.Response.t()

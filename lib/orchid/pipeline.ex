@@ -1,6 +1,6 @@
 defmodule Orchid.Pipeline do
   @doc """
-  运行管道。
+  Run pipeline
   """
   def run(stack, request) do
     dispatch(stack, request)

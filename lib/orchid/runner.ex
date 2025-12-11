@@ -43,7 +43,6 @@ defmodule Orchid.Runner do
       recipe_opts: recipe_opts,
       telemetry_meta: %{impl: impl, in_keys: in_keys, out_keys: out_keys},
 
-      # 参照了 LiveView.Socket ，后面忘了
       assigns: %{}
     }
 
@@ -55,10 +54,8 @@ defmodule Orchid.Runner do
     run_pipeline(hook_stack, initial_ctx)
   end
 
-  # 递归执行管道
   defp run_pipeline([], _ctx), do: {:error, :no_executor_plugin}
 
-  # 需要注意的是，最后一个中间件不需要 next 参数
   defp run_pipeline([plug | rest], ctx) do
     next_fn = fn next_ctx -> run_pipeline(rest, next_ctx) end
     plug.call(ctx, next_fn)

@@ -1,39 +1,53 @@
 defmodule Orchid.Step.NestedStep do
   @moduledoc """
-  将一个完整的 Recipe 封装为一个独立的 Step 以实现嵌套操作。
+  Encapsulates a complete Recipe as a standalone Step to implement nested operations.
 
-  需要的选项:
+  This allows you to treat a complex sub-workflow as a single atomic step within a
+  parent workflow.
 
-  - :recipe -> 要运行的内部 Recipe 结构体
-  - :executor (可选) -> 指定运行子流程的执行器模块 (默认 `Orchid.Executor.Serial`)
-  - :input_map (可选) -> `%{parent_name => child_name}` 参数名映射（用于两级 step 名称不一样的情形）
-  - :output_map (可选) -> `%{child_name => parent_name}` 结果名映射
+  ### Required Options
 
-  io mapper 的顺序可以理解为按照数据流的顺序进行。
+  * `:recipe` - The inner `Orchid.Recipe` struct to be executed.
+
+  ### Optional Options
+
+  * `:executor` - The executor module to run the sub-process (defaults to `Orchid.Executor.Serial`).
+  * `:executor_opts` - Options passed to the sub-executor (e.g., concurrency settings).
+  * `:input_map` - Parameter name mapping: `%{parent_name => child_name}`.
+    Use this when the parent step input name differs from what the inner recipe expects.
+  * `:output_map` - Result name mapping: `%{child_name => parent_name}`.
+    Use this to rename the inner recipe's output back to what the parent workflow expects.
+
+  The mapping direction follows the flow of data (Input: Parent -> Child; Output: Child -> Parent).
 
   ## Examples
 
       nested_step = {Orchid.Step.NestedStep,
         :parent_param, :parent_result_param,
         [
-          recipe: inner_recipe,  # Options for recipe wrote in here!!
+          recipe: inner_recipe,
           executor: Orchid.Executor.Async,
-          executer_options: [max_failer_attempt: 8],
+          # Maps parent's :parent_param to child's :child_input
           input_map: %{parent_param: :child_input},
-          output_map: %{child_output: :parent_result_param},
-          ...
+          # Maps child's :child_output back to :parent_result_param
+          output_map: %{child_output: :parent_result_param}
         ]
       }
 
-  如果你需要自定义的具备嵌套功能的 step ，请将内部的 recipe 内容放到 `:recipe`
-  参属下且如下设置：
+  ### Custom Nested Steps
+
+  If you need to define a custom step that behaves like a nested step (e.g., custom logic before/after the sub-recipe),
+  you must place the inner recipe in the `:recipe` option and implement `nested?/0`:
 
       defmodule MyNested do
         use Orchid.Step
 
+        # Tell the Scheduler to treat this as a nested step during traversals
         def nested?(), do: true
 
-        def run(..), do: ..
+        def run(input, opts) do
+          # ... custom logic ...
+        end
       end
   """
 
@@ -44,35 +58,38 @@ defmodule Orchid.Step.NestedStep do
 
   @spec run(Step.input(), Step.step_options()) ::
           {:error, {:nested_execution_failed, term()}} | {:ok, Step.output()}
+  @spec run(Step.input(), Step.step_options()) ::
+          {:error, {:nested_execution_failed, term()}} | {:ok, Step.output()}
   def run(input_params, opts) do
     inner_recipe = Keyword.fetch!(opts, :recipe)
     executor = Keyword.get(opts, :executor, Orchid.Executor.Serial)
-    executor_options = Keyword.get(opts, :executor, [])
+    # Note: In the original code, this key might overlap.
+    # Assuming intent is to pass separate opts or reuse context opts.
+    executor_options = Keyword.get(opts, :executor_opts, [])
     input_map = Keyword.get(opts, :input_map, %{})
     output_map = Keyword.get(opts, :output_map, %{})
 
-    # 将父层传进来的 Params 重命名为子层需要的名字
+    # Rename parameters passed from the parent layer to the names required by the child layer
     child_initial_params =
       input_params
       |> List.wrap()
       |> Enum.map(fn param ->
-        # 如果有映射就改名，没有就保持原名
+        # If a mapping exists, rename it; otherwise, keep the original name
         new_name = Map.get(input_map, param.name, param.name)
         %{param | name: new_name}
       end)
 
-    # 启动子流程
-    # 从这里可以看出来传入的是 recipe 结构体
+    # Start the sub-process
     with {:ok, ctx} <- Scheduler.build(inner_recipe, child_initial_params),
          {:ok, inner_results} <- executor.execute(ctx, executor_options) do
-      # inner_results 是 %{name => Param}
+      # inner_results is a map of %{name => Param}
 
-      # 根据 output_map 或默认规则，从子结果中提取父层需要的数据
-      # 这里的 output_map key 是子层名字，value 是父层名字
+      # Extract data required by the parent layer from child results based on output_map or default rules
+      # The output_map key is the child name, value is the parent name
 
       final_outputs =
         if map_size(output_map) > 0 do
-          # 如果定义了映射，只提取映射中指定的
+          # If a mapping is defined, extract only the specified ones
           Enum.map(output_map, fn {child_name, parent_name} ->
             case Map.fetch(inner_results, child_name) do
               {:ok, param} -> %{param | name: parent_name}
@@ -80,10 +97,8 @@ defmodule Orchid.Step.NestedStep do
             end
           end)
         else
-          # 如果没定义映射，为了安全，我们应该只返回在 Step 定义中声明过的 output_keys
-          # 但 step.run/2 无法直接知道自己的 output_keys 定义。
-          # 所以这里我们简单地返回所有子结果（除了改名的），
-          # 父级 Executor 会根据 Step 定义自动丢弃不需要的。
+          # If no mapping is defined, for safety, we simply return all child results.
+          # The parent Executor will automatically discard unneeded ones based on the Step definition schema.
           Map.values(inner_results)
         end
 
@@ -94,6 +109,7 @@ defmodule Orchid.Step.NestedStep do
     end
   end
 
+  @doc false
   def nested?(step) do
     {impl, _, _, _} = Step.ensure_full_step(step)
 

@@ -1,36 +1,55 @@
 defmodule Orchid.Step do
   @moduledoc """
-  Denifate specification and type of step.
+  Defines the behavior and specification for a workflow step.
 
-  ### Specification
+  A `Step` is the atomic unit of work in Orchid. It is responsible for receiving
+  data (wrapped in `Orchid.Param`), performing a specific task, and returning
+  new data.
 
-  执行 step 的代码参见 `Orchid.Runner.Hooks.Core` 以及
-  `Orchid.Runner` 。
+  ### Usage
 
-  用例参见测试以及 /examples 下面的文件。
+  To define a step, `use Orchid.Step` and implement the `c:run/2` callback:
 
-  需要特别说明的是，对于单个输入参数，在 `c:run/2` 的定义端只需要写：
+      defmodule MySteps.Upcase do
+        use Orchid.Step
+        alias Orchid.Param
 
-      def run(%Param{} = param, opts), do: ...
+        @impl true
+        def run(input_param, _opts) do
+          payload = Param.get_payload(input_param)
 
-  就可以了。
+          result =
+            Param.new(:result, :string)
+            |> Param.set_payload(String.upcase(payload))
 
-  更多输入输出，使用列表与元组都是 OK 的。
+          {:ok, result}
+        end
+      end
 
-  ### Step options
+  ### Input Pattern Matching
 
-  关于 step 的选项，除了用户自定义以及插件注入外，还包括了：
+  The structure of the `input` argument in `c:run/2` depends on how you define
+  the input keys in your Recipe:
 
-  * `:__report__`：源于本模块关于 `report/3` 的定义，便于主动汇报进度/状态
-  * `:extra_hooks_stack`：中间件堆栈，源于`Orchid.Runner` ，用户修改
+  * **Single Key:** If input is `:my_data`, `run/2` receives a single `%Param{}`.
+  * **List of Keys:** If input is `[:a, :b]`, `run/2` receives a list `[%Param{}, %Param{}]`.
+  * **Tuple of Keys:** If input is `{:a, :b}`, `run/2` receives a tuple `{%Param{}, %Param{}}`.
+
+  ### Step Options
+
+  Options can be passed when defining the step in a recipe or injected dynamically.
+  Reserved options include:
+
+  * `:extra_hooks_stack` - A list of additional hooks to run for this specific step.
+  * `:__reporter__` - (Internal) A closure used by `report/3` to send progress updates.
   """
   alias Orchid.Param
 
   @typedoc """
-  Two types:
+  The implementation of a step.
 
-  * module: 直接指定一个模块名，要求该模块实现 `Orchid.Step` 行为。
-  * single function: 指定一个函数，等同于只实现 `run/2` 回调。
+  * `module()`: A module that implements the `Orchid.Step` behavior.
+  * `function()`: A function `fn input, opts -> ... end`.
   """
   @type implementation ::
           module()
@@ -43,10 +62,19 @@ defmodule Orchid.Step do
   @type input :: tuple() | Param.t() | [Param.t()]
   @type output :: tuple() | Param.t() | [Param.t()]
 
-  @typedoc "Only allowed keyword."
+  @typedoc "Options passed to the step execution context."
   @type step_options :: keyword()
 
+  @typedoc """
+  The schema definition of a step within a recipe.
+  Format: `{Implementation, InputKeys, OutputKeys}`.
+  """
   @type step_schema :: {implementation(), input_keys(), output_keys()}
+
+  @typedoc """
+  A fully qualified step definition including options.
+  Format: `{Implementation, InputKeys, OutputKeys, Options}`.
+  """
   @type step_with_options :: {
           implementation(),
           input_keys(),
@@ -57,15 +85,40 @@ defmodule Orchid.Step do
 
   ## module step's callbacks.
 
+  @doc """
+  Determines if this step contains an inner recipe (Nested Step).
+  Defaults to `false`.
+  """
   @callback nested?() :: boolean()
 
+  @doc """
+  Validates the options passed to the step before execution.
+
+  This is useful for checking required configuration keys (e.g., API tokens, thresholds).
+  Returns `:ok` if valid, or `{:error, reason}` otherwise.
+  """
   @callback validate_options(step_options()) :: :ok | {:error, term()}
 
+  @doc """
+  Executes the step logic.
+
+  ## Arguments
+  * `input` - The input parameters. Structure depends on `input_keys` definition.
+  * `opts` - The keyword list of options available to this step.
+
+  ## Return Values
+  * `{:ok, output}` - Execution succeeded. `output` must match the structure of `output_keys`.
+  * `{:error, reason}` - Execution failed. The step (and potentially the workflow) halts.
+  """
   @callback run(input(), step_options()) :: {:ok, output()} | {:error, term()}
 
   ## public API
 
-  @doc "inject option for a step."
+  @doc """
+  Injects or merges options into a step definition.
+
+  Supports both 3-element tuple (Schema) and 4-element tuple (Full Step).
+  """
   @spec inject_options(t(), keyword()) :: step_with_options()
   def inject_options(step, options)
 
@@ -82,12 +135,17 @@ defmodule Orchid.Step do
     {impl, in_keys, out_keys, Keyword.merge(opts, new_opts)}
   end
 
+  @doc """
+  Extracts the basic schema `{Impl, Input, Output}` from a step definition.
+  """
   @spec extract_schema(t()) :: step_schema()
   def extract_schema({impl, in_keys, out_keys}), do: {impl, in_keys, out_keys}
   def extract_schema({impl, in_keys, out_keys, _opts}), do: {impl, in_keys, out_keys}
 
   @doc """
-  辅助：规范化 Step 结构，支持多种形式的 Step 定义。
+  Normalizes a step structure into the full 4-element tuple format.
+
+  If no options are present, an empty list is added.
   """
   @spec ensure_full_step(t()) :: step_with_options()
   def ensure_full_step({impl, in_k, out_k}), do: {impl, in_k, out_k, []}
@@ -105,7 +163,19 @@ defmodule Orchid.Step do
       def validate_options(_opts), do: :ok
 
       @doc """
-      向 Executor 汇报状态，通过查找 opts 中的 :__reporter__ 闭包并调用它。
+      Reports progress or status to the executor.
+
+      This function looks for a `:__reporter__` function inside `opts` and calls it.
+      If no reporter is configured, it does nothing.
+
+      ## Example
+
+          def run(input, opts) do
+            report(opts, :processing, "Start heavy calculation...")
+            # ...
+            report(opts, :uploading, 50)
+            {:ok, result}
+          end
       """
       def report(opts, progress, payload \\ nil) do
         case Keyword.get(opts, :__reporter__) do

@@ -1,6 +1,7 @@
 defmodule Orchid.Scheduler do
+  # TODO: translate doc & comments in English
   @moduledoc """
-  调度器模块，负责管理和调度 Recipe 中的步骤执行顺序。
+  Scheduler is responsible for managing and scheduling the execution order of steps in the Recipe.
   """
   alias Orchid.Scheduler.Context
   alias Orchid.{Recipe, Param, Step}
