@@ -12,23 +12,17 @@ defmodule QyCore.Executor.Async do
   ]
 
   @impl true
-  def execute(recipe, initial_params, opts \\ []) do
-    case Scheduler.build(recipe, initial_params) do
-      {:ok, ctx} ->
-        state = %__MODULE__{
-          tasks: %{},
-          max_concurrency: Keyword.get(opts, :concurrency, System.schedulers_online()),
-          recipe: recipe
-        }
+  def execute(ctx, opts) do
+    state = %__MODULE__{
+      tasks: %{},
+      max_concurrency: Keyword.get(opts, :concurrency, System.schedulers_online()),
+      recipe: ctx.recipe
+    }
 
-        try do
-          loop(ctx, state)
-        catch
-          :exit, reason -> {:error, {:executor_crashed, reason}}
-        end
-
-      error ->
-        error
+    try do
+      loop(ctx, state)
+    catch
+      :exit, reason -> {:error, {:executor_crashed, reason}}
     end
   end
 

@@ -1,15 +1,25 @@
 defmodule QyCore.Operon.Execute do
   @behaviour QyCore.Operon
 
-  alias QyCore.Operon.{Request, Responce}
+  alias QyCore.Scheduler
+  alias QyCore.Operon.{Request, Response}
 
   @impl true
   def call(%Request{} = req, _) do
     {executor, executor_opts} = req.executor_and_opts
 
-    %Responce{
-      payload: executor.execute(req.recipe, req.inital_param, executor_opts),
-      assigns: req.assigns
-    }
+    case Scheduler.build(req.recipe, req.inital_params) do
+      {:ok, ctx} ->
+        %Response{
+          payload: executor.execute(ctx, executor_opts),
+          assigns: req.assigns
+        }
+
+      err ->
+        %Response{
+          payload: err,
+          assigns: req.assigns
+        }
+    end
   end
 end

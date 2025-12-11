@@ -2,22 +2,22 @@ defmodule QyCore.Operon do
   defmodule Request do
     @type t :: %__MODULE__{
             recipe: QyCore.Recipe.t(),
-            inital_param: [QyCore.Param.t()],
+            inital_params: [QyCore.Param.t()],
             assigns: %{},
             operon_options: keyword(),
             executor_and_opts: {module(), keyword()}
           }
     defstruct [
       :recipe,
-      :inital_param,
+      :inital_params,
       :assigns,
       :operon_options,
       executor_and_opts: {QyCore.Executor.Async, []}
     ]
   end
 
-  defmodule Responce do
-    @type payload :: QyCore.Executor.responce()
+  defmodule Response do
+    @type payload :: QyCore.Executor.response()
     @type t :: %__MODULE__{
             payload: payload(),
             assigns: %{}
@@ -28,5 +28,5 @@ defmodule QyCore.Operon do
     ]
   end
 
-  @callback call(Request.t(), maybe_next_func :: (Request.t() -> Responce.t())) :: Responce.t()
+  @callback call(Request.t(), maybe_next_func :: (Request.t() -> Response.t())) :: Response.t()
 end

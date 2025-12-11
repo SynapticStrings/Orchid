@@ -6,7 +6,7 @@ defmodule QyCore do
 
   ### Options
 
-  * `:return_responce` - 以 `QyCore.Operon.Responce` 返回，默认为 false
+  * `:return_response` - 以 `QyCore.Operon.Response` 返回，默认为 false
   * `:operons_stack` - 其他操作子（Recipe 层面的 hook）的堆栈，有先后顺序
   """
 
@@ -14,24 +14,24 @@ defmodule QyCore do
   执行。
   """
   @spec run(QyCore.Recipe.t(), QyCore.Scheduler.initial_params(), keyword()) ::
-          QyCore.Operon.Responce.payload() | QyCore.Operon.Responce.t()
+          QyCore.Operon.Response.payload() | QyCore.Operon.Response.t()
   def run(recipe, input_params, opts \\ []) do
-    responce? = Keyword.get(opts, :return_responce, false)
+    response? = Keyword.get(opts, :return_response, false)
     operons_stack = Keyword.get(opts, :operons_stack, [])
 
-    responce =
+    response =
       QyCore.Pipeline.run(
         operons_stack ++ [QyCore.Operon.Execute],
         %QyCore.Operon.Request{
           recipe: recipe,
-          inital_param: input_params
+          inital_params: input_params
         }
       )
 
-    if responce? do
-      responce
+    if response? do
+      response
     else
-      responce.payload
+      response.payload
     end
   end
 end

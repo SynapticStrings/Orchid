@@ -1,29 +1,12 @@
 defmodule QyCore.Recipe.Graph do
   @moduledoc """
-  负责分析 Recipe 的拓扑结构，计算执行顺序，并进行静态检查。
+  负责分析 Recipe 的拓扑结构，主要进行静态检查。
   """
 
   alias QyCore.Step
 
-  @spec validate([Step.t()], Step.input_keys()) ::
-          :ok
-          | {:error, {:missing_inputs, %{non_neg_integer() => Step.input_keys()}}}
-          | {:error, {:cyclic, [Step.step_schema()]}}
-  def validate(steps, initial_keys) do
-    # 预处理 Steps，规范化 Keys
-    indexed_steps =
-      steps
-      |> Enum.with_index()
-      |> Enum.map(fn {step, idx} ->
-        {_impl, in_k, out_k} = Step.extract_schema(step)
-
-        %{
-          index: idx,
-          step: step,
-          needed: normalize_keys_to_set(in_k),
-          provides: normalize_keys_to_set(out_k)
-        }
-      end)
+  def check_missing_initial(steps, initial_keys) do
+    indexed_steps = build_initial_steps(steps)
 
     all_produced_keys =
       Enum.reduce(indexed_steps, MapSet.new(initial_keys), fn s, acc ->
@@ -41,18 +24,17 @@ defmodule QyCore.Recipe.Graph do
         end
       end)
 
-    if map_size(missing_inputs) > 0 do
-      {:error, {:missing_inputs, missing_inputs}}
-    else
-      check_cycles(indexed_steps, MapSet.new(initial_keys))
+    case map_size(missing_inputs) do
+      0 -> :ok
+      _ -> {:error, {:missing_inputs, missing_inputs}}
     end
   end
 
-  defp check_cycles(steps, available) do
+  def check_cycles(steps, available) do
     # 这里的逻辑类似 Kahn 算法
     # 只要能找到依赖满足的节点，就将其移出列表，并将其产出加入 available
     # 如果列表不为空但找不到可运行节点，剩下的就是环
-    case run_simulation(steps, available) do
+    case run_simulation(build_initial_steps(steps), normalize_keys_to_set(available)) do
       [] ->
         :ok
 
@@ -61,6 +43,21 @@ defmodule QyCore.Recipe.Graph do
         cyclic_indices = Enum.map(remaining_steps, & &1.step)
         {:error, {:cyclic, cyclic_indices}}
     end
+  end
+
+  defp build_initial_steps(steps) do
+    steps
+    |> Enum.with_index()
+    |> Enum.map(fn {step, idx} ->
+      {_impl, in_k, out_k} = Step.extract_schema(step)
+
+      %{
+        index: idx,
+        step: step,
+        needed: normalize_keys_to_set(in_k),
+        provides: normalize_keys_to_set(out_k)
+      }
+    end)
   end
 
   defp run_simulation([], _available), do: []
@@ -90,10 +87,10 @@ defmodule QyCore.Recipe.Graph do
   @doc """
   标准化步骤的输入输出键为 MapSet。
   """
-  @spec normalize_keys_to_set(atom() | list() | tuple()) :: MapSet.t()
-  # def normalize_keys_to_set(nil), do: MapSet.new()
+  @spec normalize_keys_to_set(nil | atom() | list() | tuple() | MapSet.t()) :: MapSet.t()
+  def normalize_keys_to_set(nil), do: MapSet.new()
   def normalize_keys_to_set(atom) when is_atom(atom), do: MapSet.new([atom])
   def normalize_keys_to_set(list) when is_list(list), do: MapSet.new(list)
   def normalize_keys_to_set(tuple) when is_tuple(tuple), do: MapSet.new(Tuple.to_list(tuple))
-  # def normalize_keys_to_set(mapset), do: mapset
+  def normalize_keys_to_set(mapset), do: mapset
 end

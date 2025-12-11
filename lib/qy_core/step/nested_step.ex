@@ -18,6 +18,7 @@ defmodule QyCore.Step.NestedStep do
         [
           recipe: inner_recipe,  # Options for recipe wrote in here!!
           executor: QyCore.Executor.Async,
+          executer_options: [max_failer_attempt: 8],
           input_map: %{parent_param: :child_input},
           output_map: %{child_output: :parent_result_param},
           ...
@@ -36,6 +37,7 @@ defmodule QyCore.Step.NestedStep do
       end
   """
 
+  alias QyCore.Scheduler
   use QyCore.Step
 
   def nested?, do: true
@@ -45,6 +47,7 @@ defmodule QyCore.Step.NestedStep do
   def run(input_params, opts) do
     inner_recipe = Keyword.fetch!(opts, :recipe)
     executor = Keyword.get(opts, :executor, QyCore.Executor.Serial)
+    executor_options = Keyword.get(opts, :executor, [])
     input_map = Keyword.get(opts, :input_map, %{})
     output_map = Keyword.get(opts, :output_map, %{})
 
@@ -60,32 +63,32 @@ defmodule QyCore.Step.NestedStep do
 
     # 启动子流程
     # 从这里可以看出来传入的是 recipe 结构体
-    case executor.execute(inner_recipe, child_initial_params) do
-      {:ok, inner_results} ->
-        # inner_results 是 %{name => Param}
+    with {:ok, ctx} <- Scheduler.build(inner_recipe, child_initial_params),
+         {:ok, inner_results} <- executor.execute(ctx, executor_options) do
+      # inner_results 是 %{name => Param}
 
-        # 根据 output_map 或默认规则，从子结果中提取父层需要的数据
-        # 这里的 output_map key 是子层名字，value 是父层名字
+      # 根据 output_map 或默认规则，从子结果中提取父层需要的数据
+      # 这里的 output_map key 是子层名字，value 是父层名字
 
-        final_outputs =
-          if map_size(output_map) > 0 do
-            # 如果定义了映射，只提取映射中指定的
-            Enum.map(output_map, fn {child_name, parent_name} ->
-              case Map.fetch(inner_results, child_name) do
-                {:ok, param} -> %{param | name: parent_name}
-                :error -> raise "Nested Recipe missing expected output: #{child_name}"
-              end
-            end)
-          else
-            # 如果没定义映射，为了安全，我们应该只返回在 Step 定义中声明过的 output_keys
-            # 但 step.run/2 无法直接知道自己的 output_keys 定义。
-            # 所以这里我们简单地返回所有子结果（除了改名的），
-            # 父级 Executor 会根据 Step 定义自动丢弃不需要的。
-            Map.values(inner_results)
-          end
+      final_outputs =
+        if map_size(output_map) > 0 do
+          # 如果定义了映射，只提取映射中指定的
+          Enum.map(output_map, fn {child_name, parent_name} ->
+            case Map.fetch(inner_results, child_name) do
+              {:ok, param} -> %{param | name: parent_name}
+              :error -> raise "Nested Recipe missing expected output: #{child_name}"
+            end
+          end)
+        else
+          # 如果没定义映射，为了安全，我们应该只返回在 Step 定义中声明过的 output_keys
+          # 但 step.run/2 无法直接知道自己的 output_keys 定义。
+          # 所以这里我们简单地返回所有子结果（除了改名的），
+          # 父级 Executor 会根据 Step 定义自动丢弃不需要的。
+          Map.values(inner_results)
+        end
 
-        {:ok, final_outputs}
-
+      {:ok, final_outputs}
+    else
       {:error, reason} ->
         {:error, {:nested_execution_failed, reason}}
     end

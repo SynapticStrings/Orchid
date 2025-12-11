@@ -9,6 +9,7 @@ end
 
 defmodule QyCore.Executor.AsyncTest do
   use ExUnit.Case
+  alias QyCore.Scheduler
   alias QyCore.{Executor.Async, Recipe, Param}
 
   test "executes independent steps concurrently" do
@@ -20,7 +21,8 @@ defmodule QyCore.Executor.AsyncTest do
     recipe1 = Recipe.new(steps1)
     initial1 = [%Param{name: :a, payload: 1}, %Param{name: :c, payload: 2}]
     start1 = System.monotonic_time()
-    {:ok, _} = Async.execute(recipe1, initial1, concurrency: 2)
+    {:ok, ctx1} = Scheduler.build(recipe1, initial1)
+    {:ok, _} = Async.execute(ctx1, concurrency: 2)
     duration1 = System.monotonic_time() - start1
 
     steps2 = [
@@ -31,7 +33,8 @@ defmodule QyCore.Executor.AsyncTest do
     recipe2 = Recipe.new(steps2)
     initial2 = [%Param{name: :input, payload: 1}]
     start2 = System.monotonic_time()
-    {:ok, _res} = Async.execute(recipe2, initial2, concurrency: 2)
+    {:ok, ctx2} = Scheduler.build(recipe2, initial2)
+    {:ok, _res} = Async.execute(ctx2, concurrency: 2)
     duration2 = System.monotonic_time() - start2
     assert duration2 >= 1.5 * duration1
   end
@@ -40,6 +43,7 @@ defmodule QyCore.Executor.AsyncTest do
     steps = [{ErrorStep, :input, :output}]
     recipe = Recipe.new(steps)
     initial = [%Param{name: :input, payload: 1}]
-    {:error, {:step_failed, 0, :failed}} = Async.execute(recipe, initial)
+    {:ok, ctx} = Scheduler.build(recipe, initial)
+    {:error, {:step_failed, 0, :failed}} = Async.execute(ctx, [])
   end
 end

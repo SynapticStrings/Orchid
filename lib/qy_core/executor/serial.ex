@@ -8,13 +8,8 @@ defmodule QyCore.Executor.Serial do
   alias QyCore.Scheduler
 
   @impl true
-  @spec execute(QyCore.Recipe.t(), [QyCore.Param.t()]) ::
-          {:error, any()} | {:ok, [QyCore.Param.t()]}
-  def execute(recipe, initial_params, _executor_opts \\ []) do
-    case Scheduler.build(recipe, initial_params) do
-      {:ok, ctx} -> loop(ctx, recipe.opts)
-      {:error, reason} -> {:error, reason}
-    end
+  def execute(ctx, _executor_opts \\ []) do
+    loop(ctx, ctx.recipe.opts)
   end
 
   defp loop(ctx, opts) do

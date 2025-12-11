@@ -78,7 +78,7 @@ end
 
 负责运行的部分是 `QyCore.Pipeline` ，其调用一系列遵循 `QyCore.Operon` 协议的中间件。
 
-但是不同的是，我们定义了两类结构体 `QyCore.Operon.Request` 以及 `QyCore.Operon.Responce` 。
+但是不同的是，我们定义了两类结构体 `QyCore.Operon.Request` 以及 `QyCore.Operon.Response` 。
 
 负责转变的模块就是包装了 Executor 的 `QyCore.Opeon.Execute` 。
 
@@ -115,7 +115,7 @@ end
   - [x] Step option 检查（step 层面来实现）
 - [o] 运行时修改
   - *仅针对尚未运行的 steps*
-  - [x] step 配置（`QyCore.Scheduler.update_pending_steps_options/3` ）
+  - [x] step 配置（`QyCore.Scheduler.inject_opts/3` ）
   - ~~ executor 配置~~（需要看 executor 的具体实现，但考虑到 QyCore 保持精简，加之 operon 也可实现，放弃）
   - [o] recipe 配置（`Recipe.walk/3` 的 `:inner_recipe` 模式 + 自定义函数）
   - [o] runner hooks（本质上还是 step 配置）

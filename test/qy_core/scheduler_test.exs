@@ -60,7 +60,7 @@ defmodule QyCore.SchedulerTest do
     end
   end
 
-  describe "update_pending_steps_options/3" do
+  describe "inject_opts/3" do
     test "updates options for matching steps" do
       steps = [{DummyStep, :in, :out, extra_hooks_stack: []}]
       recipe = Recipe.new(steps)
@@ -68,7 +68,7 @@ defmodule QyCore.SchedulerTest do
       selector = fn {impl, _, _, _} -> impl == DummyStep end
 
       new_ctx =
-        Scheduler.update_pending_steps_options(ctx, selector, extra_hooks_stack: [ExtraHook])
+        Scheduler.inject_opts(ctx, selector, extra_hooks_stack: [ExtraHook])
 
       {_, _, _, opts} = hd(new_ctx.pending_steps) |> elem(0)
       assert opts[:extra_hooks_stack] == [ExtraHook]

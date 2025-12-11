@@ -5,7 +5,7 @@ end
 
 defmodule ErrorOperon do
   @behaviour QyCore.Operon
-  def call(_req, _next), do: %QyCore.Operon.Responce{payload: {:error, :failed}}
+  def call(_req, _next), do: %QyCore.Operon.Response{payload: {:error, :failed}}
 end
 
 defmodule QyCore.PipelineTest do
@@ -14,8 +14,8 @@ defmodule QyCore.PipelineTest do
 
   test "runs operon stack" do
     operons = [DummyOperon, Operon.Execute]
-    req = %Operon.Request{recipe: Recipe.new([]), inital_param: []}
-    %Operon.Responce{payload: {:ok, _}} = Pipeline.run(operons, req)
+    req = %Operon.Request{recipe: Recipe.new([]), inital_params: []}
+    %Operon.Response{payload: {:ok, _}} = Pipeline.run(operons, req)
   end
 
   test "handles no sink" do
@@ -24,7 +24,7 @@ defmodule QyCore.PipelineTest do
 
   test "propagates errors through stack" do
     operons = [ErrorOperon]
-    req = %Operon.Request{recipe: Recipe.new([]), inital_param: []}
-    %Operon.Responce{payload: {:error, :failed}} = Pipeline.run(operons, req)
+    req = %Operon.Request{recipe: Recipe.new([]), inital_params: []}
+    %Operon.Response{payload: {:error, :failed}} = Pipeline.run(operons, req)
   end
 end
