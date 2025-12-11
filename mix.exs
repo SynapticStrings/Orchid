@@ -19,15 +19,12 @@ defmodule Orchid.MixProject do
       description: description(),
       package: package(),
       source_url: "https://github.com/SynapticStrings/Orchid",
-      docs: docs(),
-      aliases: aliases()
+      docs: docs()
     ]
   end
 
   def application do
-    [
-      # extra_applications: [:logger, :telemetry],
-    ]
+    []
   end
 
   defp description do
@@ -37,7 +34,8 @@ defmodule Orchid.MixProject do
   defp package do
     [
       licenses: ["MIT"],
-      links: %{"GitHub" => "https://github.com/SynapticStrings/Orchid"}
+      links: %{"GitHub" => "https://github.com/SynapticStrings/Orchid"},
+      files: ~w(lib mix.exs README.md assets .formatter.exs .dialyzer_ignore.exs)
     ]
   end
 
@@ -49,21 +47,11 @@ defmodule Orchid.MixProject do
     ]
   end
 
-  defp aliases do
-    [docs: ["docs", &copy_assets/1]]
-  end
-
   defp docs do
     [
-      extras: ["README.md"]
+      main: "readme",
+      extras: ["README.md"],
+      assets: %{"assets" => "assets"}
     ]
-  end
-
-  defp copy_assets(_) do
-    if not File.exists?(Path.join(File.cwd!(), "doc/assets")) do
-      Path.join(File.cwd!(), "doc/assets") |> File.mkdir!()
-    end
-    Path.wildcard("assets/**.svg")
-    |> Enum.map(&File.cp!(&1, "doc/#{&1}"))
   end
 end
