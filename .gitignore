@@ -1,30 +1,30 @@
-# Mix 会将编译的产物写入的目录。
+# The directory Mix will write compiled artifacts to.
 /_build/
 
-# 如果你运行 "mix test --cover"，覆盖率报告的资源会写入此目录。
+# If you run "mix test --cover", coverage assets end up here.
 /cover/
 
-# Mix 下载依赖的源码到的目录。
+# The directory Mix downloads your dependencies sources to.
 /deps/
 
-# 第三方工具（如 ExDoc）生成文档的输出目录。
+# Where third-party dependencies like ExDoc output generated docs.
 /doc/
 
-# 忽略 .fetch 文件，以防你想本地编辑项目依赖。
+# Ignore .fetch files in case you like to edit your project deps locally.
 /.fetch
 
-# 如果虚拟机崩溃，会生成 dump 文件，也忽略它。
+# If the VM crashes, it generates a dump, let's ignore it too.
 erl_crash.dump
 
-# 忽略归档构建文件（通过 "mix archive.build" 创建）。
+# Also ignore archive artifacts (built via "mix archive.build").
 *.ez
 
-# 忽略包的 tarball 文件（通过 "mix hex.build" 创建）。
+# Ignore tarball file with package(built via "mix hex.build")
 qy_core-*.tar
 
-# 临时文件，例如测试过程中生成的。
+# Temporary files, for example, from tests.
 /tmp/
 
-# 编辑器与 LS
+# Editor and LS
 .vscode/
 .elixir_ls/

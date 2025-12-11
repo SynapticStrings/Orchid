@@ -4,14 +4,15 @@ defmodule QyCore do
 
   旨在实现一个便于扩展和定制的任务执行框架。
 
-  ### Options
-
-  * `:return_response` - 以 `QyCore.Operon.Response` 返回，默认为 false
-  * `:operons_stack` - 其他操作子（Recipe 层面的 hook）的堆栈，有先后顺序
   """
 
   @doc """
   执行。
+
+  ### Options
+
+  * `:return_response` - 以 `QyCore.Operon.Response` 返回，默认为 false
+  * `:operons_stack` - 其他操作子（Recipe 层面的 hook）的堆栈，有先后顺序
   """
   @spec run(QyCore.Recipe.t(), QyCore.Scheduler.initial_params(), keyword()) ::
           QyCore.Operon.Response.payload() | QyCore.Operon.Response.t()

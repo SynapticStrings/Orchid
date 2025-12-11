@@ -3,7 +3,8 @@ defmodule QyCore.Runner do
   Run step.
   """
 
-  @type context :: %{
+  defmodule Context do
+    @type t :: %{
           step_implementation: QyCore.Step.implementation(),
           in_keys: QyCore.Step.input_keys(),
           out_keys: QyCore.Step.output_keys(),
@@ -13,6 +14,17 @@ defmodule QyCore.Runner do
           telemetry_meta: %{},
           assigns: %{}
         }
+    defstruct [
+      :step_implementation,
+      :in_keys,
+      :out_keys,
+      :step_default_opts,
+      :inputs,
+      :recipe_opts,
+      :telemetry_meta,
+      :assigns
+    ]
+  end
 
   @spec run(
           QyCore.Step.t(),
@@ -22,7 +34,7 @@ defmodule QyCore.Runner do
   def run(step, ctx_params, recipe_opts) do
     {impl, in_keys, out_keys, step_opts} = QyCore.Step.ensure_full_step(step)
 
-    initial_ctx = %{
+    initial_ctx = %Context{
       step_implementation: impl,
       in_keys: in_keys,
       out_keys: out_keys,
@@ -63,8 +75,8 @@ defmodule QyCore.Runner do
 end
 
 defmodule QyCore.Runner.Hook do
-  @type next_fn :: (QyCore.Runner.context() -> {:ok, QyCore.Step.output()} | {:error, term()})
+  @type next_fn :: (QyCore.Runner.Context.t() -> {:ok, QyCore.Step.output()} | {:error, term()})
 
-  @callback call(QyCore.Runner.context(), next_fn) ::
+  @callback call(QyCore.Runner.Context.t(), next_fn) ::
               {:ok, QyCore.Step.output()} | {:error, term()}
 end
