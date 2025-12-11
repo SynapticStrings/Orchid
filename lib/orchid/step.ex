@@ -1,8 +1,8 @@
 defmodule Orchid.Step do
   @moduledoc """
-  定义配方步骤（Step）的行为规范和类型。
+  Denifate specification and type of step.
 
-  ### 规范
+  ### Specification
 
   执行 step 的代码参见 `Orchid.Runner.Hooks.Core` 以及
   `Orchid.Runner` 。
@@ -27,10 +27,10 @@ defmodule Orchid.Step do
   alias Orchid.Param
 
   @typedoc """
-  目前包括三类实现：
+  Two types:
 
-  * 模块实现：直接指定一个模块名，要求该模块实现 `Orchid.Step` 行为。
-  * 单函数实现：指定一个函数，等同于只实现 `run/2` 回调。
+  * module: 直接指定一个模块名，要求该模块实现 `Orchid.Step` 行为。
+  * single function: 指定一个函数，等同于只实现 `run/2` 回调。
   """
   @type implementation ::
           module()
@@ -43,6 +43,7 @@ defmodule Orchid.Step do
   @type input :: tuple() | Param.t() | [Param.t()]
   @type output :: tuple() | Param.t() | [Param.t()]
 
+  @typedoc "Only allowed keyword."
   @type step_options :: keyword()
 
   @type step_schema :: {implementation(), input_keys(), output_keys()}
@@ -54,16 +55,17 @@ defmodule Orchid.Step do
         }
   @type t :: step_schema() | step_with_options()
 
-  ## module step 实现的回调
-
-  @callback run(input(), step_options()) :: {:ok, output()} | {:error, term()}
+  ## module step's callbacks.
 
   @callback nested?() :: boolean()
 
   @callback validate_options(step_options()) :: :ok | {:error, term()}
 
+  @callback run(input(), step_options()) :: {:ok, output()} | {:error, term()}
+
   ## public API
 
+  @doc "inject option for a step."
   @spec inject_options(t(), keyword()) :: step_with_options()
   def inject_options(step, options)
 
