@@ -1,6 +1,6 @@
 # Gemini 给出的例子，没有涉及到时间序列
 # 但是可以用容量来代替
-alias QyCore.Param
+alias Orchid.Param
 
 defmodule MyKitchen do
 
@@ -71,8 +71,8 @@ steps = [
 for guest <- ["Alice", "Bob", "Peter"] do
   # 3. 执行 Recipe
   {:ok, res} = steps ++ [{MyKitchen.to_guests([guest]), :sweet_coffee, :served_coffee}]
-  |> QyCore.Recipe.new(name: guest)
-  |> QyCore.run(initial_params)
+  |> Orchid.Recipe.new(name: guest)
+  |> Orchid.run(initial_params)
   # 4. 输出结果
   # |> IO.inspect(label: "Context New Example")
 

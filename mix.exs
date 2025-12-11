@@ -1,12 +1,11 @@
-defmodule QyCore.MixProject do
+defmodule Orchid.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :qy_core,
+      app: :orchid,
       version: "0.2.2",
       build_path: "_build",
-      # config_path: "config/config.exs",
       deps_path: "deps",
       lockfile: "mix.lock",
       elixir: "~> 1.17",

@@ -1,6 +1,6 @@
-# QyCore
+# Orchid
 
-QyCore is an Elixir-based workflow orchestration engine inspired by a [personal project](https://ges233.github.io/2023/06/Qy-project/)(written in Chinese).
+Orchid is an Elixir-based workflow orchestration engine inspired by a [personal project](https://ges233.github.io/2023/06/Qy-project/)(written in Chinese).
 
 It is primarily designed for scenarios requiring complex processing of time series (or sequences related to time series) with low real-time demands, providing a relevant protocol or interface for subsequent development.
 
@@ -17,7 +17,7 @@ graph TD
     classDef runtime fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
     classDef user fill:#eceff1,stroke:#37474f,stroke-dasharray: 5 5;
 
-    User([User / Client]) -->|QyCore.run/3| API[QyCore]:::core
+    User([User / Client]) -->|Orchid.run/3| API[Orchid]:::core
 
     subgraph Definition [Definition Layer]
         Recipe[Recipe]:::definition
@@ -61,7 +61,7 @@ graph TD
 sequenceDiagram
     autonumber
     participant User
-    participant Qy as QyCore
+    participant Qy as Orchid
     participant Pipe as Pipeline
     participant OpExec as Operon.Execute
     participant Sched as Scheduler
@@ -124,26 +124,26 @@ sequenceDiagram
 
 ### Definition
 
-#### `QyCore.Param`
+#### `Orchid.Param`
 
-#### `QyCore.Step`
+#### `Orchid.Step`
 
-#### `QyCore.Recipe`
+#### `Orchid.Recipe`
 
 ### Scheduling
 
-Mainly handled by the `QyCore.Scheduler` module.
+Mainly handled by the `Orchid.Scheduler` module.
 
 ### Execution Behavior and Executors
 
-Recipe-level execution is the responsibility of the `QyCore.Executor` behavior.
+Recipe-level execution is the responsibility of the `Orchid.Executor` behavior.
 
-Currently, `qy_core` includes two executors:
+Currently, `orchid` includes two executors:
 
-- `QyCore.Executor.Serial`
-- `QyCore.Executor.Async`
+- `Orchid.Executor.Serial`
+- `Orchid.Executor.Async`
 
-Step-level execution is handled by `QyCore.Runner.run/3`.
+Step-level execution is handled by `Orchid.Runner.run/3`.
 
 Due to the atomic nature of Step operations, no further behavior-adapter design has been implemented. However, considering business complexity, a hook mechanism has been introduced.
 
@@ -151,13 +151,13 @@ Due to the atomic nature of Step operations, no further behavior-adapter design 
 
 #### Step Level (Hook)
 
-Within `QyCore.Runner`, which is responsible for executing steps, data flows like an onion from the outer layers through the inner layers and back to the outer layers.
+Within `Orchid.Runner`, which is responsible for executing steps, data flows like an onion from the outer layers through the inner layers and back to the outer layers.
 
 The general flow for each hook is as follows:
 
 ```elixir
 defmodule MyHook do
-  @behaviour QyCore.Runner.Hook
+  @behaviour Orchid.Runner.Hook
 
   def call(ctx, next) do
     # Prelude
@@ -183,8 +183,8 @@ To run additional Hooks, they must be configured in the step's `opts[:extra_hook
 
 Currently, Runner has two hooks:
 
-- `QyCore.Runner.Hooks.Telemetry` for telemetry
-- `QyCore.Runner.Hooks.Core` for executing the step
+- `Orchid.Runner.Hooks.Telemetry` for telemetry
+- `Orchid.Runner.Hooks.Core` for executing the step
 
 #### Recipe Level (Pipeline & Operon)
 
@@ -192,23 +192,23 @@ Similar to hooks, data is also processed in an onion-like flow.
 
 It has a somewhat peculiar name—Operon (may be changed later).
 
-The execution is handled by `QyCore.Pipeline`  which calls a series of middleware conforming to the `QyCore.Operon` protocol.
+The execution is handled by `Orchid.Pipeline`  which calls a series of middleware conforming to the `Orchid.Operon` protocol.
 
-However, the difference is that we define two structs: `QyCore.Operon.Request` and `QyCore.Operon.Response`.
+However, the difference is that we define two structs: `Orchid.Operon.Request` and `Orchid.Operon.Response`.
 
-The transformation module is `QyCore.Opeon.Execute`, which wraps the Executor.
+The transformation module is `Orchid.Opeon.Execute`, which wraps the Executor.
 
 No additional middleware has been introduced yet, but it will be added later.
 
 ### Runtime Context Passing
 
 - Pipeline level
-  - `%QyCore.Openron.Request{}` & `%QyCore.Openron.Response{}`
+  - `%Orchid.Openron.Request{}` & `%Orchid.Openron.Response{}`
 - Executor level
-  - `%QyCore.Scheduler.Context{}`
+  - `%Orchid.Scheduler.Context{}`
   - Executor's own context
 - Runner Hooks level
-  - `%QyCore.Runner.Context{}`
+  - `%Orchid.Runner.Context{}`
 - Step level
 
 #### Options
@@ -231,18 +231,18 @@ TBD
 - [x] Executor protocol and implementations
 - [x] Hooks
 - [o] Pre-run modifications
-  - [x] Step configuration (via `QyCore.Recipe.assign_options/3`)
+  - [x] Step configuration (via `Orchid.Recipe.assign_options/3`)
   - [x] Recipe configuration
   - [o] Operon stack modification (via configuration changes)
   - [o] Internal hook stack modification for steps (can be done by modifying step configuration)
-- [x] Pre-run checks(`QyCore.Scheduler.build/2`)
+- [x] Pre-run checks(`Orchid.Scheduler.build/2`)
   - [x] Missing Recipe check
   - [x] Recipe cycle check
   - [x] Step option check (implemented at the step level)
 - [o] Runtime modifications
   - *Only for steps not yet executed*
-  - [x] step configuration(`QyCore.Scheduler.inject_opts/3`)
-  - ~~Executor configuration~~ (Depends on specific executor implementation; considering QyCore's goal of staying lean and the fact that Operon can achieve similar effects, this is abandoned)
+  - [x] step configuration(`Orchid.Scheduler.inject_opts/3`)
+  - ~~Executor configuration~~ (Depends on specific executor implementation; considering Orchid's goal of staying lean and the fact that Operon can achieve similar effects, this is abandoned)
   - [o] Recipe configuration (`Recipe.walk/3`'s `:inner_recipe` mode + custom function)
   - [o] Runner hooks (essentially still step configuration)
 - [ ] API consolidation
@@ -259,7 +259,7 @@ TBD
 - [ ] More OTP-style Executor
   - *Still an advanced feature, but likely requires separate plugins*
 - [ ] Persistence and Traceability
-  - *Another advanced feature, may require plugins or modifications to QyCore itself*
+  - *Another advanced feature, may require plugins or modifications to Orchid itself*
 
 <!--roadmap:end-->
 
@@ -270,8 +270,8 @@ Add to your `mix.exs`:
 ```elixir
 [
   {
-    :qy_core,
-    git: "https://github.com/SynapticStrings/QyCore.git",
+    :orchid,
+    git: "https://github.com/SynapticStrings/Orchid.git",
     branch: "core"
   }
 ]
