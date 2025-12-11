@@ -1,0 +1,37 @@
+# Roadmap
+
+- [x] Declarative steps
+- [x] Flow orchestration
+- [x] Nested recipes
+- [x] Executor protocol and implementations
+- [x] Hooks
+- [o] Pre-run modifications
+  - [x] Step configuration (via `Orchid.Recipe.assign_options/3`)
+  - [x] Recipe configuration
+  - [o] Operon stack modification (via configuration changes)
+  - [o] Internal hook stack modification for steps (can be done by modifying step configuration)
+- [x] Pre-run checks(`Orchid.Scheduler.build/2`)
+  - [x] Missing Recipe check
+  - [x] Recipe cycle check
+  - [x] Step option check (implemented at the step level)
+- [o] Runtime modifications
+  - *Only for steps not yet executed*
+  - [x] step configuration(`Orchid.Scheduler.inject_opts/3`)
+  - ~~Executor configuration~~ (Depends on specific executor implementation; considering Orchid's goal of staying lean and the fact that Operon can achieve similar effects, this is abandoned)
+  - [o] Recipe configuration (`Recipe.walk/3`'s `:inner_recipe` mode + custom function)
+  - [o] Runner hooks (essentially still step configuration)
+- [ ] API consolidation
+  - [ ] Organize logic
+    - Decouple relationships between Scheduler, Execute operon, and specific Executor implementations
+    - Document key context
+  - [ ] Write documentation & Publish to <hex.pm>
+    - use English
+  - [ ] 100% coverage
+- [ ] Dynamic graph rewriting (adding/deleting steps)
+  - *This is an optional advanced feature; similar effects can be achieved via hooks without implementing this*
+  - Modify Recipe's steps (pre-run modification, mainly addition/deletion)
+  - Modify Scheduler.Context's pending_steps (runtime modification, including add/update/delete)
+- [ ] More OTP-style Executor
+  - *Still an advanced feature, but likely requires separate plugins*
+- [ ] Persistence and Traceability
+  - *Another advanced feature, may require plugins or modifications to Orchid itself*
