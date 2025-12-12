@@ -18,6 +18,7 @@ defmodule Orchid do
     (which includes assigns and metadata) instead of just the result payload. Defaults to `false`.
   * `:operons_stack` - (list) A list of additional middleware modules (Recipe-level hooks)
     to run before the execution phase. They are executed in the order provided.
+  * `:executor_and_opts` - (tuple) Executor module and its options.
 
   ### Examples
 
