@@ -32,13 +32,15 @@ defmodule Orchid do
   def run(recipe, input_params, opts \\ []) do
     response? = Keyword.get(opts, :return_response, false)
     operons_stack = Keyword.get(opts, :operons_stack, [])
+    executor_and_opts = Keyword.get(opts, :executor_and_opts, {Orchid.Executor.Async, []})
 
     response =
       Orchid.Pipeline.run(
         operons_stack ++ [Orchid.Operon.Execute],
         %Orchid.Operon.Request{
           recipe: recipe,
-          inital_params: input_params
+          inital_params: input_params,
+          executor_and_opts: executor_and_opts
         }
       )
 
