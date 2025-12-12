@@ -155,6 +155,10 @@ However, in some cases, considering business complexity, a hook mechanism has be
 
 ### Layered Hooks
 
+Orchid employs an onion-like execution model (similar to Rack or Plug middleware), where hooks wrap around the core logic.
+
+*Note: This refers to the runtime call stack, distinct from the 'Onion Architecture' design pattern which concerns static code dependencies and domain boundaries.*
+
 #### Step Level (Hook)
 
 Within `Orchid.Runner`, which is responsible for executing steps, data flows like an onion from the outer layers through the inner layers and back to the outer layers.
