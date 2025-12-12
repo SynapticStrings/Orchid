@@ -15,7 +15,8 @@ graph TD
         Step[Step]:::definition
         Param[Param]:::definition
         Recipe -->|contains| Step
-        Step -->|io / payload| Param
+        Step -->|inputs/outputs payload| Param
+        %% Not means IO devide
     end
 
     subgraph Core [Orchestration Layer]
@@ -63,6 +64,8 @@ sequenceDiagram
     
     Orchid->>Pipe: run(operons, request)
     note right of Pipe: Pipeline traverses Operon stack
+    activate Pipe
+    Pipe->>Pipe: (Traverse Custome Operon(s))
     
     Pipe->>OpExec: call(req, next)
     
@@ -104,6 +107,7 @@ sequenceDiagram
 
     Exec-->>OpExec: {:ok, final_results}
     OpExec-->>Pipe: %Operon.Response{}
+    deactivate Pipe
     Pipe-->>Orchid: response
     
     Orchid-->>User: payload (results)
