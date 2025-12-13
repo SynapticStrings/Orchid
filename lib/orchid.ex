@@ -34,6 +34,8 @@ defmodule Orchid do
     response? = Keyword.get(opts, :return_response, false)
     operons_stack = Keyword.get(opts, :operons_stack, [])
     executor_and_opts = Keyword.get(opts, :executor_and_opts, {Orchid.Executor.Async, []})
+    # TODO: prograte `operons_stack` and `executor_and_opts`
+    # to inner recipes(exclude explicit configurations)
 
     response =
       Orchid.Pipeline.run(

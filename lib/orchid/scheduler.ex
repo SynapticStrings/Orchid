@@ -1,5 +1,4 @@
 defmodule Orchid.Scheduler do
-  # TODO: translate doc & comments in English
   @moduledoc """
   Scheduler is responsible for managing and scheduling the execution order of steps in the Recipe.
   """
@@ -9,14 +8,14 @@ defmodule Orchid.Scheduler do
   @type initial_params :: [Param.t()] | Context.param_map()
 
   @doc """
-  初始化执行上下文。
+  Initialize scheduler context.
   """
   @spec build(Recipe.t(), initial_params()) ::
           {:ok, Context.t()} | {:error, term()}
   def build(%Recipe{} = recipe, initial_params) do
     initial_map =
       case initial_params do
-        # 照理说空列表是有问题的，但还是把问题抛给后面的 validate 处理
+        # throw the problem to validate functions
         [] ->
           %{}
 
@@ -53,7 +52,7 @@ defmodule Orchid.Scheduler do
   end
 
   @doc """
-  核心调度函数：找出所有“原料已就绪”且“未执行”的步骤。
+  Core scheduling function: Identify all the steps that are "inputs params ready" and "not executed".
   """
   @spec next_ready_steps(Orchid.Scheduler.Context.t()) :: [{Step.t(), non_neg_integer()}]
   def next_ready_steps(%Context{} = ctx) do
@@ -66,7 +65,7 @@ defmodule Orchid.Scheduler do
   end
 
   @doc """
-  标记那些开始运行的。
+  Mark those steps that have started running.
   """
   @spec mark_running(Orchid.Scheduler.Context.t(), Step.t() | [Step.t()]) ::
           Orchid.Scheduler.Context.t()
@@ -76,7 +75,7 @@ defmodule Orchid.Scheduler do
   end
 
   @doc """
-  当 Step 执行完后，将结果合并回 Context。
+  After the Step is executed, merge the result back into the Context.
   """
   @spec merge_result(
           Context.t(),
@@ -112,9 +111,10 @@ defmodule Orchid.Scheduler do
   end
 
   @doc """
-  批量更新配置（运行时）。
+  Batch update configuration (at runtime).
 
-  用于外部服务挂掉重启后但还有若干 steps 的 options 使用了旧的 reference 的情况。
+  This is used in scenarios where after an external service crashes and re-assigned,
+  but several steps' options still use the old references.
   """
   @spec inject_opts(
           Orchid.Scheduler.Context.t(),
