@@ -21,11 +21,13 @@
   - [o] Recipe configuration (`Recipe.walk/3`'s `:inner_recipe` mode + custom function)
   - [o] Runner hooks (essentially still step configuration)
 - [ ] API consolidation
-  - [ ] Organize logic
+  - [x] Organize logic
     - Decouple relationships between Scheduler, Execute operon, and specific Executor implementations
     - Document key context
-  - [ ] Write documentation & Publish to <hex.pm>
+  - [x] Write documentation & Publish to <hex.pm>
     - use English
+  - [ ] finish document
+    - Chinese first, translate into English
   - [ ] 100% coverage
 - [ ] Dynamic graph rewriting (adding/deleting steps)
   - *This is an optional advanced feature; similar effects can be achieved via hooks without implementing this*

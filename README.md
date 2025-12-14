@@ -2,7 +2,7 @@
 
 ![img](assets/HeroImage.jpg)
 
-Orchid is an Elixir-based workflow orchestration engine inspired by a [personal project](https://ges233.github.io/2023/06/Qy-project/)(written in Chinese).
+Orchid is an Elixir-based workflow orchestration engine inspired by a [personal project](https://ges233.github.io/2025/03/Qy-Editor-demo/)(written in Chinese).
 
 It is primarily designed for scenarios requiring complex processing of data(time series limited originally) with low real-time demands, providing a relevant protocol or interface for subsequent development.
 
