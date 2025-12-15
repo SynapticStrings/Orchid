@@ -41,7 +41,7 @@ defmodule Orchid.Step do
   Reserved options include:
 
   * `:extra_hooks_stack` - A list of additional hooks to run for this specific step.
-  * `:__reporter__` - (Internal) A closure used by `report/3` to send progress updates.
+  * `:__reporter_ctx__` - A map contains telemetry meta used by `report/3` to send progress updates.
   """
   alias Orchid.Param
 
@@ -165,9 +165,6 @@ defmodule Orchid.Step do
       @doc """
       Reports progress or status to the executor.
 
-      This function looks for a `:__reporter__` function inside `opts` and calls it.
-      If no reporter is configured, it does nothing.
-
       ## Example
 
           def run(input, opts) do
@@ -178,9 +175,13 @@ defmodule Orchid.Step do
           end
       """
       def report(opts, progress, payload \\ nil) do
-        case Keyword.get(opts, :__reporter__) do
-          reporter_fn when is_function(reporter_fn, 2) ->
-            reporter_fn.(progress, payload)
+        case Keyword.get(opts, :__reporter_ctx__) do
+          meta when is_map(meta) ->
+            :telemetry.execute(
+              [:orchid, :step, :progress],
+              %{progress: progress},
+              Map.merge(meta, %{payload: payload})
+            )
 
           _ ->
             :ok

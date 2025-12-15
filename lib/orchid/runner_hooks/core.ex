@@ -6,20 +6,11 @@ defmodule Orchid.Runner.Hooks.Core do
   @spec call(Orchid.Runner.Context.t(), function()) ::
           {:ok, Orchid.Step.output()} | {:error, term()}
   def call(ctx, _next) do
-    # 构造 Reporter
-    reporter_fn = fn progress, payload ->
-      :telemetry.execute(
-        [:orchid, :step, :progress],
-        %{progress: progress},
-        Map.merge(ctx.telemetry_meta, %{payload: payload})
-      )
-    end
-
     # 注入资源
     final_opts =
       ctx.step_default_opts
       |> Keyword.merge(ctx.recipe_opts)
-      |> Keyword.put(:__reporter__, reporter_fn)
+      |> Keyword.put(:__reporter_ctx__, ctx.telemetry_meta)
 
     case run_step(ctx.step_implementation, ctx.inputs, final_opts) do
       {:ok, raw_output} ->
