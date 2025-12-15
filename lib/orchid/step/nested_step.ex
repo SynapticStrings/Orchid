@@ -49,19 +49,13 @@ defmodule Orchid.Step.NestedStep do
   """
   use Orchid.Step
 
-  # @inheritable_keys [:global_hooks_stack, :operons_stack]
-  # @stack_keys [:global_hooks_stack, :operons_stack]
-
   def nested?, do: true
 
-  @spec run(Step.input(), Step.step_options()) ::
-          {:error, {:nested_execution_failed, term()}} | {:ok, Step.output()}
   @spec run(Step.input(), Step.step_options()) ::
           {:error, {:nested_execution_failed, term()}} | {:ok, Step.output()}
   def run(input_params, opts) do
     inner_recipe =
       Keyword.fetch!(opts, :recipe)
-      # |> inject_inner_recipe_opts_from_outside(opts)
 
     input_map = Keyword.get(opts, :input_map, %{})
     output_map = Keyword.get(opts, :output_map, %{})
@@ -71,23 +65,6 @@ defmodule Orchid.Step.NestedStep do
     |> Orchid.run(prepare_initial_params(input_params, input_map), opts)
     |> prepare_final_results(output_map)
   end
-
-  # defp inject_inner_recipe_opts_from_outside(recipe, opts) do
-  #   inherited_opts = Keyword.take(opts, @inheritable_keys)
-
-  #   final_recipe_opts =
-  #     Keyword.merge(inherited_opts, recipe.opts, fn key, parent_val, child_val ->
-  #       if key in @stack_keys and is_list(parent_val) and is_list(child_val) do
-  #         # during execute:
-  #         # ParentHook.start -> ChildHook.start -> ... -> ChildHook.end -> ParentHook.end
-  #         parent_val ++ child_val
-  #       else
-  #         child_val
-  #       end
-  #     end)
-
-  #   %{recipe | opts: final_recipe_opts}
-  # end
 
   # Rename parameters passed from the parent layer to the names required by the child layer
   defp prepare_initial_params(input_params, input_map) do
@@ -105,11 +82,13 @@ defmodule Orchid.Step.NestedStep do
   end
 
   defp prepare_final_results({:ok, inner_results}, output_map) do
+    inner_results_map = Map.new(inner_results, fn p -> {p.name, p} end)
+
     final_outputs =
       if map_size(output_map) > 0 do
         # If a mapping is defined, extract only the specified ones
         Enum.map(output_map, fn {child_name, parent_name} ->
-          case Map.fetch(inner_results, child_name) do
+          case Map.fetch(inner_results_map, child_name) do
             {:ok, param} -> %{param | name: parent_name}
             :error -> raise "Nested Recipe missing expected output: #{child_name}"
           end
@@ -117,7 +96,7 @@ defmodule Orchid.Step.NestedStep do
       else
         # If no mapping is defined, for safety, we simply return all child results.
         # The parent Executor will automatically discard unneeded ones based on the Step definition schema.
-        Map.values(inner_results)
+        Map.values(inner_results_map)
       end
 
     {:ok, final_outputs}
