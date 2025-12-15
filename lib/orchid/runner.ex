@@ -48,6 +48,7 @@ defmodule Orchid.Runner do
 
     hook_stack =
       [Orchid.Runner.Hooks.Telemetry] ++
+        Keyword.get(recipe_opts, :global_hooks_stack, []) ++
         Keyword.get(step_opts, :extra_hooks_stack, []) ++
         [Orchid.Runner.Hooks.Core]
 

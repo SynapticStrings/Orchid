@@ -6,6 +6,8 @@ defmodule Orchid do
   It is designed to be a flexible and extensible framework for task orchestration.
   """
 
+  @facade_pass_through_keys [:global_hooks_stack, :executor_and_opts]
+
   @doc """
   Executes a workflow Recipe.
 
@@ -18,6 +20,7 @@ defmodule Orchid do
     (which includes assigns and metadata) instead of just the result payload. Defaults to `false`.
   * `:operons_stack` - (list) A list of additional middleware modules (Recipe-level hooks)
     to run before the execution phase. They are executed in the order provided.
+  * `:global_hooks_stack` - (list)
   * `:executor_and_opts` - (tuple) Executor module and its options.
 
   ### Examples
@@ -34,15 +37,15 @@ defmodule Orchid do
     response? = Keyword.get(opts, :return_response, false)
     operons_stack = Keyword.get(opts, :operons_stack, [])
     executor_and_opts = Keyword.get(opts, :executor_and_opts, {Orchid.Executor.Async, []})
-    # TODO: prograte `operons_stack` and `executor_and_opts`
+    _global_hooks_stack = Keyword.get(opts, :global_hooks_stack, [])
+    # TODO: prograte `global_hooks_stack` and `executor_and_opts`
     # to inner recipes(exclude explicit configurations)
-    # TODO: Add `global_hooks_stack` with pass-through
 
     response =
       Orchid.Pipeline.run(
         operons_stack ++ [Orchid.Operon.Execute],
         %Orchid.Operon.Request{
-          recipe: recipe,
+          recipe: inject_opts_into_recipe(recipe, opts),
           inital_params: input_params,
           executor_and_opts: executor_and_opts
         }
@@ -53,6 +56,10 @@ defmodule Orchid do
     else
       response.payload
     end
+  end
+
+  def inject_opts_into_recipe(recipe, opts) do
+    %{recipe | opts: Keyword.merge(recipe.opts, Keyword.take(opts, @facade_pass_through_keys))}
   end
 
   def install_plugins(recipe, opts, plugins) do
