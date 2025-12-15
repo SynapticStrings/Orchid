@@ -8,52 +8,45 @@ defmodule Orchid.Runner.Hooks.Telemetry do
     :telemetry.execute([:orchid, :step, :start], %{system_time: System.system_time()}, meta)
     start_time = System.monotonic_time()
 
-    # --- 执行后续管道 (包含 Validator, Executor 等) ---
+    # --- Execute inner pipes(include validator, executor etc.) ---
     try do
-      case next.(ctx) do
+      case next.(%{
+             ctx
+             | step_opts: Keyword.put(ctx.step_opts, :__reporter_ctx__, ctx.telemetry_meta)
+           }) do
         {:ok, result} ->
           duration = System.monotonic_time() - start_time
           :telemetry.execute([:orchid, :step, :stop], %{duration: duration}, meta)
+
           {:ok, result}
 
         {:error, reason} ->
-          report_error(start_time, meta, reason)
+          # report_error(start_time, meta, :failed, reason)
+          report_error(start_time, Map.put(meta, :reason, reason))
+
           {:error, reason}
       end
     rescue
-      # 开发时记得注册 Linster
+      # Remember register linster durign development
       e ->
-        stack = __STACKTRACE__
-        duration = System.monotonic_time() - start_time
-
-        :telemetry.execute(
-          [:orchid, :step, :exception],
-          %{duration: duration},
-          Map.merge(meta, %{kind: :error, reason: e, stacktrace: stack})
-        )
+        # report_error(start_time, meta, :rescue, {e, __STACKTRACE__})
+        report_error(start_time, Map.merge(meta, %{kind: :error, reason: e, stacktrace: __STACKTRACE__}))
 
         {:error, e}
     catch
       kind, reason ->
-        duration = System.monotonic_time() - start_time
-
-        :telemetry.execute(
-          [:orchid, :step, :exception],
-          %{duration: duration},
-          Map.merge(meta, %{kind: kind, reason: reason})
-        )
+        # report_error(start_time, meta, :catch, {kind, reason})
+        report_error(start_time, Map.merge(meta, %{kind: kind, reason: reason}))
 
         {:error, {kind, reason}}
     end
   end
 
-  defp report_error(start_time, meta, reason) do
-    duration = System.monotonic_time() - start_time
-
+  defp report_error(start_time, payload) do
     :telemetry.execute(
       [:orchid, :step, :exception],
-      %{duration: duration},
-      Map.put(meta, :reason, reason)
+      %{duration: System.monotonic_time() - start_time},
+      payload
     )
   end
 end

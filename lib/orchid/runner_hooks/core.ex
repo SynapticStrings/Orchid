@@ -6,11 +6,8 @@ defmodule Orchid.Runner.Hooks.Core do
   @spec call(Orchid.Runner.Context.t(), function()) ::
           {:ok, Orchid.Step.output()} | {:error, term()}
   def call(ctx, _next) do
-    # 注入资源
-    final_opts =
-      ctx.step_default_opts
-      |> Keyword.merge(ctx.recipe_opts)
-      |> Keyword.put(:__reporter_ctx__, ctx.telemetry_meta)
+    # inject opts
+    final_opts = Keyword.merge(ctx.step_opts, ctx.recipe_opts)
 
     case run_step(ctx.step_implementation, ctx.inputs, final_opts) do
       {:ok, raw_output} ->
@@ -22,8 +19,7 @@ defmodule Orchid.Runner.Hooks.Core do
     end
   end
 
-  ## 囊括单体、列表元组
-  # 单体 + 单体
+  # include mono, list and tuple
   defp align_output_names(%Param{} = param, out_key) when is_atom(out_key) do
     %{param | name: out_key}
   end
@@ -36,13 +32,11 @@ defmodule Orchid.Runner.Hooks.Core do
     %{param | name: out_key}
   end
 
-  # 列表 + 列表
   defp align_output_names(params, out_keys) when is_list(params) and not is_tuple(out_keys) do
     keys = List.wrap(out_keys)
     Enum.zip_with(params, keys, fn param, key -> %{param | name: key} end)
   end
 
-  # 包含元组
   defp align_output_names(param, out_key) when is_tuple(param) and is_tuple(out_key) do
     align_output_names(Tuple.to_list(param), Tuple.to_list(out_key))
   end
@@ -55,6 +49,7 @@ defmodule Orchid.Runner.Hooks.Core do
     align_output_names(param, Tuple.to_list(out_key))
   end
 
+  # running step
   defp run_step(impl, inputs, opts) when is_atom(impl) do
     if Code.ensure_loaded?(impl) and function_exported?(impl, :run, 2) do
       impl.run(inputs, opts)
