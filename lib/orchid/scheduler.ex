@@ -12,6 +12,7 @@ defmodule Orchid.Scheduler do
   """
   @spec build(Recipe.t(), initial_params()) ::
           {:ok, Context.t()} | {:error, term()}
+  # I don't know how to convince Dialyzer that this function can return `{:ok, context}`.
   def build(%Recipe{} = recipe, initial_params) do
     initial_map =
       case initial_params do
