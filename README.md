@@ -10,6 +10,7 @@ It is primarily designed for scenarios requiring complex processing of data(time
 
 * **Declarative Recipes**: Define your workflow steps and dependencies clearly.
 * **Flexible Execution**: Switch execution strategies(or implement and use yours) without changing business logic.
+* **Composable & Nested**: Treat entire recipes as atomic steps (`NestedStep`). Supports deep configuration inheritance and parameter mapping.
 * **Dependency Resolution**: Automatic topological sorting of steps based on input/output keys.
 * **Onion-like Hooks**: Inject custom logic (logging, telemetry, etc.) at both the Step and Recipe levels.
 
