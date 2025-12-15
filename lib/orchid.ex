@@ -36,6 +36,7 @@ defmodule Orchid do
     executor_and_opts = Keyword.get(opts, :executor_and_opts, {Orchid.Executor.Async, []})
     # TODO: prograte `operons_stack` and `executor_and_opts`
     # to inner recipes(exclude explicit configurations)
+    # TODO: Add `global_hooks_stack` with pass-through
 
     response =
       Orchid.Pipeline.run(
@@ -52,5 +53,14 @@ defmodule Orchid do
     else
       response.payload
     end
+  end
+
+  def install_plugins(recipe, opts, plugins) do
+    Enum.reduce_while(plugins, {recipe, opts}, fn {plug_mod, plug_conf}, {r, o} = acc ->
+      case plug_mod.install(r, Keyword.merge(o, plugin_config: plug_conf)) do
+        {:ok, res} -> {:count, res}
+        {:error, reason} -> {:halt, {:error, {plug_mod, reason, acc}}}
+      end
+    end)
   end
 end
