@@ -82,13 +82,11 @@ defmodule Orchid.Step.NestedStep do
   end
 
   defp prepare_final_results({:ok, inner_results}, output_map) do
-    inner_results_map = Map.new(inner_results, fn p -> {p.name, p} end)
-
     final_outputs =
       if map_size(output_map) > 0 do
         # If a mapping is defined, extract only the specified ones
         Enum.map(output_map, fn {child_name, parent_name} ->
-          case Map.fetch(inner_results_map, child_name) do
+          case Map.fetch(inner_results, child_name) do
             {:ok, param} -> %{param | name: parent_name}
             :error -> raise "Nested Recipe missing expected output: #{child_name}"
           end
@@ -96,7 +94,7 @@ defmodule Orchid.Step.NestedStep do
       else
         # If no mapping is defined, for safety, we simply return all child results.
         # The parent Executor will automatically discard unneeded ones based on the Step definition schema.
-        Map.values(inner_results_map)
+        Map.values(inner_results)
       end
 
     {:ok, final_outputs}
