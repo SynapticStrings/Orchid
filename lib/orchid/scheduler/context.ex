@@ -12,21 +12,22 @@ defmodule Orchid.Scheduler.Context do
           assings: %{any() => any()}
         }
   defstruct [
-    # Recipe 本体
-    # 用于 Executor 使用（为了保持一致性，不允许做修改）
+    # Recipe
+    # Used for Executor
+    # edit is not allowed for consistency
     :recipe,
-    ## 原始 Orchid
-    # 还未执行的步骤列表
+    ## Origin Orchid
+    # steps where not executed
     :pending_steps,
-    # 当前已有的数据 keys
+    # keys we have
     :available_keys,
-    # 实际数据本体
+    # actual datas
     :params,
-    # 正在运行中的 steps
+    # running steps
     :running_steps,
-    # 执行历史
+    # execution history
     :history,
-    ## 可能的其他上下文
+    ## other context
     :assings
   ]
 end

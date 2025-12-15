@@ -1,9 +1,11 @@
 defmodule Orchid.Repo do
   @moduledoc """
-  定义数据仓库的行为。
-  用于存储不适合在 Param 中直接传递的大容量数据（如音频波形、模型权重）。
+  Defines the behaviour of the data warehouse.
+  Used to store large volumes of data unsuitable for direct transmission via
+  Param (such as audio waveforms or model weights).
 
-  暂时不考虑在 Orchid 中实现，但是其他应用可能会实现这个协议并且通过自定义 hook 调用。
+  Implementation within Orchid is not currently envisaged, though other applications
+  may implement this protocol and invoke it via custom hooks.
   """
 
   @type key :: term()

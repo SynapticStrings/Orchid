@@ -1,8 +1,10 @@
 defmodule Orchid.Executor.Serial do
   @moduledoc """
-  串行执行器，实现 `Orchid.Executor` 行为。
-  它按顺序执行 Recipe 中的步骤，每次只执行一个步骤，等待其完成后再执行下一个步骤。
-  默认的执行器即为串行执行器。
+  Serial Executor, implementing the behaviour of `Orchid.Executor`.
+
+  It executes the steps within a Recipe sequentially, performing only
+  one step at a time and waiting for its completion before proceeding
+  to the next step.
   """
   @behaviour Orchid.Executor
   alias Orchid.Scheduler

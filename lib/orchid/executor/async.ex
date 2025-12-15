@@ -48,7 +48,8 @@ defmodule Orchid.Executor.Async do
           if Scheduler.done?(ctx) do
             {:ok, Scheduler.get_results(ctx)}
           else
-            # 这里理论上在 Graph.validate 就会被拦截，但作为运行时保险
+            # This would theoretically be intercepted by `Graph.validate`,
+            # but serves as a runtime safeguard.
             {:error, :stuck_at_runtime}
           end
       end

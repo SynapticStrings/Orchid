@@ -58,8 +58,8 @@ defmodule Orchid.Scheduler do
   @spec next_ready_steps(Orchid.Scheduler.Context.t()) :: [{Step.t(), non_neg_integer()}]
   def next_ready_steps(%Context{} = ctx) do
     Enum.filter(ctx.pending_steps, fn {step, idx} ->
-      # 看谁的 needed 是 available 的子集
-      # 不考虑运行的
+      # See whose needed is a subset of available
+      # And exclude running
       dependencies_met?(step, ctx.available_keys) and
         not MapSet.member?(ctx.running_steps, idx)
     end)

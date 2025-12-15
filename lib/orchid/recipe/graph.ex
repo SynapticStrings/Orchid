@@ -1,6 +1,7 @@
 defmodule Orchid.Recipe.Graph do
   @moduledoc """
-  负责分析 Recipe 的拓扑结构，主要进行静态检查。
+  Responsible for analysing the topological structure of Recipes,
+  primarily conducting static checks.
   """
 
   alias Orchid.Step
@@ -31,9 +32,10 @@ defmodule Orchid.Recipe.Graph do
   end
 
   def check_cycles(steps, available) do
-    # 这里的逻辑类似 Kahn 算法
-    # 只要能找到依赖满足的节点，就将其移出列表，并将其产出加入 available
-    # 如果列表不为空但找不到可运行节点，剩下的就是环
+    # The logic here is analogous to Kahn's algorithm
+    # Whenever a node satisfying dependencies is found, it is removed from the list
+    # and its output added to available
+    # If the list is non-empty yet no runnable node is found, the remaining nodes form a cycle
     case run_simulation(build_initial_steps(steps), normalize_keys_to_set(available)) do
       [] ->
         :ok
