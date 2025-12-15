@@ -49,8 +49,8 @@ defmodule Orchid.Step.NestedStep do
   """
   use Orchid.Step
 
-  @inheritable_keys [:global_hooks_stack, :operons_stack]
-  @stack_keys [:global_hooks_stack, :operons_stack]
+  # @inheritable_keys [:global_hooks_stack, :operons_stack]
+  # @stack_keys [:global_hooks_stack, :operons_stack]
 
   def nested?, do: true
 
@@ -61,7 +61,7 @@ defmodule Orchid.Step.NestedStep do
   def run(input_params, opts) do
     inner_recipe =
       Keyword.fetch!(opts, :recipe)
-      |> inject_inner_recipe_opts_from_outside(opts)
+      # |> inject_inner_recipe_opts_from_outside(opts)
 
     input_map = Keyword.get(opts, :input_map, %{})
     output_map = Keyword.get(opts, :output_map, %{})
@@ -72,22 +72,22 @@ defmodule Orchid.Step.NestedStep do
     |> prepare_final_results(output_map)
   end
 
-  defp inject_inner_recipe_opts_from_outside(recipe, opts) do
-    inherited_opts = Keyword.take(opts, @inheritable_keys)
+  # defp inject_inner_recipe_opts_from_outside(recipe, opts) do
+  #   inherited_opts = Keyword.take(opts, @inheritable_keys)
 
-    final_recipe_opts =
-      Keyword.merge(inherited_opts, recipe.opts, fn key, parent_val, child_val ->
-        if key in @stack_keys and is_list(parent_val) and is_list(child_val) do
-          # during execute:
-          # ParentHook.start -> ChildHook.start -> ... -> ChildHook.end -> ParentHook.end
-          parent_val ++ child_val
-        else
-          child_val
-        end
-      end)
+  #   final_recipe_opts =
+  #     Keyword.merge(inherited_opts, recipe.opts, fn key, parent_val, child_val ->
+  #       if key in @stack_keys and is_list(parent_val) and is_list(child_val) do
+  #         # during execute:
+  #         # ParentHook.start -> ChildHook.start -> ... -> ChildHook.end -> ParentHook.end
+  #         parent_val ++ child_val
+  #       else
+  #         child_val
+  #       end
+  #     end)
 
-    %{recipe | opts: final_recipe_opts}
-  end
+  #   %{recipe | opts: final_recipe_opts}
+  # end
 
   # Rename parameters passed from the parent layer to the names required by the child layer
   defp prepare_initial_params(input_params, input_map) do

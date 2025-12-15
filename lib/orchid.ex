@@ -7,6 +7,7 @@ defmodule Orchid do
   """
 
   @facade_pass_through_keys [:global_hooks_stack, :executor_and_opts]
+  @stack_keys [:global_hooks_stack, :operons_stack]
 
   @doc """
   Executes a workflow Recipe.
@@ -37,9 +38,6 @@ defmodule Orchid do
     response? = Keyword.get(opts, :return_response, false)
     operons_stack = Keyword.get(opts, :operons_stack, [])
     executor_and_opts = Keyword.get(opts, :executor_and_opts, {Orchid.Executor.Async, []})
-    _global_hooks_stack = Keyword.get(opts, :global_hooks_stack, [])
-    # TODO: prograte `global_hooks_stack` and `executor_and_opts`
-    # to inner recipes(exclude explicit configurations)
 
     response =
       Orchid.Pipeline.run(
@@ -58,8 +56,20 @@ defmodule Orchid do
     end
   end
 
-  def inject_opts_into_recipe(recipe, opts) do
-    %{recipe | opts: Keyword.merge(recipe.opts, Keyword.take(opts, @facade_pass_through_keys))}
+  def inject_opts_into_recipe(recipe, run_opts) do
+    opts_to_inject = Keyword.take(run_opts, @facade_pass_through_keys)
+
+    merged_opts = Keyword.merge(opts_to_inject, recipe.opts, fn key, parent_val, child_val ->
+      if key in @stack_keys do
+        # (run_opts) ++ (recipe)
+        parent_val ++ child_val
+      else
+        # default: child_val
+        child_val
+      end
+    end)
+
+    %{recipe | opts: merged_opts}
   end
 
   def install_plugins(recipe, opts, plugins) do
