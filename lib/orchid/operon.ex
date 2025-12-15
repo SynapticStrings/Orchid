@@ -18,14 +18,8 @@ defmodule Orchid.Operon do
 
   defmodule Response do
     @type payload :: Orchid.Executor.response()
-    @type t :: %__MODULE__{
-            payload: payload(),
-            assigns: %{}
-          }
-    defstruct [
-      :payload,
-      assigns: %{}
-    ]
+    @type t :: %__MODULE__{payload: payload(), assigns: %{}}
+    defstruct [:payload, assigns: %{}]
   end
 
   @callback call(Request.t(), maybe_next_func :: (Request.t() -> Response.t())) :: Response.t()

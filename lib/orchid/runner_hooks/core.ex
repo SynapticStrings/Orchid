@@ -20,47 +20,36 @@ defmodule Orchid.Runner.Hooks.Core do
   end
 
   # include mono, list and tuple
-  defp align_output_names(%Param{} = param, out_key) when is_atom(out_key) do
-    %{param | name: out_key}
-  end
+  defp align_output_names(param, out_key) when is_tuple(param) and is_tuple(out_key),
+    do: align_output_names(Tuple.to_list(param), Tuple.to_list(out_key))
 
-  defp align_output_names(%Param{} = param, [out_key]) when is_atom(out_key) do
-    %{param | name: out_key}
-  end
+  defp align_output_names(param, out_key) when is_tuple(param),
+    do: align_output_names(Tuple.to_list(param), out_key)
 
-  defp align_output_names([%Param{} = param], out_key) when not is_tuple(out_key) do
-    %{param | name: out_key}
-  end
+  defp align_output_names(param, out_key) when is_tuple(out_key),
+    do: align_output_names(param, Tuple.to_list(out_key))
 
-  defp align_output_names(params, out_keys) when is_list(params) and not is_tuple(out_keys) do
-    keys = List.wrap(out_keys)
-    Enum.zip_with(params, keys, fn param, key -> %{param | name: key} end)
-  end
+  defp align_output_names(%Param{} = param, out_key) when is_atom(out_key),
+    do: %{param | name: out_key}
 
-  defp align_output_names(param, out_key) when is_tuple(param) and is_tuple(out_key) do
-    align_output_names(Tuple.to_list(param), Tuple.to_list(out_key))
-  end
+  defp align_output_names(%Param{} = param, [out_key]) when is_atom(out_key),
+    do: %{param | name: out_key}
 
-  defp align_output_names(param, out_key) when is_tuple(param) do
-    align_output_names(Tuple.to_list(param), out_key)
-  end
+  defp align_output_names([%Param{} = param], out_key) when not is_tuple(out_key),
+    do: %{param | name: out_key}
 
-  defp align_output_names(param, out_key) when is_tuple(out_key) do
-    align_output_names(param, Tuple.to_list(out_key))
-  end
+  defp align_output_names(params, out_keys) when is_list(params) and not is_tuple(out_keys),
+    do: params |> Enum.zip_with(List.wrap(out_keys), fn param, key -> %{param | name: key} end)
 
   # running step
   defp run_step(impl, inputs, opts) when is_atom(impl) do
-    if Code.ensure_loaded?(impl) and function_exported?(impl, :run, 2) do
-      impl.run(inputs, opts)
-    else
-      {:error, {:invalid_step_implementation, impl}}
-    end
+    if(Code.ensure_loaded?(impl) and function_exported?(impl, :run, 2),
+      do: impl.run(inputs, opts),
+      else: {:error, {:invalid_step_implementation, impl}}
+    )
   end
 
-  defp run_step(run_fun, inputs, opts) when is_function(run_fun, 2) do
-    run_fun.(inputs, opts)
-  end
+  defp run_step(run_fun, inputs, opts) when is_function(run_fun, 2), do: run_fun.(inputs, opts)
 
-  defp run_step(_, _, _), do: {:error, :invalid_step_implementation}
+  defp run_step(maybe_impl, _, _), do: {:error, {:invalid_step_implementation, maybe_impl}}
 end

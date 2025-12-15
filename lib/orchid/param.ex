@@ -40,12 +40,12 @@ defmodule Orchid.Param do
     }
   end
 
+  @spec get_payload(t()) :: payload()
   def get_payload(%__MODULE__{payload: payload}), do: payload
 
   @spec set_payload(t(), payload()) :: t()
-  def set_payload(%__MODULE__{} = param, new_payload) do
-    %__MODULE__{param | payload: new_payload}
-  end
+  def set_payload(%__MODULE__{} = param, new_payload),
+    do: %__MODULE__{param | payload: new_payload}
 
   # TBD metadata related
 end

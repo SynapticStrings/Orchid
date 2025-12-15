@@ -5,15 +5,15 @@ defmodule Orchid.Runner do
 
   defmodule Context do
     @type t :: %{
-          step_implementation: Orchid.Step.implementation(),
-          in_keys: Orchid.Step.input_keys(),
-          out_keys: Orchid.Step.output_keys(),
-          step_opts: Orchid.Step.step_options(),
-          inputs: [Orchid.Param.t()],
-          recipe_opts: keyword(),
-          telemetry_meta: %{},
-          assigns: %{}
-        }
+            step_implementation: Orchid.Step.implementation(),
+            in_keys: Orchid.Step.input_keys(),
+            out_keys: Orchid.Step.output_keys(),
+            step_opts: Orchid.Step.step_options(),
+            inputs: [Orchid.Param.t()],
+            recipe_opts: keyword(),
+            telemetry_meta: %{},
+            assigns: %{}
+          }
     defstruct [
       :step_implementation,
       :in_keys,
@@ -42,7 +42,6 @@ defmodule Orchid.Runner do
       inputs: prepare_inputs(in_keys, ctx_params),
       recipe_opts: recipe_opts,
       telemetry_meta: %{impl: impl, in_keys: in_keys, out_keys: out_keys},
-
       assigns: %{}
     }
 

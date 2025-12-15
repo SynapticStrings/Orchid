@@ -41,7 +41,7 @@ defmodule Orchid.Recipe.Graph do
         :ok
 
       remaining_steps ->
-        # 剩下的步骤构成了环（或者互相等待）
+        # next steps create cycle(or waiting for each other)
         cyclic_indices = Enum.map(remaining_steps, & &1.step)
         {:error, {:cyclic, cyclic_indices}}
     end
@@ -72,7 +72,7 @@ defmodule Orchid.Recipe.Graph do
 
     case ready do
       [] ->
-        # 没有任何步骤准备好，死锁
+        # no step's realy, deadlock
         pending
 
       _ ->
@@ -87,7 +87,7 @@ defmodule Orchid.Recipe.Graph do
   end
 
   @doc """
-  标准化步骤的输入输出键为 MapSet。
+  normalize step's io key into MapSet。
   """
   @spec normalize_keys_to_set(nil | atom() | list() | tuple() | MapSet.t()) :: MapSet.t()
   def normalize_keys_to_set(nil), do: MapSet.new()

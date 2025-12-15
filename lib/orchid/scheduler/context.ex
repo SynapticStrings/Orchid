@@ -12,11 +12,11 @@ defmodule Orchid.Scheduler.Context do
           assings: %{any() => any()}
         }
   defstruct [
+    ## Origin Orchid
     # Recipe
     # Used for Executor
     # edit is not allowed for consistency
     :recipe,
-    ## Origin Orchid
     # steps where not executed
     :pending_steps,
     # keys we have

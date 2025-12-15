@@ -28,7 +28,10 @@ defmodule Orchid.Runner.Hooks.Telemetry do
     rescue
       # Remember register linster durign development
       e ->
-        report_error(start_time, Map.merge(meta, %{kind: :error, reason: e, stacktrace: __STACKTRACE__}))
+        report_error(
+          start_time,
+          Map.merge(meta, %{kind: :error, reason: e, stacktrace: __STACKTRACE__})
+        )
 
         {:error, e}
     catch

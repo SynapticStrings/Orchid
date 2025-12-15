@@ -2,17 +2,9 @@ defmodule Orchid.Pipeline do
   @doc """
   Run pipeline
   """
-  def run(stack, request) do
-    dispatch(stack, request)
-  end
+  def run(stack, request), do: dispatch(stack, request)
 
   defp dispatch([], _req), do: {:error, :no_sink_middleware}
-
-  defp dispatch([sink], req) do
-    sink.call(req, fn _ -> {:error, :reached_sink_end} end)
-  end
-
-  defp dispatch([operon | rest], req) do
-    operon.call(req, &dispatch(rest, &1))
-  end
+  defp dispatch([sink], req), do: sink.call(req, fn _ -> {:error, :reached_sink_end} end)
+  defp dispatch([operon | rest], req), do: operon.call(req, &dispatch(rest, &1))
 end

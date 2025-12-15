@@ -1,13 +1,12 @@
 defmodule Orchid.Executor.Async do
+  # record opts into moduledoc
   @behaviour Orchid.Executor
   alias Orchid.Scheduler
 
   defstruct [
-    # Map: %{ref => step_idx}
     :tasks,
     :max_concurrency,
     :recipe,
-    # 记录是否需要清理
     :trap_exit?
   ]
 

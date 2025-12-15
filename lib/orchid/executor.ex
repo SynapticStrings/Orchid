@@ -1,6 +1,8 @@
 defmodule Orchid.Executor do
   @moduledoc """
   Executor behavoir.
+
+  An executor receive a `Orchid.Scheduler.Context` struct and do execution.
   """
 
   @type executor :: module()

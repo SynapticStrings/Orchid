@@ -16,7 +16,7 @@ defmodule Orchid.MixProject do
         list_unused_filters: true
       ],
       name: "Orchid",
-      description: description(),
+      description: "A lightweight and extensible workflow orchestration engine, written in Elixir.",
       package: package(),
       source_url: "https://github.com/SynapticStrings/Orchid",
       docs: docs()
@@ -25,10 +25,6 @@ defmodule Orchid.MixProject do
 
   def application do
     []
-  end
-
-  defp description do
-    "A lightweight and extensible workflow orchestration engine, written in Elixir."
   end
 
   defp package do
@@ -42,7 +38,7 @@ defmodule Orchid.MixProject do
   defp deps do
     [
       {:telemetry, "~> 1.3"},
-      {:dialyxir, "~> 1.0", only: [:dev], runtime: false, optional: true},
+      {:dialyxir, "~> 1.0", only: :dev, runtime: false, optional: true},
       {:ex_doc, "~> 0.39", only: :dev, runtime: false, warn_if_outdated: true}
     ]
   end
