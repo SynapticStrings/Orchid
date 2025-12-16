@@ -234,4 +234,15 @@ No additional middleware has been introduced yet, but it will be added later.
 
 ## Next Step
 
-Let me take a rest, increase test coverage, consolidate API and **To Be Determined**.
+### Resource Management, Persistence & Resilient Executor
+
+* Goal: Evolving `Executor` to handle external failures (e.g., AI inference service restarts) and internal concurrency limits, and save execution state to external storage (Disk/DB).
+* Key Aspect: 
+    * Isolate resource lifecycle management (Supervision strategy).
+    * Back-pressure mechanism (prevent overloading downstream GPU/Resources).
+    * Allow workflows to recover from crashes or system restarts without re-running completed expensive steps (crucial for long-running AI tasks).
+* Libs:
+  * [`OrchidStage`](https://github.com/GES233/OrchidStage)
+    * *Combine `Orchid`'s new executor with `GenStage`*
+  * `OrchidPersistence`
+    * *Implement `Orchid.Repo` to store `Orchid.Param`'s payload in memery/disk and manage heavey calculation(e.g. load Ortex model, call HTTP service)*
