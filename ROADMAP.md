@@ -12,6 +12,7 @@
   - [x] Recipe configuration
   - [o] Operon stack modification (via configuration changes)
   - [o] Internal hook stack modification for steps (can be done by modifying step configuration)
+  - [x] Options' pass-through
 - [x] Pre-run checks(`Orchid.Scheduler.build/2`)
   - [x] Missing Recipe check
   - [x] Recipe cycle check
