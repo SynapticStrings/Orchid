@@ -74,6 +74,6 @@ end
 defmodule Orchid.Runner.Hook do
   @type next_fn :: (Orchid.Runner.Context.t() -> {:ok, Orchid.Step.output()} | {:error, term()})
 
-  @callback call(Orchid.Runner.Context.t(), next_fn) ::
+  @callback call(ctx :: Orchid.Runner.Context.t(), next_fn) ::
               {:ok, Orchid.Step.output()} | {:error, term()}
 end
