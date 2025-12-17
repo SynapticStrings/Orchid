@@ -33,12 +33,4 @@ defmodule Orchid.Executor.SerialTest do
     {:ok, ctx} = Scheduler.build(recipe, initial)
     {:error, :failed} = Serial.execute(ctx, [])
   end
-
-  # test "handles missing" do
-  #   steps = [{SuccessStep, :missing, :output}]
-  #   recipe = Recipe.new(steps)
-  #   {:error, {:missing_inputs, missing_map}} = Serial.execute(recipe, [])
-
-  #   assert missing_map[0] == [:missing]
-  # end
 end

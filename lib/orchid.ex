@@ -69,12 +69,16 @@ defmodule Orchid do
     %{recipe | opts: merged_opts}
   end
 
-  def install_plugins(recipe, opts, plugins) do
-    Enum.reduce_while(plugins, {recipe, opts}, fn {plug_mod, plug_conf}, {r, o} = acc ->
-      case plug_mod.install(r, Keyword.merge(o, plugin_config: plug_conf)) do
-        {:ok, res} -> {:count, res}
-        {:error, reason} -> {:halt, {:error, {plug_mod, reason, acc}}}
-      end
-    end)
-  end
+  # TODO: ensure plugins' options.
+  # @doc """
+  # Install all plugins for a recipe.
+  # """
+  # def install_plugins(recipe, opts, plugins) do
+  #   Enum.reduce_while(plugins, {recipe, opts}, fn {plug_mod, plug_conf}, {r, o} = acc ->
+  #     case plug_mod.install(r, Keyword.merge(o, plugin_config: plug_conf)) do
+  #       {:ok, res} -> {:count, res}
+  #       {:error, reason} -> {:halt, {:error, {plug_mod, reason, acc}}}
+  #     end
+  #   end)
+  # end
 end

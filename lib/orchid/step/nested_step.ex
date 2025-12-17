@@ -52,7 +52,7 @@ defmodule Orchid.Step.NestedStep do
   def nested?, do: true
 
   @spec run(Step.input(), Step.step_options()) ::
-          {:error, {:nested_execution_failed, term()}} | {:ok, Step.output()}
+          {:error, {:nested_step_execution_failed, term()}} | {:ok, Step.output()}
   def run(input_params, opts) do
     inner_recipe =
       Keyword.fetch!(opts, :recipe)
@@ -78,7 +78,7 @@ defmodule Orchid.Step.NestedStep do
   end
 
   defp prepare_final_results({:error, reason}, _output_map) do
-    {:error, {:nested_execution_failed, reason}}
+    {:error, {:nested_step_execution_failed, reason}}
   end
 
   defp prepare_final_results({:ok, inner_results}, output_map) do
