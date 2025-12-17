@@ -133,17 +133,7 @@ In step-level, function `Orchid.Runner.run/3` will handle it.
 
 ### Architecture
 
-#### Overview
-
-*Separation of Definition, Orchestration, and Execution layers.*
-
-![Overview](assets/Orchid_overview.svg)
-
-#### Lifecycle
-
-*How a request flows through the pipeline and executor(s).*
-
-![Flowchart](assets/Orchid_flow.svg)
+![Overview](assets/Orchid_arch_and_dataflow.png)
 
 ### Advanced Usage
 
