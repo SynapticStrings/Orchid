@@ -1,20 +1,14 @@
 defmodule Orchid.NestedOptsTest do
   use ExUnit.Case, async: true
 
-  defmodule MockHookA do
-    @behaviour Orchid.Runner.Hook
-
-    def call(ctx, next_fn) do
-      next_fn.(ctx)
-    end
-  end
-
-  defmodule MockHookB do
-    @behaviour Orchid.Runner.Hook
-
-    def call(ctx, next_fn) do
-      next_fn.(ctx)
-    end
+  for hook_name <- [MockHookA, MockHookB] do
+    Module.create(
+      hook_name,
+      quote do
+        use Orchid.TestHelpers.HookFactory
+      end,
+      Macro.Env.location(__ENV__)
+    )
   end
 
   alias Orchid.Executor.Serial, as: MockExecutorParent
