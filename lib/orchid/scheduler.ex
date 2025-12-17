@@ -2,14 +2,46 @@ defmodule Orchid.Scheduler do
   @moduledoc """
   Scheduler is responsible for managing and scheduling the execution order of steps in the Recipe.
   """
-  alias Orchid.Scheduler.Context
   alias Orchid.{Recipe, Param, Step}
+
+  defmodule Context do
+    alias Orchid.{Param, Step, Recipe}
+
+    @type param_map :: %{optional(atom()) => Param.t()}
+    @type step_index :: non_neg_integer()
+    @type t :: %__MODULE__{
+            recipe: Recipe.t(),
+            pending_steps: [{Step.t(), step_index()}],
+            available_keys: MapSet.t(Step.io_key()),
+            params: param_map(),
+            running_steps: MapSet.t(Step.t()),
+            history: [{step_index(), param_map() | [Param.t()] | Param.t()}],
+            assings: %{any() => any()}
+          }
+    defstruct [
+      ## Origin Orchid
+      # Recipe
+      # Used for Executor
+      # edit is not allowed for consistency
+      :recipe,
+      # steps where not executed
+      :pending_steps,
+      # keys we have
+      :available_keys,
+      # actual datas
+      :params,
+      # running steps
+      :running_steps,
+      # execution history
+      :history,
+      ## other context
+      :assings
+    ]
+  end
 
   @type initial_params :: [Param.t()] | Context.param_map()
 
-  @doc """
-  Initialize scheduler context.
-  """
+  @doc "Initialize scheduler context."
   @spec build(Recipe.t(), initial_params()) ::
           {:ok, Context.t()} | {:error, term()}
   # I don't know how to convince Dialyzer that this function can return `{:ok, context}`.
@@ -55,7 +87,7 @@ defmodule Orchid.Scheduler do
   @doc """
   Core scheduling function: Identify all the steps that are "inputs params ready" and "not executed".
   """
-  @spec next_ready_steps(Orchid.Scheduler.Context.t()) :: [{Step.t(), non_neg_integer()}]
+  @spec next_ready_steps(Context.t()) :: [{Step.t(), Context.step_index()}]
   def next_ready_steps(%Context{} = ctx) do
     Enum.filter(ctx.pending_steps, fn {step, idx} ->
       # See whose needed is a subset of available
@@ -65,19 +97,30 @@ defmodule Orchid.Scheduler do
     end)
   end
 
-  @doc """
-  Mark those steps that have started running.
-  """
-  @spec mark_running(Orchid.Scheduler.Context.t(), Step.t() | [Step.t()]) ::
-          Orchid.Scheduler.Context.t()
-  def mark_running(%Context{} = ctx, step_indices) do
-    new_running = MapSet.union(ctx.running_steps, MapSet.new(step_indices))
-    %{ctx | running_steps: new_running}
-  end
+  @doc "Mark those steps that have started running."
+  @spec mark_running_steps(
+          Context.t(),
+          Context.step_index() | [Context.step_index()],
+          mode :: :running | :reattempt
+        ) ::
+          Context.t()
+  def mark_running_steps(ctx, step_indices, mode \\ :running)
 
-  @doc """
-  After the Step is executed, merge the result back into the Context.
-  """
+  def mark_running_steps(%Context{} = ctx, step_indices, :running),
+    do: %{
+      ctx
+      | running_steps: ctx.running_steps |> MapSet.union(MapSet.new(List.wrap(step_indices)))
+    }
+
+  # used when try to re-attempt a failed step.
+  # remove from `running_steps` firstly.
+  def mark_running_steps(%Context{} = ctx, step_indices, :reattempt),
+    do: %{
+      ctx
+      | running_steps: ctx.running_steps |> MapSet.difference(MapSet.new(List.wrap(step_indices)))
+    }
+
+  @doc "After the Step is executed, merge the result back into the Context."
   @spec merge_result(
           Context.t(),
           non_neg_integer(),

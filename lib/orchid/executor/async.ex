@@ -57,7 +57,7 @@ defmodule Orchid.Executor.Async do
 
   defp launch_steps(ctx, state, steps) do
     step_indices = Enum.map(steps, fn {_, idx} -> idx end)
-    updated_ctx = Scheduler.mark_running(ctx, step_indices)
+    updated_ctx = Scheduler.mark_running_steps(ctx, step_indices, :running)
 
     new_tasks =
       Enum.reduce(steps, state.tasks, fn {step, idx}, acc_tasks ->
