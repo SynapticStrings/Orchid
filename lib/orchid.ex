@@ -49,11 +49,7 @@ defmodule Orchid do
         }
       )
 
-    if response? do
-      response
-    else
-      response.payload
-    end
+    if response?, do: response, else: response.payload
   end
 
   def inject_opts_into_recipe(recipe, run_opts) do

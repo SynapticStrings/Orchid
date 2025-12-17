@@ -224,6 +224,13 @@ No additional middleware has been introduced yet, but it will be added later.
 
 ## Next Step
 
+### API consolidation
+
+- [ ] 100% coverage
+- [ ] Return facade: `{:ok, res} | {:error, {error_step, context}}`
+- [ ] finish document
+  - Chinese first, then translate it into English
+
 ### Resource Management, Persistence & Resilient Executor
 
 * Goal: Evolving `Executor` to handle external failures (e.g., AI inference service restarts) and internal concurrency limits, and save execution state to external storage (Disk/DB).
