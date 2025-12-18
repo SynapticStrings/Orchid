@@ -231,6 +231,11 @@ No additional middleware has been introduced yet, but it will be added later.
 - [ ] finish document
   - Chinese first, then translate it into English
 
+### Serialization Protocol (Context Marshalling)
+
+* **Goal**: Ensure the `Context` and `Recipe` are fully serializable (free of runtime closures/PIDs).
+* **Impact**: Prerequisites for persistence, clustering, and debugging tools.
+
 ### Resource Management, Persistence & Resilient Executor
 
 * Goal: Evolving `Executor` to handle external failures (e.g., AI inference service restarts) and internal concurrency limits, and save execution state to external storage (Disk/DB).
@@ -243,3 +248,8 @@ No additional middleware has been introduced yet, but it will be added later.
     * *Combine `Orchid`'s new executor with `GenStage`*
   * `OrchidPersistence`
     * *Implement `Orchid.Repo` to store `Orchid.Param`'s payload in memery/disk and manage heavey calculation(e.g. load Ortex model, call HTTP service)*
+
+### Dynamic Workflow Mutation (Experimental)
+
+* **Goal**: Allow modifying the dependency graph (DAG) during runtime or just before execution.
+* **Note**: *To be evaluated. Complex scenarios might be solvable via `Hooks` or `Operons` without introducing graph mutability.*
