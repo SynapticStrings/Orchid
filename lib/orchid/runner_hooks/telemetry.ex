@@ -8,7 +8,6 @@ defmodule Orchid.Runner.Hooks.Telemetry do
     :telemetry.execute([:orchid, :step, :start], %{system_time: System.system_time()}, meta)
     start_time = System.monotonic_time()
 
-    # --- Execute inner pipes(include validator, executor etc.) ---
     try do
       case next.(%{
              ctx

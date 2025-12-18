@@ -21,8 +21,7 @@ defmodule Orchid.Scheduler do
     defstruct [
       ## Origin Orchid
       # Recipe
-      # Used for Executor
-      # edit is not allowed for consistency
+      # Used for Executor, edit is not allowed for consistency
       :recipe,
       # steps where not executed
       :pending_steps,
@@ -69,20 +68,17 @@ defmodule Orchid.Scheduler do
     end
   end
 
-  defp do_build(recipe, initial_map) do
-    step_with_options = Enum.map(recipe.steps, &Step.ensure_full_step/1)
-
-    context = %Context{
-      recipe: recipe,
-      pending_steps: Enum.with_index(step_with_options),
-      running_steps: MapSet.new(),
-      available_keys: MapSet.new(Map.keys(initial_map)),
-      params: initial_map,
-      history: []
-    }
-
-    {:ok, context}
-  end
+  defp do_build(recipe, initial_map),
+    do:
+      {:ok,
+       %Context{
+         recipe: recipe,
+         pending_steps: recipe.steps |> Enum.map(&Step.ensure_full_step/1) |> Enum.with_index(),
+         running_steps: MapSet.new(),
+         available_keys: MapSet.new(Map.keys(initial_map)),
+         params: initial_map,
+         history: []
+       }}
 
   @doc """
   Core scheduling function: Identify all the steps that are "inputs params ready" and "not executed".
@@ -97,6 +93,14 @@ defmodule Orchid.Scheduler do
     end)
   end
 
+  defp dependencies_met?(step, available_keys) do
+    {_impl, in_keys, _out} = Orchid.Step.extract_schema(step)
+
+    needed = Orchid.Recipe.Graph.normalize_keys_to_set(in_keys)
+
+    MapSet.subset?(needed, available_keys)
+  end
+
   @doc "Mark those steps that have started running."
   @spec mark_running_steps(
           Context.t(),
@@ -109,7 +113,7 @@ defmodule Orchid.Scheduler do
   def mark_running_steps(%Context{} = ctx, step_indices, :running),
     do: %{
       ctx
-      | running_steps: ctx.running_steps |> MapSet.union(MapSet.new(List.wrap(step_indices)))
+      | running_steps: MapSet.union(ctx.running_steps, normalize_step_indices(step_indices))
     }
 
   # used when try to re-attempt a failed step.
@@ -117,8 +121,11 @@ defmodule Orchid.Scheduler do
   def mark_running_steps(%Context{} = ctx, step_indices, :reattempt),
     do: %{
       ctx
-      | running_steps: ctx.running_steps |> MapSet.difference(MapSet.new(List.wrap(step_indices)))
+      | running_steps: MapSet.difference(ctx.running_steps, normalize_step_indices(step_indices))
     }
+
+  defp normalize_step_indices(step_indices),
+    do: MapSet.new(List.wrap(step_indices))
 
   @doc "After the Step is executed, merge the result back into the Context."
   @spec merge_result(
@@ -192,12 +199,4 @@ defmodule Orchid.Scheduler do
     do:
       Enum.map(params, fn {k, v} -> if k == key, do: v, else: nil end)
       |> Enum.reject(&is_nil/1)
-
-  defp dependencies_met?(step, available_keys) do
-    {_impl, in_keys, _out} = Orchid.Step.extract_schema(step)
-
-    needed = Orchid.Recipe.Graph.normalize_keys_to_set(in_keys)
-
-    MapSet.subset?(needed, available_keys)
-  end
 end

@@ -49,7 +49,7 @@ defmodule Orchid.Step do
   The implementation of a step.
 
   * `module()`: A module that implements the `Orchid.Step` behavior.
-  * `function()`: A function `fn input, opts -> ... end`.
+  * `function()`: A function `fn input, opts -> {:ok, params} | {:error, term} end`.
   """
   @type implementation ::
           module()
@@ -122,18 +122,14 @@ defmodule Orchid.Step do
   @spec inject_options(t(), keyword()) :: step_with_options()
   def inject_options(step, options)
 
-  def inject_options({_, _, _} = step_schema, new_opts) do
-    step_schema |> ensure_full_step() |> inject_options(new_opts)
-  end
+  def inject_options({_, _, _} = step_schema, new_opts),
+    do: step_schema |> ensure_full_step() |> inject_options(new_opts)
 
-  def inject_options({impl, in_keys, out_keys, opts}, new_opts) when is_map(new_opts) do
-    merged_opts = new_opts |> Enum.map(& &1) |> Keyword.merge(opts)
-    {impl, in_keys, out_keys, merged_opts}
-  end
+  def inject_options({impl, in_keys, out_keys, opts}, new_opts) when is_map(new_opts),
+    do: {impl, in_keys, out_keys, new_opts |> Enum.map(& &1) |> Keyword.merge(opts)}
 
-  def inject_options({impl, in_keys, out_keys, opts}, new_opts) when is_list(new_opts) do
-    {impl, in_keys, out_keys, Keyword.merge(opts, new_opts)}
-  end
+  def inject_options({impl, in_keys, out_keys, opts}, new_opts) when is_list(new_opts),
+    do: {impl, in_keys, out_keys, Keyword.merge(opts, new_opts)}
 
   @doc """
   Extracts the basic schema `{Impl, Input, Output}` from a step definition.
