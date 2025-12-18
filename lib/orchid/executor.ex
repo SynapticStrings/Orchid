@@ -7,7 +7,7 @@ defmodule Orchid.Executor do
   There're some functions recommend to use during execution.
 
   * `Orchid.Scheduler.next_ready_steps/1`
-  * `Orchid.Scheduler.merge_result/2`
+  * `Orchid.Scheduler.merge_result/3`
   * `Orchid.Scheduler.mark_running_steps/3`
   """
 
