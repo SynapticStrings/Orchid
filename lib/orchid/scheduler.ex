@@ -150,7 +150,8 @@ defmodule Orchid.Scheduler do
         running_steps: new_running,
         params: merged_params,
         available_keys: updated_keys,
-        history: ctx.history ++ [step_idx]
+        history:
+          ctx.history ++ [Enum.filter(ctx.pending_steps, fn {_, idx} -> idx == step_idx end)]
     }
   end
 
