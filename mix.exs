@@ -10,6 +10,7 @@ defmodule Orchid.MixProject do
       lockfile: "mix.lock",
       elixir: "~> 1.17",
       start_permanent: Mix.env() == :prod,
+      elixirc_paths: elixirc_paths(Mix.env()),
       deps: deps(),
       dialyzer: [
         ignore_warnings: ".dialyzer_ignore.exs",
@@ -34,6 +35,9 @@ defmodule Orchid.MixProject do
       files: ~w(lib mix.exs README.md assets .formatter.exs .dialyzer_ignore.exs)
     ]
   end
+
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_), do: ["lib"]
 
   defp deps do
     [
