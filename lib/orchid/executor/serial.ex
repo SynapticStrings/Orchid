@@ -16,7 +16,7 @@ defmodule Orchid.Executor.Serial do
     case Orchid.Executor.execute_next_step(ctx) do
       {:done, final_ctx} -> {:ok, Scheduler.get_results(final_ctx)}
       {:stuck, _stuck_ctx} -> {:error, :stuck}
-      %Orchid.Scheduler.Context{} = new_ctx -> loop(new_ctx, opts)
+      {:cont, new_ctx} -> loop(new_ctx, opts)
       error -> error
     end
   end
