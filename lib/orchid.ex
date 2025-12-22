@@ -52,7 +52,7 @@ defmodule Orchid do
     if response?, do: response, else: response.payload
   end
 
-  def inject_opts_into_recipe(recipe, run_opts) do
+  defp inject_opts_into_recipe(recipe, run_opts) do
     opts_to_inject = Keyword.take(run_opts, @facade_pass_through_keys)
 
     merged_opts =

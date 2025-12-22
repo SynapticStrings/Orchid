@@ -120,7 +120,7 @@ defmodule Orchid.Recipe do
   @spec assign_options(
           Orchid.Recipe.t(),
           Step.implementation() | (Step.t() -> boolean()) | :all,
-          keyword() | %{}
+          keyword() | %{} | (Step.t() -> Step.t())
         ) :: Orchid.Recipe.t()
   def assign_options(%__MODULE__{} = recipe, selector, new_opts) when is_list(new_opts),
     do:

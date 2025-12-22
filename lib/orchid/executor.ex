@@ -24,6 +24,11 @@ defmodule Orchid.Executor do
 
   Debugging helpers.
   """
+  @spec execute_next_step(Orchid.Scheduler.Context.t()) ::
+          {:done, Orchid.Scheduler.Context.t()}
+          | {:stuck, Orchid.Scheduler.Context.t()}
+          | Orchid.Scheduler.Context.t()
+          | {:error, term()}
   def execute_next_step(ctx) do
     case {Orchid.Scheduler.next_ready_steps(ctx), Orchid.Scheduler.done?(ctx)} do
       {[], true} ->
