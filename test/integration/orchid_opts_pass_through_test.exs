@@ -1,9 +1,6 @@
 defmodule Orchid.OptsPassThroughTest do
   use ExUnit.Case, async: true
 
-  alias Orchid.{Param, Recipe}
-  alias Orchid.TestSteps.{Denoise, PitchFix, Mix}
-
   for hook_name <- [MockHookA, MockHookB] do
     Module.create(
       hook_name,
