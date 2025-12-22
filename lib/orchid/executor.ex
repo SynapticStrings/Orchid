@@ -18,4 +18,28 @@ defmodule Orchid.Executor do
 
   @callback execute(Orchid.Scheduler.Context.t(), executor_opts()) ::
               response()
+
+  @doc """
+  Executes the next ready step in the given context.
+
+  Debugging helper function for executors.
+  """
+  def execute_next_step(ctx) do
+    case {Orchid.Scheduler.next_ready_steps(ctx), Orchid.Scheduler.done?(ctx)} do
+      {[], true} ->
+        {:done, ctx}
+
+      {[], false} ->
+        {:stuck, ctx}
+
+      {[{step, idx} | _], _} ->
+        case Orchid.Runner.run(step, ctx.params, ctx.recipe.opts) do
+          {:ok, renamed_output} ->
+            Orchid.Scheduler.merge_result(ctx, idx, renamed_output)
+
+          error ->
+            error
+        end
+    end
+  end
 end

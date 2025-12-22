@@ -10,28 +10,14 @@ defmodule Orchid.Executor.Serial do
   alias Orchid.Scheduler
 
   @impl true
-  def execute(ctx, _executor_opts \\ []) do
-    loop(ctx, ctx.recipe.opts)
-  end
+  def execute(ctx, _executor_opts \\ []), do: loop(ctx, ctx.recipe.opts)
 
   defp loop(ctx, opts) do
-    case Scheduler.next_ready_steps(ctx) do
-      [] ->
-        if Scheduler.done?(ctx) do
-          {:ok, Scheduler.get_results(ctx)}
-        else
-          {:error, :stuck}
-        end
-
-      # 串行只取第一个
-      [{step, idx} | _] ->
-        case Orchid.Runner.run(step, ctx.params, opts) do
-          {:ok, renamed_output} ->
-            loop(Scheduler.merge_result(ctx, idx, renamed_output), opts)
-
-          error ->
-            error
-        end
+    case Orchid.Executor.execute_next_step(ctx) do
+      {:done, final_ctx} -> {:ok, Scheduler.get_results(final_ctx)}
+      {:stuck, _stuck_ctx} -> {:error, :stuck}
+      %Orchid.Scheduler.Context{} = new_ctx -> loop(new_ctx, opts)
+      error -> error
     end
   end
 end
