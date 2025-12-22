@@ -9,6 +9,8 @@ defmodule Orchid.Executor do
   * `Orchid.Scheduler.next_ready_steps/1`
   * `Orchid.Scheduler.merge_result/3`
   * `Orchid.Scheduler.mark_running_steps/3`
+  * `Orchid.Scheduler.done?/1`
+  * `Orchid.Runner.run/3`
   """
 
   @type executor :: module()
