@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.4] - 2025-12-22
+
+### Added
+- **Executor**: Added `Orchid.Executor.execute_next_step/1`. This helper encapsulates logic for fetching the next ready step and detecting "stuck" or "done" states, simplifying custom Executor implementation and debugging.
+- **Recipe**: Enhanced `Orchid.Recipe.assign_options/3`. It now accepts a transformation function `(Step.t() -> Step.t())` as the third argument, allowing dynamic modification of step configurations.
+- **Runner**: Updated `Orchid.Runner.run/4`. Added an optional `initial_assigns` argument to inject context assigns when running individual steps.
+
+### Changed
+- **Executor.Serial**: Refactored the internal loop to utilize the new `execute_next_step/1` helper.
+- **Scheduler**: Updated the internal structure of `Context.history`. It now records `{Step.t(), step_index, MapSet<ProducedKeys>}` to track keys produced by each step more accurately.
+- **Mix**: Configured `elixirc_paths` in `mix.exs`. Files in `test/support` are now automatically compiled only in the `:test` environment, removing the need for manual requires in `test_helper.exs`.
+
 ## [0.3.3] - 2025-12-18
 
 ### Fixed
