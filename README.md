@@ -246,8 +246,11 @@ No additional middleware has been introduced yet, but it will be added later.
 * Libs:
   * [`OrchidStage`](https://github.com/GES233/OrchidStage)
     * *Combine `Orchid`'s new executor with `GenStage`*
+  * `OrchidInstruments`
+    * Let Orchid can execute steps where required HEAVY service(Ortex service(via NxServing), ErlPort, NIF, HTTP request, etc.).
   * `OrchidPersistence`
     * *Implement `Orchid.Repo` to store `Orchid.Param`'s payload in memery/disk and manage heavey calculation(e.g. load Ortex model, call HTTP service)*
+  * Executor can paused with `:gen_statem`
 
 ### Dynamic Workflow Mutation (Experimental)
 
