@@ -119,20 +119,26 @@ defmodule Orchid.Recipe do
   """
   @spec assign_options(
           Orchid.Recipe.t(),
-          Step.implementation() | (Step.t() -> boolean()),
+          Step.implementation() | (Step.t() -> boolean()) | :all,
           keyword() | %{}
         ) :: Orchid.Recipe.t()
-  def assign_options(%__MODULE__{} = recipe, selector, new_opts) do
-    %{
-      recipe
-      | steps:
-          walk(recipe.steps, fn step ->
-            step
-            |> do_match(selector)
-            |> if(do: Step.inject_options(Step.ensure_full_step(step), new_opts), else: step)
-          end)
-    }
-  end
+  def assign_options(%__MODULE__{} = recipe, selector, new_opts) when is_list(new_opts),
+    do:
+      assign_options(recipe, selector, fn step ->
+        Step.inject_options(Step.ensure_full_step(step), new_opts)
+      end)
+
+  def assign_options(%__MODULE__{} = recipe, selector, covert_func)
+      when is_function(covert_func),
+      do: %{recipe | steps: do_assign_options(recipe.steps, selector, covert_func)}
+
+  defp do_assign_options(steps, selector, convert_func),
+    do:
+      walk(steps, fn step ->
+        step
+        |> do_match(selector)
+        |> if(do: convert_func.(step), else: step)
+      end)
 
   @doc """
   Performs a deep traversal on a list of steps.

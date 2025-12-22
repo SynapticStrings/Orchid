@@ -29,9 +29,10 @@ defmodule Orchid.Runner do
   @spec run(
           Orchid.Step.t(),
           any(),
-          keyword()
+          keyword(),
+          map()
         ) :: {:ok, Orchid.Step.output()} | {:error, term()}
-  def run(step, ctx_params, recipe_opts) do
+  def run(step, ctx_params, recipe_opts, initial_assigns \\ %{}) do
     {impl, in_keys, out_keys, step_opts} = Orchid.Step.ensure_full_step(step)
 
     initial_ctx = %Context{
@@ -42,7 +43,7 @@ defmodule Orchid.Runner do
       inputs: prepare_inputs(in_keys, ctx_params),
       recipe_opts: recipe_opts,
       telemetry_meta: %{impl: impl, in_keys: in_keys, out_keys: out_keys},
-      assigns: %{}
+      assigns: initial_assigns
     }
 
     hook_stack =
