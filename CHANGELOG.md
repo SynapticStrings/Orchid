@@ -5,9 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.5] - 2025-12-23
+
+### Changed
+
+- **Executor**: Refined the return signature of `Orchid.Executor.execute_next_step/1`. It now returns `{:cont, context}` for successful step execution, providing a clearer distinction between running, stuck, and done states.
+- **API Visibility**: Changed `Orchid.inject_opts_into_recipe/2` from public (`def`) to private (`defp`) to reduce the public API surface area.
+- **Structs**: initialized default values for `Orchid.Operon.Request`. `assigns` now defaults to `%{}` (was nil) and `operon_options` to `[]`.
+- **Packaging**: Included `CHANGELOG.md` in the Hex package definition and documentation extras in `mix.exs`.
+
+### Fixed
+
+- **Types**: Added missing type specifications for `Orchid.Pipeline.run/2` and corrected the spec for `Orchid.Recipe.assign_options/3`.
+
+### Documentation
+
+- **Roadmap**: Updated `README.md` to reflect plans for `OrchidInstruments` and `OrchidPersistence`.
+
 ## [0.3.4] - 2025-12-22
 
 ### Added
+
 - **Executor**: Added `Orchid.Executor.execute_next_step/1`. This helper encapsulates logic for fetching the next ready step and detecting "stuck" or "done" states, simplifying custom Executor implementation and debugging.
 - **Recipe**: Enhanced `Orchid.Recipe.assign_options/3`. It now accepts a transformation function `(Step.t() -> Step.t())` as the third argument, allowing dynamic modification of step configurations.
 - **Runner**: Updated `Orchid.Runner.run/4`. Added an optional `initial_assigns` argument to inject context assigns when running individual steps.
