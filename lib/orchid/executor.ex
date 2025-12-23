@@ -26,6 +26,11 @@ defmodule Orchid.Executor do
 
   Debugging helpers.
   """
+  @spec execute_next_step(Orchid.Scheduler.Context.t()) ::
+          {:done, Orchid.Scheduler.Context.t()}
+          | {:stuck, Orchid.Scheduler.Context.t()}
+          | {:cont, Orchid.Scheduler.Context.t()}
+          | {:error, term()}
   def execute_next_step(ctx) do
     case {Orchid.Scheduler.next_ready_steps(ctx), Orchid.Scheduler.done?(ctx)} do
       {[], true} ->
@@ -36,7 +41,7 @@ defmodule Orchid.Executor do
 
       {[{step, idx} | _], _} ->
         case Orchid.Runner.run(step, ctx.params, ctx.recipe.opts) do
-          {:ok, result} -> Orchid.Scheduler.merge_result(ctx, idx, result)
+          {:ok, result} -> {:cont, Orchid.Scheduler.merge_result(ctx, idx, result)}
           error -> error
         end
     end

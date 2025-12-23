@@ -32,7 +32,7 @@ defmodule Orchid.MixProject do
     [
       licenses: ["MIT"],
       links: %{"GitHub" => "https://github.com/SynapticStrings/Orchid"},
-      files: ~w(lib mix.exs README.md assets .formatter.exs .dialyzer_ignore.exs)
+      files: ~w(lib assets) ++ ~w(mix.exs .formatter.exs .dialyzer_ignore.exs README.md CHANGELOG.md)
     ]
   end
 
@@ -50,7 +50,7 @@ defmodule Orchid.MixProject do
   defp docs do
     [
       main: "readme",
-      extras: ["README.md"],
+      extras: ["README.md", "CHANGELOG.md"],
       assets: %{"assets" => "assets"}
     ]
   end
