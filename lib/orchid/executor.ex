@@ -24,7 +24,7 @@ defmodule Orchid.Executor do
   @doc """
   Executes the next ready step in the given context.
 
-  Debugging helpers.
+  Debugging helper function for executors.
   """
   @spec execute_next_step(Orchid.Scheduler.Context.t()) ::
           {:done, Orchid.Scheduler.Context.t()}
