@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **Executor**: Refined the return signature of `Orchid.Executor.execute_next_step/1`. It now returns `{:cont, context}` for successful step execution, providing a clearer distinction between running, stuck, and done states.
-- **API Visibility**: Changed `Orchid.inject_opts_into_recipe/2` from public (`def`) to private (`defp`) to reduce the public API surface area.
+- **API Visibility**: Changed Orchid.inject_opts_into_recipe/2 from public (`def`) to private (`defp`) to reduce the public API surface area.
 - **Structs**: initialized default values for `Orchid.Operon.Request`. `assigns` now defaults to `%{}` (was nil) and `operon_options` to `[]`.
 - **Packaging**: Included `CHANGELOG.md` in the Hex package definition and documentation extras in `mix.exs`.
 
