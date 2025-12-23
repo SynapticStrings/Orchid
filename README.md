@@ -244,8 +244,6 @@ No additional middleware has been introduced yet, but it will be added later.
     * Back-pressure mechanism (prevent overloading downstream GPU/Resources).
     * Allow workflows to recover from crashes or system restarts without re-running completed expensive steps (crucial for long-running AI tasks).
 * Libs:
-  * [`OrchidStage`](https://github.com/GES233/OrchidStage)
-    * *Combine `Orchid`'s new executor with `GenStage`*
   * `OrchidInstruments`
     * Let Orchid can execute steps where required HEAVY service(Ortex service(via NxServing), ErlPort, NIF, HTTP request, etc.).
   * `OrchidPersistence`
