@@ -244,11 +244,12 @@ No additional middleware has been introduced yet, but it will be added later.
     * Back-pressure mechanism (prevent overloading downstream GPU/Resources).
     * Allow workflows to recover from crashes or system restarts without re-running completed expensive steps (crucial for long-running AI tasks).
 * Libs:
-  * `OrchidInstruments`
+  * [`OrchidSymbiont`](https://github.com/SynapticStrings/OrchidSymbiont)
     * Let Orchid can execute steps where required HEAVY service(Ortex service(via NxServing), ErlPort, NIF, HTTP request, etc.).
   * `OrchidPersistence`
     * *Implement `Orchid.Repo` to store `Orchid.Param`'s payload in memery/disk and manage heavey calculation(e.g. load Ortex model, call HTTP service)*
   * Executor can paused with `:gen_statem`
+    * Need modify Orchid core's behavoir
 
 ### Dynamic Workflow Mutation (Experimental)
 
