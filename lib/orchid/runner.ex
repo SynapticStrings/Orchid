@@ -46,7 +46,7 @@ defmodule Orchid.Runner do
       inputs: prepare_inputs(in_keys, ctx_params),
       recipe_opts: recipe_opts,
       telemetry_meta: %{impl: impl, in_keys: in_keys, out_keys: out_keys},
-      workflow_ctx: workflow_ctx,
+      workflow_ctx: Orchid.WorkflowCtx.add_step(workflow_ctx, Orchid.Step.ID.finger_print(step)),
       assigns: initial_assigns
     }
 

@@ -11,5 +11,5 @@ defmodule Orchid.WorkflowCtx do
     %__MODULE__{}
   end
 
-  def add_nested(%__MODULE__{path: path} = ctx, step_id), do: %{ctx | path: path ++ [step_id]}
+  def add_step(%__MODULE__{path: path} = ctx, step_id), do: %{ctx | path: path ++ [step_id]}
 end

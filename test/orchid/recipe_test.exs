@@ -11,12 +11,15 @@ defmodule Orchid.RecipeTest do
 
   defmodule TestStepB do
     use Orchid.Step
+    @impl true
     def run(p, _), do: {:ok, p}
   end
 
   defmodule TestStepC do
     use Orchid.Step
+    @impl true
     def nested?(), do: true
+    @impl true
     def run(p, _), do: {:ok, p}
   end
 
