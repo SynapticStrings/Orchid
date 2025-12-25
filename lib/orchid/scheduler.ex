@@ -2,10 +2,11 @@ defmodule Orchid.Scheduler do
   @moduledoc """
   Scheduler is responsible for managing and scheduling the execution order of steps in the Recipe.
   """
+  alias Orchid.WorkflowCtx
   alias Orchid.{Recipe, Param, Step}
 
   defmodule Context do
-    alias Orchid.{Param, Step, Recipe}
+    alias Orchid.{Param, Step, Recipe, WorkflowCtx}
 
     @type param_map :: %{optional(atom()) => Param.t()}
     @type step_index :: non_neg_integer()
@@ -16,6 +17,7 @@ defmodule Orchid.Scheduler do
             params: param_map(),
             running_steps: MapSet.t(Step.t()),
             history: [{Step.t(), step_index(),  MapSet.t(Step.io_key())}],
+            workflow_ctx: WorkflowCtx.t(),
             assings: %{any() => any()}
           }
     defstruct [
@@ -33,6 +35,8 @@ defmodule Orchid.Scheduler do
       :running_steps,
       # execution history
       :history,
+      # workflow
+      :workflow_ctx,
       ## other context
       :assings
     ]
@@ -41,10 +45,10 @@ defmodule Orchid.Scheduler do
   @type initial_params :: [Param.t()] | Context.param_map()
 
   @doc "Initialize scheduler context."
-  @spec build(Recipe.t(), initial_params()) ::
+  @spec build(Recipe.t(), initial_params(), WorkflowCtx.t()) ::
           {:ok, Context.t()} | {:error, term()}
   # I don't know how to convince Dialyzer that this function can return `{:ok, context}`.
-  def build(%Recipe{} = recipe, initial_params) do
+  def build(%Recipe{} = recipe, initial_params, workflow_context) do
     initial_map =
       case initial_params do
         # throw the problem to validate functions
@@ -63,12 +67,12 @@ defmodule Orchid.Scheduler do
     initial_keys = Map.keys(initial_map)
 
     case Recipe.validate_steps(recipe.steps, initial_keys) do
-      :ok -> do_build(recipe, initial_map)
+      :ok -> do_build(recipe, initial_map, workflow_context)
       {:error, reason} -> {:error, reason}
     end
   end
 
-  defp do_build(recipe, initial_map),
+  defp do_build(recipe, initial_map, workflow_context),
     do:
       {:ok,
        %Context{
@@ -77,7 +81,8 @@ defmodule Orchid.Scheduler do
          running_steps: MapSet.new(),
          available_keys: MapSet.new(Map.keys(initial_map)),
          params: initial_map,
-         history: []
+         history: [],
+         workflow_ctx: workflow_context
        }}
 
   @doc """

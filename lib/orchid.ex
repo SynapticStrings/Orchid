@@ -35,6 +35,17 @@ defmodule Orchid do
   @spec run(Orchid.Recipe.t(), Orchid.Scheduler.initial_params(), keyword()) ::
           Orchid.Operon.Response.payload() | Orchid.Operon.Response.t()
   def run(recipe, input_params, opts \\ []) do
+    run_with_ctx(recipe, input_params, Orchid.WorkflowCtx.new(), opts)
+  end
+
+  @spec run_with_ctx(
+          Orchid.Recipe.t(),
+          Orchid.Scheduler.initial_params(),
+          Orchid.WorkflowCtx.t(),
+          keyword()
+        ) ::
+          Orchid.Operon.Response.payload() | Orchid.Operon.Response.t()
+  def run_with_ctx(recipe, input_params, workflow_ctx, opts \\ []) do
     response? = Keyword.get(opts, :return_response, false)
     operons_stack = Keyword.get(opts, :operons_stack, [])
     executor_and_opts = Keyword.get(opts, :executor_and_opts, {Orchid.Executor.Async, []})
@@ -45,7 +56,8 @@ defmodule Orchid do
         %Orchid.Operon.Request{
           recipe: inject_opts_into_recipe(recipe, opts),
           inital_params: input_params,
-          executor_and_opts: executor_and_opts
+          executor_and_opts: executor_and_opts,
+          workflow_ctx: workflow_ctx
         }
       )
 
@@ -68,17 +80,4 @@ defmodule Orchid do
 
     %{recipe | opts: merged_opts}
   end
-
-  # TODO: ensure plugins' options.
-  # @doc """
-  # Install all plugins for a recipe.
-  # """
-  # def install_plugins(recipe, opts, plugins) do
-  #   Enum.reduce_while(plugins, {recipe, opts}, fn {plug_mod, plug_conf}, {r, o} = acc ->
-  #     case plug_mod.install(r, Keyword.merge(o, plugin_config: plug_conf)) do
-  #       {:ok, res} -> {:count, res}
-  #       {:error, reason} -> {:halt, {:error, {plug_mod, reason, acc}}}
-  #     end
-  #   end)
-  # end
 end

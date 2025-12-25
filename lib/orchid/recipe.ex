@@ -177,7 +177,7 @@ defmodule Orchid.Recipe do
   defp do_walk_step(step, func) do
     modified_step = func.(step)
 
-    if NestedStep.nested?(modified_step) do
+    if NestedStep.nested_check(modified_step) do
       update_inner_recipe(modified_step, fn inner_recipe ->
         %{inner_recipe | steps: walk(inner_recipe.steps, func, :step)}
       end)
@@ -187,7 +187,7 @@ defmodule Orchid.Recipe do
   end
 
   defp do_walk_inner_recipe(step, func) do
-    if NestedStep.nested?(step) do
+    if NestedStep.nested_check(step) do
       update_inner_recipe(step, fn inner_recipe ->
         new_recipe = func.(inner_recipe)
         %{new_recipe | steps: walk(new_recipe.steps, func, :inner_recipe)}

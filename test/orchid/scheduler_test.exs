@@ -17,7 +17,7 @@ defmodule Orchid.SchedulerTest do
       steps = [{DummyStep, :input, :output}]
       recipe = Recipe.new(steps)
       initial_params = [%Param{name: :input, type: :test, payload: "data"}]
-      {:ok, ctx} = Scheduler.build(recipe, initial_params)
+      {:ok, ctx} = Scheduler.build(recipe, initial_params, Orchid.WorkflowCtx.new())
       assert length(ctx.pending_steps) == 1
       assert MapSet.member?(ctx.available_keys, :input)
       assert ctx.params[:input].payload == "data"
@@ -28,7 +28,7 @@ defmodule Orchid.SchedulerTest do
       recipe = Recipe.new(steps, [%Param{name: :a}])
 
       {:error, {:cyclic, [{DummyStep, _, _}, {DummyStep, _, _}]}} =
-        Scheduler.build(recipe, [])
+        Scheduler.build(recipe, [], Orchid.WorkflowCtx.new())
     end
   end
 
@@ -42,7 +42,7 @@ defmodule Orchid.SchedulerTest do
 
       recipe = Recipe.new(steps)
       initial = [%Param{name: :a, payload: 1}]
-      {:ok, ctx} = Scheduler.build(recipe, initial)
+      {:ok, ctx} = Scheduler.build(recipe, initial, Orchid.WorkflowCtx.new())
       assert [{_, 0}] = Scheduler.next_ready_steps(ctx)
     end
   end
@@ -52,7 +52,7 @@ defmodule Orchid.SchedulerTest do
       steps = [{DummyStep, :input, :output}]
       recipe = Recipe.new(steps)
       initial = [%Param{name: :input, payload: "in"}]
-      {:ok, ctx} = Scheduler.build(recipe, initial)
+      {:ok, ctx} = Scheduler.build(recipe, initial, Orchid.WorkflowCtx.new())
       output = %Param{name: :output, payload: "out"}
       new_ctx = Scheduler.merge_result(ctx, 0, output)
       assert Scheduler.done?(new_ctx)
@@ -64,7 +64,7 @@ defmodule Orchid.SchedulerTest do
     test "updates options for matching steps" do
       steps = [{DummyStep, :in, :out, extra_hooks_stack: []}]
       recipe = Recipe.new(steps)
-      {:ok, ctx} = Scheduler.build(recipe, [%Param{name: :in, payload: nil}])
+      {:ok, ctx} = Scheduler.build(recipe, [%Param{name: :in, payload: nil}], Orchid.WorkflowCtx.new())
       selector = fn {impl, _, _, _} -> impl == DummyStep end
 
       new_ctx =
@@ -78,7 +78,7 @@ defmodule Orchid.SchedulerTest do
   describe "done?/1 and get_results/1" do
     test "checks completion and retrieves results" do
       recipe = Recipe.new([])
-      {:ok, ctx} = Scheduler.build(recipe, [])
+      {:ok, ctx} = Scheduler.build(recipe, [], Orchid.WorkflowCtx.new())
       assert Scheduler.done?(ctx)
       assert Scheduler.get_results(ctx) == %{}
     end

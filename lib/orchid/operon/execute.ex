@@ -12,7 +12,7 @@ defmodule Orchid.Operon.Execute do
     # I tried several methods, didn't work.
     # So I ignore it in `.dialyzer_ignore.exs`
     # But I don't known how to ignore it in ElixirLS.
-    case Scheduler.build(req.recipe, req.inital_params) do
+    case Scheduler.build(req.recipe, req.inital_params, req.workflow_ctx) do
       {:ok, ctx} ->
         %Response{
           payload: executor.execute(ctx, executor_opts),

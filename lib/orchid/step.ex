@@ -179,15 +179,25 @@ defmodule Orchid.Step do
       @behaviour Orchid.Step
       alias Orchid.Step
 
-      @impl true
-      def nested?(), do: false
+      @orchid_step_nested false
 
-      @impl true
+      @before_compile Orchid.Step.CodeGenerator
+
       def validate_options(_opts), do: :ok
 
       import unquote(__MODULE__), only: [report: 3]
 
-      defoverridable nested?: 0, validate_options: 1
+      defoverridable validate_options: 1
+    end
+  end
+
+  defmodule CodeGenerator do
+    defmacro __before_compile__(env) do
+      is_nested = Module.get_attribute(env.module, :orchid_step_nested)
+      quote do
+        @impl true
+        def nested?(), do: unquote(is_nested)
+      end
     end
   end
 end

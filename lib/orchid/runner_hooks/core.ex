@@ -9,6 +9,17 @@ defmodule Orchid.Runner.Hooks.Core do
     # inject opts
     final_opts = Keyword.merge(ctx.step_opts, ctx.recipe_opts)
 
+    final_opts =
+      if Orchid.Step.NestedStep.nested_check(ctx.step_implementation) do
+        workflow_context =
+          ctx.workflow_ctx
+          |> Orchid.WorkflowCtx.add_nested({ctx.step_implementation, ctx.in_keys, ctx.out_keys})
+
+        Orchid.Step.NestedStep.inject_workflow_ctx(final_opts, workflow_context)
+      else
+        final_opts
+      end
+
     case run_step(ctx.step_implementation, ctx.inputs, final_opts) do
       {:ok, raw_output} ->
         renamed = align_output_names(raw_output, ctx.out_keys)

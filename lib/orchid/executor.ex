@@ -10,7 +10,7 @@ defmodule Orchid.Executor do
   * `Orchid.Scheduler.merge_result/3`
   * `Orchid.Scheduler.mark_running_steps/3`
   * `Orchid.Scheduler.done?/1`
-  * `Orchid.Runner.run/3`
+  * `Orchid.Runner.run/4`
   """
 
   @type executor :: module()
@@ -31,7 +31,7 @@ defmodule Orchid.Executor do
           | {:stuck, Orchid.Scheduler.Context.t()}
           | {:cont, Orchid.Scheduler.Context.t()}
           | {:error, term()}
-  def execute_next_step(ctx) do
+  def execute_next_step(%Orchid.Scheduler.Context{} = ctx) do
     case {Orchid.Scheduler.next_ready_steps(ctx), Orchid.Scheduler.done?(ctx)} do
       {[], true} ->
         {:done, ctx}
@@ -40,7 +40,7 @@ defmodule Orchid.Executor do
         {:stuck, ctx}
 
       {[{step, idx} | _], _} ->
-        case Orchid.Runner.run(step, ctx.params, ctx.recipe.opts) do
+        case Orchid.Runner.run(step, ctx.params, ctx.recipe.opts, ctx.workflow_ctx) do
           {:ok, result} -> {:cont, Orchid.Scheduler.merge_result(ctx, idx, result)}
           error -> error
         end

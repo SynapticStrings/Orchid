@@ -40,7 +40,9 @@ defmodule Orchid.Step.NestedStep do
         use Orchid.Step
 
         # Tell the Scheduler to treat this as a nested step during traversals
-        def nested?(), do: true
+        # def nested?(), do: true
+        # use module attribute instead
+        @orchid_step_nested true
 
         def run(input, opts) do
           # ... custom logic ...
@@ -49,7 +51,7 @@ defmodule Orchid.Step.NestedStep do
   """
   use Orchid.Step
 
-  def nested?, do: true
+  @orchid_step_nested true
 
   @spec run(Step.input(), Step.step_options()) ::
           {:error, {:nested_step_execution_failed, term()}} | {:ok, Step.output()}
@@ -62,7 +64,7 @@ defmodule Orchid.Step.NestedStep do
 
     # Start the sub-process
     inner_recipe
-    |> Orchid.run(prepare_initial_params(input_params, input_map), opts)
+    |> Orchid.run_with_ctx(prepare_initial_params(input_params, input_map), extract_workflow_ctx(opts), opts)
     |> prepare_final_results(output_map)
   end
 
@@ -104,10 +106,26 @@ defmodule Orchid.Step.NestedStep do
     prepare_final_results(res, output_map)
   end
 
-  @doc false
-  def nested?(step) do
-    {impl, _, _, _} = Step.ensure_full_step(step)
-
-    is_atom(impl) and function_exported?(impl, :nested?, 0) and impl.nested?()
+  def inject_workflow_ctx(opts, ctx) do
+    Keyword.merge(opts, [__orchid_nested_ctx: ctx])
   end
+
+  defp extract_workflow_ctx(opts) do
+    Keyword.get(opts, :__orchid_nested_ctx, Orchid.WorkflowCtx.new())
+  end
+
+  @spec nested_check(Step.implementation() | Step.t()) :: boolean()
+  def nested_check(step) when is_tuple(step) do
+    {impl, _, _, _} = Step.ensure_full_step(step); nested_check(impl)
+  end
+
+  def nested_check(impl) when is_atom(impl) do
+    if Code.ensure_loaded?(impl) and function_exported?(impl, :nested?, 0) do
+      apply(impl, :nested?, [])
+    else
+      false
+    end
+  end
+
+  def nested_check(impl) when is_function(impl), do: false
 end

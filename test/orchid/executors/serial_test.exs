@@ -21,7 +21,7 @@ defmodule Orchid.Executor.SerialTest do
 
     recipe = Recipe.new(steps)
     initial = [%Param{name: :input, payload: 1}]
-    {:ok, ctx} = Scheduler.build(recipe, initial)
+    {:ok, ctx} = Scheduler.build(recipe, initial, Orchid.WorkflowCtx.new())
     {:ok, results} = Serial.execute(ctx, [])
     assert (fn {_, v} -> v end).(Enum.find(results, fn {k, _} -> k == :output end)).payload == 3
   end
@@ -30,7 +30,7 @@ defmodule Orchid.Executor.SerialTest do
     steps = [{ErrorStep, :input, :output}]
     recipe = Recipe.new(steps)
     initial = [%Param{name: :input, payload: 1}]
-    {:ok, ctx} = Scheduler.build(recipe, initial)
+    {:ok, ctx} = Scheduler.build(recipe, initial, Orchid.WorkflowCtx.new())
     {:error, :failed} = Serial.execute(ctx, [])
   end
 end

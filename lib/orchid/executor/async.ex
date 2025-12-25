@@ -65,7 +65,7 @@ defmodule Orchid.Executor.Async do
         # 但需要确定 Executor 进程可能因为运行 step 的进程崩溃而宕机的可能性
         task =
           Task.async(fn ->
-            Orchid.Runner.run(step, ctx.params, state.recipe.opts)
+            Orchid.Runner.run(step, ctx.params, state.recipe.opts, ctx.workflow_ctx)
           end)
 
         Map.put(acc_tasks, task.ref, {step, idx})

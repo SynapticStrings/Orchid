@@ -12,6 +12,7 @@ defmodule Orchid.Runner do
             inputs: [Orchid.Param.t()],
             recipe_opts: keyword(),
             telemetry_meta: %{},
+            workflow_ctx: Orchid.WorkflowCtx.t(),
             assigns: %{}
           }
     defstruct [
@@ -22,6 +23,7 @@ defmodule Orchid.Runner do
       :inputs,
       :recipe_opts,
       :telemetry_meta,
+      :workflow_ctx,
       :assigns
     ]
   end
@@ -30,9 +32,10 @@ defmodule Orchid.Runner do
           Orchid.Step.t(),
           Orchid.Scheduler.Context.param_map(),
           keyword(),
+          Orchid.WorkflowCtx.t(),
           map()
         ) :: {:ok, Orchid.Step.output()} | {:error, term()}
-  def run(step, ctx_params, recipe_opts, initial_assigns \\ %{}) do
+  def run(step, ctx_params, recipe_opts, workflow_ctx, initial_assigns \\ %{}) do
     {impl, in_keys, out_keys, step_opts} = Orchid.Step.ensure_full_step(step)
 
     initial_ctx = %Context{
@@ -43,6 +46,7 @@ defmodule Orchid.Runner do
       inputs: prepare_inputs(in_keys, ctx_params),
       recipe_opts: recipe_opts,
       telemetry_meta: %{impl: impl, in_keys: in_keys, out_keys: out_keys},
+      workflow_ctx: workflow_ctx,
       assigns: initial_assigns
     }
 

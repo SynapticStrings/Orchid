@@ -3,6 +3,9 @@ defmodule Orchid.Step.ID do
   Create identifier/fingerprint via Step's input, output or mapper in option.
   """
 
+  @type t :: integer() | :root
+
+  @spec finger_print(Orchid.Step.t()) :: t()
   def finger_print({impl, in_k, out_k, _opts}), do: finger_print({impl, in_k, out_k})
   def finger_print({impl, in_k, out_k}) do
     :erlang.phash2({impl, normalize_key(in_k), normalize_key(out_k)})
