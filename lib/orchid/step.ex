@@ -147,6 +147,33 @@ defmodule Orchid.Step do
   def ensure_full_step({impl, in_k, out_k}), do: {impl, in_k, out_k, []}
   def ensure_full_step({impl, in_k, out_k, opts}), do: {impl, in_k, out_k, opts}
 
+  @doc """
+  Reports progress or status to the executor.
+
+  ## Example
+
+      def run(input, opts) do
+        report(opts, :processing, "Start heavy calculation...")
+        # ...
+        report(opts, :uploading, 50)
+        {:ok, result}
+      end
+  """
+  @spec report(keyword(), term(), term()) :: :ok
+  def report(opts, progress, payload \\ nil) do
+    case Keyword.get(opts, :__reporter_ctx__) do
+      meta when is_map(meta) ->
+        :telemetry.execute(
+          [:orchid, :step, :progress],
+          %{progress: progress},
+          Map.merge(meta, %{payload: payload})
+        )
+
+      _ ->
+        :ok
+    end
+  end
+
   defmacro __using__(_opts) do
     quote do
       @behaviour Orchid.Step
@@ -158,31 +185,7 @@ defmodule Orchid.Step do
       @impl true
       def validate_options(_opts), do: :ok
 
-      @doc """
-      Reports progress or status to the executor.
-
-      ## Example
-
-          def run(input, opts) do
-            report(opts, :processing, "Start heavy calculation...")
-            # ...
-            report(opts, :uploading, 50)
-            {:ok, result}
-          end
-      """
-      def report(opts, progress, payload \\ nil) do
-        case Keyword.get(opts, :__reporter_ctx__) do
-          meta when is_map(meta) ->
-            :telemetry.execute(
-              [:orchid, :step, :progress],
-              %{progress: progress},
-              Map.merge(meta, %{payload: payload})
-            )
-
-          _ ->
-            :ok
-        end
-      end
+      import unquote(__MODULE__), only: [report: 3]
 
       defoverridable nested?: 0, validate_options: 1
     end

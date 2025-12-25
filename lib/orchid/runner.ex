@@ -28,7 +28,7 @@ defmodule Orchid.Runner do
 
   @spec run(
           Orchid.Step.t(),
-          any(),
+          Orchid.Scheduler.Context.param_map(),
           keyword(),
           map()
         ) :: {:ok, Orchid.Step.output()} | {:error, term()}
@@ -55,12 +55,8 @@ defmodule Orchid.Runner do
     run_pipeline(hook_stack, initial_ctx)
   end
 
-  defp run_pipeline([], _ctx), do: {:error, :no_executor_plugin}
-
-  defp run_pipeline([plug | rest], ctx) do
-    next_fn = fn next_ctx -> run_pipeline(rest, next_ctx) end
-    plug.call(ctx, next_fn)
-  end
+  defp run_pipeline([], _ctx), do: {:error, :no_executor_hook}
+  defp run_pipeline([hook | rest], ctx), do: hook.call(ctx, &run_pipeline(rest, &1))
 
   defp prepare_inputs(keys, params) when is_list(keys),
     do: Enum.map(keys, &Map.fetch!(params, &1))
