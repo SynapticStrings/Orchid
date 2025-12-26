@@ -194,6 +194,10 @@ Currently, Runner has two hooks:
 - `Orchid.Runner.Hooks.Telemetry` for telemetry
 - `Orchid.Runner.Hooks.Core` for executing the step
 
+### Vertical-propogated Context
+
+TBD
+
 #### Pipeline Middleware (Operons)
 
 Similar to hooks, data is also processed in an onion-like flow.
@@ -227,7 +231,6 @@ No additional middleware has been introduced yet, but it will be added later.
 ### API consolidation
 
 - [ ] 100% coverage
-- [ ] Return facade: `{:ok, res} | {:error, {error_step, context}}`
 - [ ] finish document
   - Chinese first, then translate it into English
 
