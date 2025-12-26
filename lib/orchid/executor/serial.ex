@@ -15,7 +15,7 @@ defmodule Orchid.Executor.Serial do
   defp loop(ctx, opts) do
     case Orchid.Executor.execute_next_step(ctx) do
       {:done, final_ctx} -> {:ok, Scheduler.get_results(final_ctx)}
-      {:stuck, _stuck_ctx} -> {:error, :stuck}
+      {:stuck, stuck_ctx} -> {:error, %Orchid.Error{reason: :stuck, context: stuck_ctx, kind: :exception}}
       {:cont, new_ctx} -> loop(new_ctx, opts)
       error -> error
     end

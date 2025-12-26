@@ -49,7 +49,13 @@ defmodule Orchid.Executor.Async do
           else
             # This would theoretically be intercepted by `Graph.validate`,
             # but serves as a runtime safeguard.
-            {:error, :stuck_at_runtime}
+            {:error,
+             %Orchid.Error{
+               reason: :stuck_at_runtime,
+               context: ctx,
+               step_id: nil,
+               kind: :exception
+             }}
           end
       end
     end
@@ -77,7 +83,7 @@ defmodule Orchid.Executor.Async do
   defp wait_for_result(ctx, state) do
     receive do
       {ref, result} when is_reference(ref) ->
-        {{_step, step_idx}, remaining_tasks} = Map.pop(state.tasks, ref)
+        {{step, step_idx}, remaining_tasks} = Map.pop(state.tasks, ref)
         # 必须显式 demonitor 并且 flush，防止 :DOWN 消息污染邮箱
         Process.demonitor(ref, [:flush])
 
@@ -89,16 +95,32 @@ defmodule Orchid.Executor.Async do
           {:error, reason} ->
             # Fail-Fast: 立即终止其他所有正在运行的任务
             cleanup_tasks(remaining_tasks)
-            {:error, {:step_failed, step_idx, reason}}
+
+            err = %Orchid.Error{
+              reason: reason,
+              context: ctx,
+              step_id: Orchid.Step.ID.finger_print(step),
+              kind: :logic
+            }
+
+            {:error, err}
         end
 
       {:DOWN, ref, :process, _pid, reason} ->
         # 捕获 Task crash
         # 需考虑极端情况下的 Race condition 可能对 Executor 带来影响
         # （虽然按照目前的项目会一并崩掉返回 {:error, blabla} 罢了）
-        {{_step, step_idx}, remaining_tasks} = Map.pop(state.tasks, ref)
+        {{step, _step_idx}, remaining_tasks} = Map.pop(state.tasks, ref)
         cleanup_tasks(remaining_tasks)
-        {:error, {:step_crashed, step_idx, reason}}
+
+        err = %Orchid.Error{
+          reason: reason,
+          context: ctx,
+          step_id: Orchid.Step.ID.finger_print(step),
+          kind: :exit
+        }
+
+        {:error, err}
     end
   end
 

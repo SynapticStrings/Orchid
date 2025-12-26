@@ -19,9 +19,14 @@ defmodule Orchid.Operon.Execute do
           assigns: req.assigns
         }
 
-      err ->
+      {:error, reason} ->
         %Response{
-          payload: err,
+          payload:
+            {:error,
+             %Orchid.Error{
+               reason: reason,
+               kind: :exception
+             }},
           assigns: req.assigns
         }
     end

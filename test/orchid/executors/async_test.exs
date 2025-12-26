@@ -44,6 +44,6 @@ defmodule Orchid.Executor.AsyncTest do
     recipe = Recipe.new(steps)
     initial = [%Param{name: :input, payload: 1}]
     {:ok, ctx} = Scheduler.build(recipe, initial, Orchid.WorkflowCtx.new())
-    {:error, {:step_failed, 0, :failed}} = Async.execute(ctx, [])
+    {:error, %Orchid.Error{}} = Async.execute(ctx, [])
   end
 end

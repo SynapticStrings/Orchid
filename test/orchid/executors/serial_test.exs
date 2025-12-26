@@ -31,6 +31,6 @@ defmodule Orchid.Executor.SerialTest do
     recipe = Recipe.new(steps)
     initial = [%Param{name: :input, payload: 1}]
     {:ok, ctx} = Scheduler.build(recipe, initial, Orchid.WorkflowCtx.new())
-    {:error, :failed} = Serial.execute(ctx, [])
+    {:error, %Orchid.Error{reason: :failed}} = Serial.execute(ctx, [])
   end
 end

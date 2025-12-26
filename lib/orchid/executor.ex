@@ -16,7 +16,7 @@ defmodule Orchid.Executor do
   @type executor :: module()
   @type executor_opts :: keyword()
 
-  @type response :: {:ok, Orchid.Scheduler.Context.param_map()} | {:error, term()}
+  @type response :: {:ok, Orchid.Scheduler.Context.param_map()} | {:error, Orchid.Error.t()}
 
   @callback execute(Orchid.Scheduler.Context.t(), executor_opts()) ::
               response()
@@ -30,7 +30,7 @@ defmodule Orchid.Executor do
           {:done, Orchid.Scheduler.Context.t()}
           | {:stuck, Orchid.Scheduler.Context.t()}
           | {:cont, Orchid.Scheduler.Context.t()}
-          | {:error, term()}
+          | {:error, Orchid.Error.t()}
   def execute_next_step(%Orchid.Scheduler.Context{} = ctx) do
     case {Orchid.Scheduler.next_ready_steps(ctx), Orchid.Scheduler.done?(ctx)} do
       {[], true} ->
@@ -41,8 +41,17 @@ defmodule Orchid.Executor do
 
       {[{step, idx} | _], _} ->
         case Orchid.Runner.run(step, ctx.params, ctx.recipe.opts, ctx.workflow_ctx) do
-          {:ok, result} -> {:cont, Orchid.Scheduler.merge_result(ctx, idx, result)}
-          error -> error
+          {:ok, result} ->
+            {:cont, Orchid.Scheduler.merge_result(ctx, idx, result)}
+
+          {:error, reason} ->
+            {:error,
+             %Orchid.Error{
+               reason: reason,
+               context: ctx,
+               step_id: Orchid.Step.ID.finger_print(step),
+               kind: :exception
+             }}
         end
     end
   end
