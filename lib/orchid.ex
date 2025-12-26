@@ -6,9 +6,6 @@ defmodule Orchid do
   It is designed to be a flexible and extensible framework for task orchestration.
   """
 
-  @facade_pass_through_keys [:global_hooks_stack, :executor_and_opts]
-  @stack_keys [:global_hooks_stack, :operons_stack]
-
   @doc """
   Executes a workflow Recipe.
 
@@ -35,26 +32,32 @@ defmodule Orchid do
   @spec run(Orchid.Recipe.t(), Orchid.Scheduler.initial_params(), keyword()) ::
           Orchid.Operon.Response.payload() | Orchid.Operon.Response.t()
   def run(recipe, input_params, opts \\ []) do
-    run_with_ctx(recipe, input_params, Orchid.WorkflowCtx.new(), opts)
+    # Fetch keys and inject into Orchid.WorkflowCtx struct
+    run_with_ctx(
+      recipe,
+      input_params,
+      Orchid.WorkflowCtx.new() |> Orchid.WorkflowCtx.merge_config(opts)
+    )
   end
 
   @spec run_with_ctx(
           Orchid.Recipe.t(),
           Orchid.Scheduler.initial_params(),
-          Orchid.WorkflowCtx.t(),
-          keyword()
+          Orchid.WorkflowCtx.t()
         ) ::
           Orchid.Operon.Response.payload() | Orchid.Operon.Response.t()
-  def run_with_ctx(recipe, input_params, workflow_ctx, opts \\ []) do
-    response? = Keyword.get(opts, :return_response, false)
-    operons_stack = Keyword.get(opts, :operons_stack, [])
-    executor_and_opts = Keyword.get(opts, :executor_and_opts, {Orchid.Executor.Async, []})
+  def run_with_ctx(recipe, input_params, workflow_ctx) do
+    response? = Orchid.WorkflowCtx.get_config(workflow_ctx, :return_response, false)
+    operons_stack = Orchid.WorkflowCtx.get_config(workflow_ctx, :operons_stack, [])
+
+    executor_and_opts =
+      Orchid.WorkflowCtx.get_config(workflow_ctx, :executor_and_opts, {Orchid.Executor.Async, []})
 
     response =
       Orchid.Pipeline.run(
         operons_stack ++ [Orchid.Operon.Execute],
         %Orchid.Operon.Request{
-          recipe: inject_opts_into_recipe(recipe, opts),
+          recipe: recipe,
           inital_params: input_params,
           executor_and_opts: executor_and_opts,
           workflow_ctx: workflow_ctx
@@ -62,22 +65,5 @@ defmodule Orchid do
       )
 
     if response?, do: response, else: response.payload
-  end
-
-  defp inject_opts_into_recipe(recipe, run_opts) do
-    opts_to_inject = Keyword.take(run_opts, @facade_pass_through_keys)
-
-    merged_opts =
-      Keyword.merge(opts_to_inject, recipe.opts, fn key, parent_val, child_val ->
-        if key in @stack_keys do
-          # (run_opts) ++ (recipe)
-          parent_val ++ child_val
-        else
-          # default: child_val
-          child_val
-        end
-      end)
-
-    %{recipe | opts: merged_opts}
   end
 end

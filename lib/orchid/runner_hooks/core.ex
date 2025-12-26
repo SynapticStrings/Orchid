@@ -7,14 +7,7 @@ defmodule Orchid.Runner.Hooks.Core do
           {:ok, Orchid.Step.output()} | {:error, term()}
   def call(ctx, _next) do
     # inject opts
-    final_opts = Keyword.merge(ctx.step_opts, ctx.recipe_opts)
-
-    final_opts =
-      if Orchid.Step.NestedStep.nested_check(ctx.step_implementation) do
-        Orchid.Step.NestedStep.inject_workflow_ctx(final_opts, ctx.workflow_ctx)
-      else
-        final_opts
-      end
+    final_opts = Keyword.merge(ctx.step_opts, ctx.recipe_opts) |> inject_workflow_ctx(ctx.workflow_ctx)
 
     case run_step(ctx.step_implementation, ctx.inputs, final_opts) do
       {:ok, raw_output} ->
@@ -24,6 +17,17 @@ defmodule Orchid.Runner.Hooks.Core do
       other ->
         other
     end
+  end
+
+  def get_workflow_ctx_key, do: :__orchid_workflow_ctx__
+
+  def inject_workflow_ctx(opts, ctx) do
+    Keyword.put(opts, get_workflow_ctx_key(), ctx)
+  end
+
+  @spec extract_workflow_ctx(keyword()) :: Orchid.WorkflowCtx.t()
+  def extract_workflow_ctx(opts) do
+    Keyword.get(opts, get_workflow_ctx_key(), Orchid.WorkflowCtx.new())
   end
 
   # include mono, list and tuple

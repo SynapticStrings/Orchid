@@ -63,8 +63,11 @@ defmodule Orchid.Step.NestedStep do
     output_map = Keyword.get(opts, :output_map, %{})
 
     # Start the sub-process
-    inner_recipe
-    |> Orchid.run_with_ctx(prepare_initial_params(input_params, input_map), extract_workflow_ctx(opts), opts)
+    Orchid.run_with_ctx(
+      inner_recipe,
+      prepare_initial_params(input_params, input_map),
+      Orchid.Runner.Hooks.Core.extract_workflow_ctx(opts)
+    )
     |> prepare_final_results(output_map)
   end
 
@@ -106,17 +109,10 @@ defmodule Orchid.Step.NestedStep do
     prepare_final_results(res, output_map)
   end
 
-  def inject_workflow_ctx(opts, ctx) do
-    Keyword.merge(opts, [__orchid_nested_ctx: ctx])
-  end
-
-  defp extract_workflow_ctx(opts) do
-    Keyword.get(opts, :__orchid_nested_ctx, Orchid.WorkflowCtx.new())
-  end
-
   @spec nested_check(Step.implementation() | Step.t()) :: boolean()
   def nested_check(step) when is_tuple(step) do
-    {impl, _, _, _} = Step.ensure_full_step(step); nested_check(impl)
+    {impl, _, _, _} = Step.ensure_full_step(step)
+    nested_check(impl)
   end
 
   def nested_check(impl) when is_atom(impl) do

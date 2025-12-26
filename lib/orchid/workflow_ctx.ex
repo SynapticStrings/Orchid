@@ -11,5 +11,14 @@ defmodule Orchid.WorkflowCtx do
     %__MODULE__{}
   end
 
+  def get_config(ctx, key, default \\ nil) do
+    Map.get(ctx.config, key, default)
+  end
+
+  def merge_config(ctx, new_opts) do
+    new_config = Map.merge(ctx.config, Enum.into(new_opts, %{}))
+    %{ctx | config: new_config}
+  end
+
   def add_step(%__MODULE__{path: path} = ctx, step_id), do: %{ctx | path: path ++ [step_id]}
 end
