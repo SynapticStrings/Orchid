@@ -64,7 +64,10 @@ defmodule Orchid.SchedulerTest do
     test "updates options for matching steps" do
       steps = [{DummyStep, :in, :out, extra_hooks_stack: []}]
       recipe = Recipe.new(steps)
-      {:ok, ctx} = Scheduler.build(recipe, [%Param{name: :in, payload: nil}], Orchid.WorkflowCtx.new())
+
+      {:ok, ctx} =
+        Scheduler.build(recipe, [%Param{name: :in, payload: nil}], Orchid.WorkflowCtx.new())
+
       selector = fn {impl, _, _, _} -> impl == DummyStep end
 
       new_ctx =

@@ -17,7 +17,8 @@ defmodule Orchid.MixProject do
         list_unused_filters: true
       ],
       name: "Orchid",
-      description: "A lightweight and extensible workflow orchestration engine, written in Elixir.",
+      description:
+        "A lightweight and extensible workflow orchestration engine, written in Elixir.",
       package: package(),
       source_url: "https://github.com/SynapticStrings/Orchid",
       docs: docs()
@@ -32,7 +33,8 @@ defmodule Orchid.MixProject do
     [
       licenses: ["MIT"],
       links: %{"GitHub" => "https://github.com/SynapticStrings/Orchid"},
-      files: ~w(lib assets) ++ ~w(mix.exs .formatter.exs .dialyzer_ignore.exs README.md CHANGELOG.md)
+      files:
+        ~w(lib assets) ++ ~w(mix.exs .formatter.exs .dialyzer_ignore.exs README.md CHANGELOG.md)
     ]
   end
 

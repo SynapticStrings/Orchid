@@ -24,5 +24,6 @@ defmodule Orchid.Operon do
     defstruct [:payload, assigns: %{}]
   end
 
-  @callback call(request :: Request.t(), maybe_next_func :: (Request.t() -> Response.t())) :: Response.t()
+  @callback call(request :: Request.t(), maybe_next_func :: (Request.t() -> Response.t())) ::
+              Response.t()
 end

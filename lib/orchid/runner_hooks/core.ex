@@ -7,7 +7,8 @@ defmodule Orchid.Runner.Hooks.Core do
           {:ok, Orchid.Step.output()} | {:error, term()}
   def call(ctx, _next) do
     # inject opts
-    final_opts = Keyword.merge(ctx.step_opts, ctx.recipe_opts) |> inject_workflow_ctx(ctx.workflow_ctx)
+    final_opts =
+      Keyword.merge(ctx.step_opts, ctx.recipe_opts) |> inject_workflow_ctx(ctx.workflow_ctx)
 
     case run_step(ctx.step_implementation, ctx.inputs, final_opts) do
       {:ok, raw_output} ->

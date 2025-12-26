@@ -2,7 +2,8 @@ defmodule Orchid.Pipeline do
   @doc """
   Run pipeline
   """
-  @spec run([module()], Orchid.Operon.Request.t()) :: Orchid.Operon.Response.t() | {:error, term()}
+  @spec run([module()], Orchid.Operon.Request.t()) ::
+          Orchid.Operon.Response.t() | {:error, term()}
   def run(stack, request), do: dispatch(stack, request)
 
   defp dispatch([], _req), do: {:error, :no_sink_middleware}

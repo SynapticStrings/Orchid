@@ -194,6 +194,7 @@ defmodule Orchid.Step do
   defmodule CodeGenerator do
     defmacro __before_compile__(env) do
       is_nested = Module.get_attribute(env.module, :orchid_step_nested)
+
       quote do
         @impl true
         def nested?(), do: unquote(is_nested)

@@ -16,7 +16,7 @@ defmodule Orchid.Scheduler do
             available_keys: MapSet.t(Step.io_key()),
             params: param_map(),
             running_steps: MapSet.t(Step.t()),
-            history: [{Step.t(), step_index(),  MapSet.t(Step.io_key())}],
+            history: [{Step.t(), step_index(), MapSet.t(Step.io_key())}],
             workflow_ctx: WorkflowCtx.t(),
             assigns: %{any() => any()}
           }
@@ -163,11 +163,12 @@ defmodule Orchid.Scheduler do
         params: merged_params,
         available_keys: updated_keys,
         history:
-          ctx.history ++ [
-            ctx.pending_steps
-            |> Enum.filter(fn {_, idx} -> idx == step_idx end)
-            |> Enum.map(fn {step, idx} -> {step, idx, MapSet.new(new_keys)} end)
-          ]
+          ctx.history ++
+            [
+              ctx.pending_steps
+              |> Enum.filter(fn {_, idx} -> idx == step_idx end)
+              |> Enum.map(fn {step, idx} -> {step, idx, MapSet.new(new_keys)} end)
+            ]
     }
   end
 

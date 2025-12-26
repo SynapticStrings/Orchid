@@ -1,10 +1,10 @@
 defmodule Orchid.WorkflowCtx do
   @type t :: %__MODULE__{
-    root_id: any(),
-    path: [Orchid.Step.ID.t()],
-    baggage: %{},
-    config: %{}
-  }
+          root_id: any(),
+          path: [Orchid.Step.ID.t()],
+          baggage: %{},
+          config: %{}
+        }
   defstruct [:root_id, path: [:root], baggage: %{}, config: %{}]
 
   def new() do
