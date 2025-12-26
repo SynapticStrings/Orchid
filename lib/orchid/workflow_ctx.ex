@@ -20,6 +20,10 @@ defmodule Orchid.WorkflowCtx do
     %{ctx | config: new_config}
   end
 
+  def get_baggage(ctx, key, default \\ nil) do
+    Map.get(ctx.baggage, key, default)
+  end
+
   def merge_baggage(ctx, baggage) do
     %{ctx | baggage: Map.merge(ctx.baggage, Enum.into(baggage, %{}))}
   end

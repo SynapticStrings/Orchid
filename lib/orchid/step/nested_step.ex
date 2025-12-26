@@ -62,7 +62,6 @@ defmodule Orchid.Step.NestedStep do
     input_map = Keyword.get(opts, :input_map, %{})
     output_map = Keyword.get(opts, :output_map, %{})
 
-    # Start the sub-process
     Orchid.run_with_ctx(
       inner_recipe,
       prepare_initial_params(input_params, input_map),

@@ -214,7 +214,6 @@ defmodule Orchid.Recipe do
 
     case selector do
       :all -> true
-      # Match by implementation module or function ref
       ^impl -> true
       _ -> false
     end

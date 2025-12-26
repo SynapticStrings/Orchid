@@ -85,10 +85,7 @@ defmodule Orchid.Step do
 
   ## module step's callbacks.
 
-  @doc """
-  Determines if this step contains an inner recipe (Nested Step).
-  Defaults to `false`.
-  """
+  @doc "Determines if this step contains an inner recipe (Nested Step)."
   @callback nested?() :: boolean()
 
   @doc """
@@ -131,18 +128,12 @@ defmodule Orchid.Step do
   def inject_options({impl, in_keys, out_keys, opts}, new_opts) when is_list(new_opts),
     do: {impl, in_keys, out_keys, Keyword.merge(opts, new_opts)}
 
-  @doc """
-  Extracts the basic schema `{Impl, Input, Output}` from a step definition.
-  """
+  @doc "Extracts the basic schema `{Impl, Input, Output}` from a step definition."
   @spec extract_schema(t()) :: step_schema()
   def extract_schema({impl, in_keys, out_keys}), do: {impl, in_keys, out_keys}
   def extract_schema({impl, in_keys, out_keys, _opts}), do: {impl, in_keys, out_keys}
 
-  @doc """
-  Normalizes a step structure into the full 4-element tuple format.
-
-  If no options are present, an empty list is added.
-  """
+  @doc "Normalizes a step structure into the full 4-element tuple format."
   @spec ensure_full_step(t()) :: step_with_options()
   def ensure_full_step({impl, in_k, out_k}), do: {impl, in_k, out_k, []}
   def ensure_full_step({impl, in_k, out_k, opts}), do: {impl, in_k, out_k, opts}

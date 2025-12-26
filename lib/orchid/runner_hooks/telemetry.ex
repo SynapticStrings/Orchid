@@ -11,7 +11,7 @@ defmodule Orchid.Runner.Hooks.Telemetry do
     try do
       case next.(%{
              ctx
-             | step_opts: Keyword.put(ctx.step_opts, :__reporter_ctx__, ctx.telemetry_meta)
+             | step_opts: Keyword.put(ctx.step_opts, :__reporter_ctx__, meta)
            }) do
         {:ok, result} ->
           duration = System.monotonic_time() - start_time
