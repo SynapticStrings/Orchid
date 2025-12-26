@@ -5,6 +5,10 @@ defmodule Orchid do
   This module provides the primary interface (`run/3`) to execute defined Recipes.
   It is designed to be a flexible and extensible framework for task orchestration.
   """
+  alias Orchid.{WorkflowCtx, Recipe, Pipeline, Scheduler}
+  alias Orchid.Operon.{Request, Response, Execute}
+
+  @allow_option_keys [:return_response, :operons_stack, :global_hooks_stack, :executor_and_opts]
 
   @doc """
   Executes a workflow Recipe.
@@ -29,34 +33,33 @@ defmodule Orchid do
       # Execution returning the full Response struct
       Orchid.run(my_recipe, initial_params, return_response: true)
   """
-  @spec run(Orchid.Recipe.t(), Orchid.Scheduler.initial_params(), keyword()) ::
-          Orchid.Operon.Response.payload() | Orchid.Operon.Response.t()
+  @spec run(Recipe.t(), Scheduler.initial_params(), keyword()) ::
+          Response.payload() | Response.t()
   def run(recipe, input_params, opts \\ []) do
-    # Fetch keys and inject into Orchid.WorkflowCtx struct
     run_with_ctx(
       recipe,
       input_params,
-      Orchid.WorkflowCtx.new() |> Orchid.WorkflowCtx.merge_config(opts)
+      WorkflowCtx.merge_config(
+        WorkflowCtx.new(),
+        Keyword.filter(opts, fn {k, _v} -> k in @allow_option_keys end)
+      )
     )
   end
 
-  @spec run_with_ctx(
-          Orchid.Recipe.t(),
-          Orchid.Scheduler.initial_params(),
-          Orchid.WorkflowCtx.t()
-        ) ::
-          Orchid.Operon.Response.payload() | Orchid.Operon.Response.t()
+  @doc "Run with explicit WorkflowContext struct."
+  @spec run_with_ctx(Recipe.t(), Scheduler.initial_params(), WorkflowCtx.t()) ::
+          Response.payload() | Response.t()
   def run_with_ctx(recipe, input_params, workflow_ctx) do
-    response? = Orchid.WorkflowCtx.get_config(workflow_ctx, :return_response, false)
-    operons_stack = Orchid.WorkflowCtx.get_config(workflow_ctx, :operons_stack, [])
+    response? = WorkflowCtx.get_config(workflow_ctx, :return_response, false)
+    operons_stack = WorkflowCtx.get_config(workflow_ctx, :operons_stack, [])
 
     executor_and_opts =
-      Orchid.WorkflowCtx.get_config(workflow_ctx, :executor_and_opts, {Orchid.Executor.Async, []})
+      WorkflowCtx.get_config(workflow_ctx, :executor_and_opts, {Orchid.Executor.Async, []})
 
     response =
-      Orchid.Pipeline.run(
-        operons_stack ++ [Orchid.Operon.Execute],
-        %Orchid.Operon.Request{
+      Pipeline.run(
+        operons_stack ++ [Execute],
+        %Request{
           recipe: recipe,
           inital_params: input_params,
           executor_and_opts: executor_and_opts,
