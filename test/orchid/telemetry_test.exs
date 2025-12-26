@@ -42,7 +42,7 @@ defmodule Orchid.TelemetryTest do
       "test-handler",
       [
         [:orchid, :step, :start],
-        [:orchid, :step, :stop],
+        [:orchid, :step, :done],
         [:orchid, :step, :progress],
         [:orchid, :step, :exception]
       ],
@@ -64,7 +64,7 @@ defmodule Orchid.TelemetryTest do
     assert_receive {:telemetry_event, [:orchid, :step, :progress], %{progress: 50}, meta}
     assert meta.payload == "Halfway"
 
-    assert_receive {:telemetry_event, [:orchid, :step, :stop], %{duration: _}, _}
+    assert_receive {:telemetry_event, [:orchid, :step, :done], %{duration: _}, _}
 
     recipe2 = Orchid.Recipe.new([{ReportingCrash, :in, :out}])
 
