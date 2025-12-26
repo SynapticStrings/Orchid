@@ -129,7 +129,7 @@ Mainly handled by the `Orchid.Scheduler` module.
 
 Recipe-level execution is the responsibility of the `Orchid.Executor` behavior.
 
-In step-level, function `Orchid.Runner.run/3` will handle it.
+In step-level, function `Orchid.Runner.run/4` will handle it.
 
 ### Architecture
 
