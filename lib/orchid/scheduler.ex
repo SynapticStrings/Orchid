@@ -18,7 +18,7 @@ defmodule Orchid.Scheduler do
             running_steps: MapSet.t(Step.t()),
             history: [{Step.t(), step_index(),  MapSet.t(Step.io_key())}],
             workflow_ctx: WorkflowCtx.t(),
-            assings: %{any() => any()}
+            assigns: %{any() => any()}
           }
     defstruct [
       ## Origin Orchid
@@ -38,7 +38,7 @@ defmodule Orchid.Scheduler do
       # workflow
       :workflow_ctx,
       ## other context
-      :assings
+      :assigns
     ]
   end
 
