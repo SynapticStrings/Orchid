@@ -194,7 +194,7 @@ Currently, Runner has two hooks:
 - `Orchid.Runner.Hooks.Telemetry` for telemetry
 - `Orchid.Runner.Hooks.Core` for executing the step
 
-### Vertical-propogated Context
+#### Vertical-propogated Context
 
 TBD
 
