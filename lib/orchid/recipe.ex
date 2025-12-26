@@ -66,8 +66,8 @@ defmodule Orchid.Recipe do
       {:error, {:missing_inputs, missing_map}} ->
         {:error, {:missing_inputs, missing_map}}
 
-      {:error, {:cyclic, cyclic_indices}} ->
-        {:error, {:cyclic, cyclic_indices}}
+      {:error, {:cyclic, cyclic_steps}} ->
+        {:error, {:cyclic, cyclic_steps}}
 
       validate_errors ->
         {:error, {:option_validation_failed, validate_errors}}

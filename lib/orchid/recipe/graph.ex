@@ -43,8 +43,7 @@ defmodule Orchid.Recipe.Graph do
 
       remaining_steps ->
         # next steps create cycle(or waiting for each other)
-        cyclic_indices = Enum.map(remaining_steps, & &1.step)
-        {:error, {:cyclic, cyclic_indices}}
+        {:error, {:cyclic, Enum.map(remaining_steps, & &1.step)}}
     end
   end
 
