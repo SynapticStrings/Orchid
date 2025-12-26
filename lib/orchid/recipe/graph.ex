@@ -5,6 +5,7 @@ defmodule Orchid.Recipe.Graph do
   """
 
   alias Orchid.Step
+  import Orchid.Step.ID, only: [normalize_keys_to_set: 1]
 
   def check_missing_initial(steps, initial_keys) do
     indexed_steps = build_initial_steps(steps)
@@ -85,14 +86,4 @@ defmodule Orchid.Recipe.Graph do
         run_simulation(not_ready, new_available)
     end
   end
-
-  @doc """
-  normalize step's io key into MapSet。
-  """
-  @spec normalize_keys_to_set(nil | atom() | list() | tuple() | MapSet.t()) :: MapSet.t()
-  def normalize_keys_to_set(nil), do: MapSet.new()
-  def normalize_keys_to_set(atom) when is_atom(atom), do: MapSet.new([atom])
-  def normalize_keys_to_set(list) when is_list(list), do: MapSet.new(list)
-  def normalize_keys_to_set(tuple) when is_tuple(tuple), do: MapSet.new(Tuple.to_list(tuple))
-  def normalize_keys_to_set(mapset), do: mapset
 end

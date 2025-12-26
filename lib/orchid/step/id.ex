@@ -13,14 +13,20 @@ defmodule Orchid.Step.ID do
     do: finger_print({impl, in_k, out_k}, as_num?)
 
   def finger_print({impl, in_k, out_k}, true) do
-    :erlang.phash2({impl, normalize_key(in_k), normalize_key(out_k)})
+    :erlang.phash2({impl, normalize_keys_to_set(in_k), normalize_keys_to_set(out_k)})
   end
 
   def finger_print({impl, in_k, out_k}, false) do
-    {impl, normalize_key(in_k), normalize_key(out_k)}
+    {impl, normalize_keys_to_set(in_k), normalize_keys_to_set(out_k)}
   end
 
-  defp normalize_key(k) when is_atom(k), do: MapSet.new([k])
-  defp normalize_key(k) when is_tuple(k), do: Tuple.to_list(k)
-  defp normalize_key(k) when is_list(k), do: MapSet.new(k)
+  @doc """
+  normalize step's io key into MapSet。
+  """
+  @spec normalize_keys_to_set(nil | atom() | list() | tuple() | MapSet.t()) :: MapSet.t()
+  def normalize_keys_to_set(nil), do: MapSet.new()
+  def normalize_keys_to_set(atom) when is_atom(atom), do: MapSet.new([atom])
+  def normalize_keys_to_set(list) when is_list(list), do: MapSet.new(list)
+  def normalize_keys_to_set(tuple) when is_tuple(tuple), do: MapSet.new(Tuple.to_list(tuple))
+  def normalize_keys_to_set(mapset), do: mapset
 end

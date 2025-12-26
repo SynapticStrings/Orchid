@@ -10,7 +10,7 @@ defmodule Orchid.Executor.Serial do
   alias Orchid.Scheduler
 
   @impl true
-  def execute(ctx, _executor_opts \\ []), do: loop(ctx, ctx.recipe.opts)
+  def execute(ctx, executor_opts \\ []), do: loop(ctx, executor_opts)
 
   defp loop(ctx, opts) do
     case Orchid.Executor.execute_next_step(ctx) do

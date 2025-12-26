@@ -101,9 +101,9 @@ defmodule Orchid.Scheduler do
   defp dependencies_met?(step, available_keys) do
     {_impl, in_keys, _out} = Orchid.Step.extract_schema(step)
 
-    needed = Orchid.Recipe.Graph.normalize_keys_to_set(in_keys)
-
-    MapSet.subset?(needed, available_keys)
+    in_keys
+    |> Orchid.Step.ID.normalize_keys_to_set()
+    |> MapSet.subset?(available_keys)
   end
 
   @doc "Mark those steps that have started running."
