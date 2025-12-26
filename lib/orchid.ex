@@ -24,6 +24,7 @@ defmodule Orchid do
     to run before the execution phase. They are executed in the order provided.
   * `:global_hooks_stack` - (list)
   * `:executor_and_opts` - (tuple) Executor module and its options.
+  * `:baggage` - (enumerable) Custome options used by user/custome operons/hooks/etc.
 
   ### Examples
 
@@ -43,6 +44,7 @@ defmodule Orchid do
         WorkflowCtx.new(),
         Keyword.filter(opts, fn {k, _v} -> k in @allow_option_keys end)
       )
+      |> WorkflowCtx.merge_baggage(Keyword.get(opts, :baggage, []))
     )
   end
 
