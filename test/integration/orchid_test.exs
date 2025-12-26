@@ -58,7 +58,7 @@ defmodule OrchidTest do
     recipe = Recipe.new(steps)
 
     # 预期报错
-    {:error, {:missing_inputs, missing_map}} = Orchid.run(recipe, initial_params)
+    {:error, %Orchid.Error{reason: {:missing_inputs, missing_map}}} = Orchid.run(recipe, initial_params)
     assert Map.get(missing_map, 0) == [:bgm]
   end
 

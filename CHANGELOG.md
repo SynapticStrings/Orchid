@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2025-12-26
+
+### Breaking Changes
+
+- **Context & Options**: `Orchid.run/3` now strictly filters input options. Arbitrary keys are no longer implicitly merged into step options. User-defined metadata/context must now be passed via the new `:baggage` option.
+- **Error Handling**: Execution failures are now returned as `{:error, %Orchid.Error{}}`. The `Orchid.Error` struct (an Exception) contains the failure reason, the step fingerprint, the failure kind (`:logic`, `:exception`, `:exit`), and the **execution context** (enabling partial result recovery).
+- **Telemetry**: Renamed the event `[:orchid, :step, :stop]` to `[:orchid, :step, :done]` to distinct completion from termination.
+- **Step DSL**: The `nested?/0` callback has been replaced by the module attribute `@orchid_step_nested boolean` when using `Orchid.Step`.
+- **Plugin**: Removed `Orchid.Plugin` module as it was unused and superseded by the Operon/Hook architecture.
+
+### Added
+
+- **Workflow Context**: Introduced `Orchid.WorkflowCtx` to explicitly manage execution scope, nested paths, configuration, and baggage throughout the pipeline.
+- **API**: Added `Orchid.run_with_ctx/3` to support executing recipes with a pre-initialized context (e.g., for sub-workflows or resuming).
+- **Identification**: Introduced `Orchid.Step.ID` to generate deterministic fingerprints/IDs for steps.
+- **Helpers**: Added `Orchid.Step.report/3` to standardize progress reporting via Telemetry.
+
+### Changed
+
+- **Executor**: Executors (`Async` and `Serial`) now capture the runtime context upon failure and wrap it in `Orchid.Error`, preventing data loss during crashes.
+- **Internals**: Refactored `Orchid.Runner` to propagate `WorkflowCtx` instead of loose keyword lists.
+
 ## [0.3.5] - 2025-12-23
 
 ### Changed
