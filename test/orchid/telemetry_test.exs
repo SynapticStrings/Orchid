@@ -30,7 +30,6 @@ defmodule Orchid.TelemetryTest do
     end
   end
 
-  # 定义一个 Handler，把事件转发给 Test 进程
   defmodule TestHandler do
     def handle_event(event, measurements, metadata, test_pid) do
       send(test_pid, {:telemetry_event, event, measurements, metadata})
@@ -47,7 +46,6 @@ defmodule Orchid.TelemetryTest do
         [:orchid, :step, :exception]
       ],
       &TestHandler.handle_event/4,
-      # config: 传给 handle_event 的第4个参数
       self()
     )
 
