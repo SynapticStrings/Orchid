@@ -1,4 +1,8 @@
 defmodule Orchid.WorkflowCtx do
+  @moduledoc """
+  Represents the context of a workflow execution, including its configuration,
+  path, and baggage.
+  """
   @type t :: %__MODULE__{
           root_id: any(),
           path: [Orchid.Step.ID.t()],

@@ -2,10 +2,22 @@ defmodule Orchid.Scheduler do
   @moduledoc """
   Scheduler is responsible for managing and scheduling the execution order of steps in the Recipe.
   """
-  alias Orchid.WorkflowCtx
-  alias Orchid.{Recipe, Param, Step}
+  alias Orchid.{WorkflowCtx, Recipe, Param, Step}
 
   defmodule Context do
+    @moduledoc """
+    Provides the execution context for the Scheduler, including the recipe, pending steps,
+    available keys, parameters, running steps, execution history, workflow context, and additional assigns.
+
+    * `:recipe` - The Recipe being executed.
+    * `:pending_steps` - A list of tuples containing steps that have not yet been executed and their indices.
+    * `:available_keys` - A set of keys that are currently available for step execution.
+    * `:params` - A map of parameters available in the current context.
+    * `:running_steps` - A set of steps that are currently in execution.
+    * `:history` - A list of tuples recording the execution history of steps, including their indices and output keys.
+    * `:workflow_ctx` - The `Orchid.WorkflowCtx` struct associated with the execution.
+    * `:assigns` - A map for storing additional context-specific data.
+    """
     alias Orchid.{Param, Step, Recipe, WorkflowCtx}
 
     @type param_map :: %{optional(atom()) => Param.t()}
@@ -21,27 +33,18 @@ defmodule Orchid.Scheduler do
             assigns: %{any() => any()}
           }
     defstruct [
-      ## Origin Orchid
-      # Recipe
-      # Used for Executor, edit is not allowed for consistency
       :recipe,
-      # steps where not executed
       :pending_steps,
-      # keys we have
       :available_keys,
-      # actual datas
       :params,
-      # running steps
       :running_steps,
-      # execution history
       :history,
-      # workflow
       :workflow_ctx,
-      ## other context
       :assigns
     ]
   end
 
+  @typedoc "Initial parameters can be a list of Params or a map of Params."
   @type initial_params :: [Param.t()] | Context.param_map()
 
   @doc "Initialize scheduler context."
@@ -91,22 +94,19 @@ defmodule Orchid.Scheduler do
   @spec next_ready_steps(Context.t()) :: [{Step.t(), Context.step_index()}]
   def next_ready_steps(%Context{} = ctx) do
     Enum.filter(ctx.pending_steps, fn {step, idx} ->
-      # See whose needed is a subset of available
-      # And exclude running
-      dependencies_met?(step, ctx.available_keys) and
-        not MapSet.member?(ctx.running_steps, idx)
+      dependencies_met?(step, ctx.available_keys) and not MapSet.member?(ctx.running_steps, idx)
     end)
   end
 
   defp dependencies_met?(step, available_keys) do
-    {_impl, in_keys, _out} = Orchid.Step.extract_schema(step)
+    {_impl, in_keys, _out} = Step.extract_schema(step)
 
     in_keys
-    |> Orchid.Step.ID.normalize_keys_to_set()
+    |> Step.ID.normalize_keys_to_set()
     |> MapSet.subset?(available_keys)
   end
 
-  @doc "Mark those steps that have started running."
+  @doc "Mark those steps that have started running(or remove when failed)."
   @spec mark_running_steps(
           Context.t(),
           Context.step_index() | [Context.step_index()],
@@ -121,8 +121,6 @@ defmodule Orchid.Scheduler do
       | running_steps: MapSet.union(ctx.running_steps, normalize_step_indices(step_indices))
     }
 
-  # used when try to re-attempt a failed step.
-  # remove from `running_steps` firstly.
   def mark_running_steps(%Context{} = ctx, step_indices, :reattempt),
     do: %{
       ctx
@@ -179,11 +177,11 @@ defmodule Orchid.Scheduler do
   but several steps' options still use the old references.
   """
   @spec inject_opts(
-          Orchid.Scheduler.Context.t(),
+          Scheduler.Context.t(),
           (Step.t() -> boolean()),
           keyword()
         ) ::
-          Orchid.Scheduler.Context.t()
+          Scheduler.Context.t()
   def inject_opts(%Context{} = ctx, selector, new_opts) do
     %{
       ctx

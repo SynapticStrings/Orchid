@@ -4,6 +4,19 @@ defmodule Orchid.Runner do
   """
 
   defmodule Context do
+    @moduledoc """
+    Context for step execution.
+
+    * `:step_implementation` - Step implementation module or function.
+    * `:in_keys` - Input keys.
+    * `:out_keys` - Output keys.
+    * `:step_opts` - Step options.
+    * `:inputs` - Prepared inputs.
+    * `:recipe_opts` - Recipe options.
+    * `:telemetry_meta` - Telemetry metadata.
+    * `:workflow_ctx` - Workflow context.
+    * `:assigns` - Assigns map.
+    """
     @type t :: %{
             step_implementation: Orchid.Step.implementation(),
             in_keys: Orchid.Step.input_keys(),
@@ -68,13 +81,19 @@ defmodule Orchid.Runner do
   defp prepare_inputs(keys, params) when is_tuple(keys),
     do: Enum.map(Tuple.to_list(keys), &Map.fetch!(params, &1))
 
-  # Let it crash.
   defp prepare_inputs(key, params) when is_map(params), do: Map.fetch!(params, key)
 end
 
 defmodule Orchid.Runner.Hook do
+  @moduledoc """
+  Behaviour for runner hooks.
+  """
+
   @type next_fn :: (Orchid.Runner.Context.t() -> {:ok, Orchid.Step.output()} | {:error, term()})
 
+  @doc """
+  Callback to execute the hook.
+  """
   @callback call(ctx :: Orchid.Runner.Context.t(), next_fn) ::
               {:ok, Orchid.Step.output()} | {:error, term()}
 end

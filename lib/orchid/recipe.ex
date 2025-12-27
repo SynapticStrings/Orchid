@@ -52,6 +52,7 @@ defmodule Orchid.Recipe do
   Statically validates the steps within a recipe.
 
   It performs the following checks:
+
   1. **Option Validation**: Calls `Step.validate_options/1` for each step.
   2. **Missing Inputs**: Checks if all steps have their required input keys satisfied (either by initial params or previous steps).
   3. **Cyclic Dependencies**: Checks if the graph contains any cycles.

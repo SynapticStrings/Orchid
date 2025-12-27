@@ -183,6 +183,8 @@ defmodule Orchid.Step do
   end
 
   defmodule CodeGenerator do
+    @moduledoc false
+
     defmacro __before_compile__(env) do
       is_nested = Module.get_attribute(env.module, :orchid_step_nested)
 

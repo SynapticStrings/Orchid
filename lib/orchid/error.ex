@@ -1,4 +1,7 @@
 defmodule Orchid.Error do
+  @moduledoc """
+  A container for errors that occur during Orchid execution.
+  """
   @type t :: %__MODULE__{
           reason: term(),
           context: Orchid.Scheduler.Context.t() | nil,
