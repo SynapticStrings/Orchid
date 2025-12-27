@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.1] - 2025-12-27
+
+### Refinements (Improvements to 0.4.0)
+
+- **Context Propagation**: Introduced "Baggage" to `Orchid.WorkflowCtx`. You can now pass global metadata via `Orchid.run(..., baggage: map)` which propagates vertically into nested steps.
+- **Hooks Resolution**: Global hooks are now correctly resolved from the `WorkflowCtx` configuration instead of the recipe options. This aligns the behavior with the new Context architecture introduced in 0.4.0.
+- **Error Reporting**: The cyclic dependency error now returns useful `Step` structs (`{:cyclic, steps}`) instead of opaque indices.
+
+### Fixed
+
+- **Validation**: Fixed a variable scope issue in `Recipe.validate_steps` that could cause a crash during cycle detection.
+- **Key Normalization**: Moved IO key normalization logic to `Orchid.Step.ID` to fix potential inconsistencies between static checks and runtime execution.
+- **Telemetry**: Fixed the injection timing of `__reporter_ctx__` to ensuring metadata is available during the entire step lifecycle.
+
+### Docs
+
+- **Internals**: Added comprehensive documentation for `Orchid.Error`, `Orchid.Scheduler.Context`, and `Orchid.WorkflowCtx`.
+- **Tests**: Translated integration test comments to English.
+
 ## [0.4.0] - 2025-12-26
 
 ### Breaking Changes
