@@ -232,35 +232,7 @@ The transformation module is `Orchid.Operon.Execute`, which wraps the Executor.
 
 No additional middleware has been introduced yet, but it will be added later.
 
-## Next Step
+## Libs
 
-### API consolidation
-
-- [ ] 100% coverage
-- [ ] finish document
-  - Chinese first, then translate it into English
-
-### Serialization Protocol (Context Marshalling)
-
-* **Goal**: Ensure the `Context` and `Recipe` are fully serializable (free of runtime closures/PIDs).
-* **Impact**: Prerequisites for persistence, clustering, and debugging tools.
-
-### Resource Management, Persistence & Resilient Executor
-
-* Goal: Evolving `Executor` to handle external failures (e.g., AI inference service restarts) and internal concurrency limits, and save execution state to external storage (Disk/DB).
-* Key Aspect: 
-    * Isolate resource lifecycle management (Supervision strategy).
-    * Back-pressure mechanism (prevent overloading downstream GPU/Resources).
-    * Allow workflows to recover from crashes or system restarts without re-running completed expensive steps (crucial for long-running AI tasks).
-* Libs:
-  * [`OrchidSymbiont`](https://hex.pm/packages/orchid_symbiont)
-    * Let Orchid can execute steps where required HEAVY service(Ortex service(via NxServing), ErlPort, NIF, HTTP request, etc.).
-  * `OrchidPersistence`
-    * *Implement `Orchid.Repo` to store `Orchid.Param`'s payload in memery/disk and manage heavey calculation(e.g. load Ortex model, call HTTP service)*
-  * Executor can paused with `:gen_statem`
-    * Need modify Orchid core's behavoir
-
-### Dynamic Workflow Mutation (Experimental)
-
-* **Goal**: Allow modifying the dependency graph (DAG) during runtime or just before execution.
-* **Note**: *To be evaluated. Complex scenarios might be solvable via `Hooks` or `Operons` without introducing graph mutability.*
+* [`OrchidSymbiont`](https://hex.pm/packages/orchid_symbiont)
+  * Let Orchid can execute steps where required HEAVY service(Ortex service(via NxServing), ErlPort, NIF, HTTP request, etc.).
