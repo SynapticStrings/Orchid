@@ -196,7 +196,13 @@ Currently, Runner has two hooks:
 
 #### Vertical-propogated Context
 
-TBD
+A container can propagate some global data into deeper(benifit when using nested step).
+
+Original used for record depth of multplt nested step.
+
+```elixir
+Orchid.run(recipe, initial_params, baggage: %{foo: :bar})
+```
 
 #### Pipeline Middleware (Operons)
 
