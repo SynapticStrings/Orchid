@@ -16,7 +16,6 @@ defmodule Orchid.Executor do
   @type executor :: module()
   @type executor_opts :: keyword()
 
-  # TODO: add streaming(or PID) response type
   @type response :: {:ok, Orchid.Scheduler.Context.param_map()} | {:error, Orchid.Error.t()}
 
   @callback execute(Orchid.Scheduler.Context.t(), executor_opts()) ::

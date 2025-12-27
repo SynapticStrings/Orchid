@@ -194,11 +194,11 @@ Currently, Runner has two hooks:
 - `Orchid.Runner.Hooks.Telemetry` for telemetry
 - `Orchid.Runner.Hooks.Core` for executing the step
 
-#### Vertical-propogated Context
+#### Vertical-propagated Context
 
-A container can propagate some global data into deeper(benifit when using nested step).
+Allows propagating global data deeply into nested steps.
 
-Original used for record depth of multplt nested step.
+Originally designed to track the depth of nested executions.
 
 ```elixir
 Orchid.run(recipe, initial_params, baggage: %{foo: :bar})
@@ -231,6 +231,11 @@ However, the difference is that we define two structs: `Orchid.Operon.Request` a
 The transformation module is `Orchid.Operon.Execute`, which wraps the Executor.
 
 No additional middleware has been introduced yet, but it will be added later.
+
+## Roadmap
+
+- Return as Stream or PID
+- Implement Session for inte
 
 ## Libs
 

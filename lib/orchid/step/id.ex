@@ -21,7 +21,7 @@ defmodule Orchid.Step.ID do
   end
 
   @doc """
-  normalize step's io key into MapSet。
+  normalize step's io key into MapSet.
   """
   @spec normalize_keys_to_set(nil | atom() | list() | tuple() | MapSet.t()) :: MapSet.t()
   def normalize_keys_to_set(nil), do: MapSet.new()
