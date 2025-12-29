@@ -198,7 +198,7 @@ Currently, Runner has two hooks:
 
 Allows propagating global data deeply into nested steps.
 
-Originally designed to track the depth of nested executions.
+Originally designed to track the context of nested executions.
 
 ```elixir
 Orchid.run(recipe, initial_params, baggage: %{foo: :bar})
@@ -235,7 +235,8 @@ No additional middleware has been introduced yet, but it will be added later.
 ## Roadmap
 
 - Return as Stream or PID
-- Implement Session for inte
+- Implement Session for interruptible and recovery workflow
+- Hydrate & dehydrate with param large payload
 
 ## Libs
 
