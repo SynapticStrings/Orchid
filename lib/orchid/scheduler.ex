@@ -2,7 +2,7 @@ defmodule Orchid.Scheduler do
   @moduledoc """
   Scheduler is responsible for managing and scheduling the execution order of steps in the Recipe.
   """
-  alias Orchid.{WorkflowCtx, Recipe, Param, Step}
+  alias Orchid.{WorkflowCtx, Recipe, Param, Step, Scheduler}
 
   defmodule Context do
     @moduledoc """

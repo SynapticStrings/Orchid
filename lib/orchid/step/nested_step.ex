@@ -81,8 +81,8 @@ defmodule Orchid.Step.NestedStep do
     end)
   end
 
-  defp prepare_final_results({:error, reason}, _output_map) do
-    {:error, {:nested_step_execution_failed, reason}}
+  defp prepare_final_results({:error, inner_context}, _output_map) do
+    {:error, {:nested_step_execution_failed, inner_context}}
   end
 
   defp prepare_final_results({:ok, inner_results}, output_map) do
