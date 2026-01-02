@@ -5,6 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-01-02
+
+> _Happy New Year!_
+
+This is the first release of the year, bringing a new plugin architecture to Orchid. May your workflows bloom beautifully this year!
+
+### Breaking Changes
+
+- **Nested Step Error Handling**: `Orchid.Step.NestedStep` now returns `{:error, {:nested_step_execution_failed, inner_context}}` instead of just the reason. This allows parent workflows to access the failed child's context for potential recovery or debugging.
+- **Hook Protocol**: The `Orchid.Runner.Hook` behavior now supports a third return type: `{:special, any()}`. Custom hooks implementing stricter type checks may need updates.
+- **Default Executors**: The built-in `Serial` and `Async` executors will now explicitly error with `{:core_executor_not_support_special, ...}` if a step returns a `{:special, ...}` tuple. This signals that a specialized executor (e.g., from a Session plugin) is required to handle such states.
+
+### Added
+
+- **Plugin Support (Special Return)**: Introduced `{:special, payload}` as a first-class return type in `Orchid.Runner`. This mechanism is designed for plugins (like `Orchid.Session`) to implement flow control logic like **Pause**, **Interrupt**, or **Yield** without abusing the Error channel.
+- **Telemetry**: Added a new event `[:orchid, :step, :special]` to track steps that exit with the special status.
+- **Error Kinds**: Added `:logic_or_exception` to `Orchid.Error` kinds to better describe failures caught in async tasks.
+
+### Changed
+
+- **Async Executor**: Improved robustness by explicitly flushing the monitor message (`:DOWN`) when a task completes successfully, preventing potential race conditions or mailbox pollution.
+- **Dependencies**: Updated `lib/orchid/step/id.ex` to depend on `Orchid.Step` alias correctly.
+- **Documentation**: Updated README roadmap and translated more comments in `Async` executor to English.
+- **Copyright**: Updated License year to 2026.
+
+### Internal
+
+- **Refactoring**: `Orchid.WorkflowCtx` now uses pipeline operators for cleaner config/baggage merging logic.
+
 ## [0.4.1] - 2025-12-27
 
 ### Refinements (Improvements to 0.4.0)
