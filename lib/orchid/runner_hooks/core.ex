@@ -3,8 +3,8 @@ defmodule Orchid.Runner.Hooks.Core do
 
   alias Orchid.Param
 
-  @spec call(Orchid.Runner.Context.t(), function()) ::
-          {:ok, Orchid.Step.output()} | {:error, term()}
+  @spec call(Orchid.Runner.Context.t(), Orchid.Runner.Hook.next_fn()) ::
+          Orchid.Runner.Hook.hook_result()
   def call(ctx, _next) do
     # inject opts
     final_opts =

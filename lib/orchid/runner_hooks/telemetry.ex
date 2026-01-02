@@ -2,7 +2,7 @@ defmodule Orchid.Runner.Hooks.Telemetry do
   @behaviour Orchid.Runner.Hook
 
   @spec call(Orchid.Runner.Context.t(), Orchid.Runner.Hook.next_fn()) ::
-          {:ok, Orchid.Step.output()} | {:error, term()}
+          Orchid.Runner.Hook.hook_result()
   def call(ctx, next) do
     meta = ctx.telemetry_meta
     :telemetry.execute([:orchid, :step, :start], %{system_time: System.system_time()}, meta)
@@ -16,6 +16,12 @@ defmodule Orchid.Runner.Hooks.Telemetry do
           :telemetry.execute([:orchid, :step, :done], %{duration: duration}, meta)
 
           {:ok, result}
+
+        {:special, result} ->
+          duration = System.monotonic_time() - start_time
+          :telemetry.execute([:orchid, :step, :special], %{duration: duration}, %{meta | special: result})
+
+          {:special, result}
 
         {:error, reason} ->
           report_error(start_time, Map.put(meta, :reason, reason))

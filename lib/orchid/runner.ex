@@ -47,7 +47,7 @@ defmodule Orchid.Runner do
           keyword(),
           Orchid.WorkflowCtx.t(),
           map()
-        ) :: {:ok, Orchid.Step.output()} | {:error, term()}
+        ) :: Orchid.Runner.Hook.hook_result()
   def run(step, ctx_params, recipe_opts, workflow_ctx, initial_assigns \\ %{}) do
     {impl, in_keys, out_keys, step_opts} = Orchid.Step.ensure_full_step(step)
 
@@ -59,7 +59,8 @@ defmodule Orchid.Runner do
       inputs: prepare_inputs(in_keys, ctx_params),
       recipe_opts: recipe_opts,
       telemetry_meta: %{impl: impl, in_keys: in_keys, out_keys: out_keys},
-      workflow_ctx: Orchid.WorkflowCtx.add_step(workflow_ctx, Orchid.Step.ID.finger_print(step)),
+      workflow_ctx:
+        workflow_ctx |> Orchid.WorkflowCtx.add_step(Orchid.Step.ID.finger_print(step)),
       assigns: initial_assigns
     }
 
@@ -89,11 +90,17 @@ defmodule Orchid.Runner.Hook do
   Behaviour for runner hooks.
   """
 
-  @type next_fn :: (Orchid.Runner.Context.t() -> {:ok, Orchid.Step.output()} | {:error, term()})
+  # Used for some plugin
+  @type special_result :: {:special, any()}
+
+  @type orchid_core_result :: {:ok, Orchid.Step.output()} | {:error, term()}
+
+  @type hook_result :: orchid_core_result() | special_result()
+
+  @type next_fn :: (Orchid.Runner.Context.t() -> hook_result())
 
   @doc """
   Callback to execute the hook.
   """
-  @callback call(ctx :: Orchid.Runner.Context.t(), next_fn) ::
-              {:ok, Orchid.Step.output()} | {:error, term()}
+  @callback call(ctx :: Orchid.Runner.Context.t(), next_fn()) :: hook_result()
 end

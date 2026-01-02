@@ -41,8 +41,17 @@ defmodule Orchid.Executor do
 
       {[{step, idx} | _], _} ->
         case Orchid.Runner.run(step, ctx.params, ctx.recipe.opts, ctx.workflow_ctx) do
-          {:ok, result} ->
+          {:ok, result} when is_list(result) or is_struct(result, Orchid.Param) ->
             {:cont, Orchid.Scheduler.merge_result(ctx, idx, result)}
+
+          {:special, result} ->
+            {:error,
+             %Orchid.Error{
+               reason: {:core_executor_not_support_special, result},
+               context: ctx,
+               step_id: Orchid.Step.ID.finger_print(step),
+               kind: :exception
+             }}
 
           {:error, reason} ->
             {:error,
