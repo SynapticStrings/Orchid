@@ -41,7 +41,9 @@ defmodule Orchid.Executor do
 
       {[{step, idx} | _], _} ->
         case Orchid.Runner.run(step, ctx.params, ctx.recipe.opts, ctx.workflow_ctx) do
-          {:ok, result} when is_list(result) or is_struct(result, Orchid.Param) ->
+          # List(Params), Tuple(Params) & Param
+          {:ok, result}
+          when is_list(result) or is_tuple(result) or is_struct(result, Orchid.Param) ->
             {:cont, Orchid.Scheduler.merge_result(ctx, idx, result)}
 
           {:special, result} ->
