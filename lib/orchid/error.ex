@@ -6,7 +6,7 @@ defmodule Orchid.Error do
           reason: term(),
           context: Orchid.Scheduler.Context.t() | nil,
           step_id: Orchid.Step.ID.t() | Orchid.Step.t() | nil,
-          kind: :logic | :exception | :exit
+          kind: :logic | :exception | :exit | :logic_or_exception
         }
   defexception [:reason, :context, :step_id, :kind]
 

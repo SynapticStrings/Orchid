@@ -19,7 +19,11 @@ defmodule Orchid.Runner.Hooks.Telemetry do
 
         {:special, result} ->
           duration = System.monotonic_time() - start_time
-          :telemetry.execute([:orchid, :step, :special], %{duration: duration}, %{meta | special: result})
+
+          :telemetry.execute([:orchid, :step, :special], %{duration: duration}, %{
+            meta
+            | special: result
+          })
 
           {:special, result}
 

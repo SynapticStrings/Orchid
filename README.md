@@ -173,8 +173,12 @@ defmodule MyHook do
 
     # Execute inner part
     case next.(ctx) do
-      # When success
+      # When success and get result
       {:ok, result} ->
+        ...
+
+      # Reserved for plugin
+      {:special, _any} ->
         ...
 
       # When failed
@@ -234,9 +238,11 @@ No additional middleware has been introduced yet, but it will be added later.
 
 ## Roadmap
 
-- Return as Stream or PID
-- Implement Session for interruptible and recovery workflow
+- Return as Stream or PID & Implement Session for interruptible and recovery workflow
+  - [x] Core part
+  - [ ] Plugin part
 - Hydrate & dehydrate with param large payload
+  - [ ] Plugin part
 
 ## Libs
 

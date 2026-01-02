@@ -67,8 +67,6 @@ defmodule Orchid.Executor.Async do
 
     new_tasks =
       Enum.reduce(steps, state.tasks, fn {step, idx}, acc_tasks ->
-        # 使用 Task.async 启动，它会链接当前进程
-        # 但需要确定 Executor 进程可能因为运行 step 的进程崩溃而宕机的可能性
         task =
           Task.async(fn ->
             Orchid.Runner.run(step, ctx.params, state.recipe.opts, ctx.workflow_ctx)
@@ -84,7 +82,7 @@ defmodule Orchid.Executor.Async do
     receive do
       {ref, result} when is_reference(ref) ->
         {{step, step_idx}, remaining_tasks} = Map.pop(state.tasks, ref)
-        # 必须显式 demonitor 并且 flush，防止 :DOWN 消息污染邮箱
+        # MUST do this to avoid receiving :DOWN message later
         Process.demonitor(ref, [:flush])
 
         case result do
@@ -92,24 +90,35 @@ defmodule Orchid.Executor.Async do
             new_ctx = Scheduler.merge_result(ctx, step_idx, outputs)
             loop(new_ctx, %{state | tasks: remaining_tasks})
 
+          {:special, _plugin_context} ->
+            cleanup_tasks(remaining_tasks)
+
+            err = %Orchid.Error{
+              reason: :core_executor_not_support_special,
+              context: ctx,
+              step_id: Orchid.Step.ID.finger_print(step),
+              kind: :exception
+            }
+
+            {:error, err}
+
           {:error, reason} ->
-            # Fail-Fast: 立即终止其他所有正在运行的任务
             cleanup_tasks(remaining_tasks)
 
             err = %Orchid.Error{
               reason: reason,
               context: ctx,
               step_id: Orchid.Step.ID.finger_print(step),
-              kind: :logic
+              kind: :logic_or_exception
             }
 
             {:error, err}
         end
 
       {:DOWN, ref, :process, _pid, reason} ->
-        # 捕获 Task crash
-        # 需考虑极端情况下的 Race condition 可能对 Executor 带来影响
-        # （虽然按照目前的项目会一并崩掉返回 {:error, blabla} 罢了）
+        # caught task crash
+        # it requires consider whether the race condition would impact the executor
+        # (although in current project it would just crash together and return {:error, blabla})
         {{step, _step_idx}, remaining_tasks} = Map.pop(state.tasks, ref)
         cleanup_tasks(remaining_tasks)
 
@@ -124,11 +133,11 @@ defmodule Orchid.Executor.Async do
     end
   end
 
-  # 暴力清理：向所有并发任务发送 shutdown
+  # Sends a shutdown signal to ALL concurrent tasks
   defp cleanup_tasks(tasks) do
     tasks
     |> Enum.each(fn {_ref, {task, _idx}} ->
-      Task.shutdown(task, :brutal_kill) |> IO.inspect()
+      Task.shutdown(task, :brutal_kill)
 
       :ok
     end)

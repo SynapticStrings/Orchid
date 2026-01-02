@@ -1,6 +1,6 @@
 defmodule Orchid.Pipeline do
   @doc """
-  Run pipeline
+  Run pipeline at request level(not step).
   """
   @spec run([module()], Orchid.Operon.Request.t()) ::
           Orchid.Operon.Response.t() | {:error, term()}
