@@ -14,7 +14,7 @@ defmodule Orchid.Operon.Execute do
     case Scheduler.build(req.recipe, req.inital_params, req.workflow_ctx) do
       {:ok, ctx} ->
         %Response{
-          payload: do_execute(executor, ctx, executor_opts),
+          payload: apply(executor, :execute, [ctx, executor_opts]),
           assigns: req.assigns
         }
 
@@ -25,7 +25,4 @@ defmodule Orchid.Operon.Execute do
         }
     end
   end
-
-  defp do_execute(executor, ctx, executor_opts),
-    do: apply(executor, :execute, [ctx, executor_opts])
 end
