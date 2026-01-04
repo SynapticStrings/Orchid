@@ -5,7 +5,7 @@ defmodule Orchid do
   This module provides the primary interface (`run/3`) to execute defined Recipes.
   It is designed to be a flexible and extensible framework for task orchestration.
   """
-  alias Orchid.{WorkflowCtx, Recipe, Pipeline, Scheduler}
+  alias Orchid.{Recipe, Pipeline, Scheduler, WorkflowCtx}
   alias Orchid.Operon.{Request, Response, Execute}
 
   @allow_option_keys [:return_response, :operons_stack, :global_hooks_stack, :executor_and_opts]
@@ -37,15 +37,14 @@ defmodule Orchid do
   @spec run(Recipe.t(), Scheduler.initial_params(), keyword()) ::
           Response.payload() | Response.t()
   def run(recipe, input_params, opts \\ []) do
-    run_with_ctx(
-      recipe,
-      input_params,
-      WorkflowCtx.merge_config(
-        WorkflowCtx.new(),
-        Keyword.filter(opts, fn {k, _v} -> k in @allow_option_keys end)
-      )
+    initial_config = Keyword.filter(opts, fn {k, _v} -> k in @allow_option_keys end)
+
+    ctx =
+      WorkflowCtx.new()
+      |> WorkflowCtx.merge_config(initial_config)
       |> WorkflowCtx.merge_baggage(Keyword.get(opts, :baggage, []))
-    )
+
+    run_with_ctx(recipe, input_params, ctx)
   end
 
   @doc "Run with explicit WorkflowContext struct."
@@ -55,19 +54,13 @@ defmodule Orchid do
     response? = WorkflowCtx.get_config(workflow_ctx, :return_response, false)
     operons_stack = WorkflowCtx.get_config(workflow_ctx, :operons_stack, [])
 
-    executor_and_opts =
-      WorkflowCtx.get_config(workflow_ctx, :executor_and_opts, {Orchid.Executor.Async, []})
+    initial_request = %Request{
+      recipe: recipe,
+      inital_params: input_params,
+      workflow_ctx: workflow_ctx
+    }
 
-    response =
-      Pipeline.run(
-        operons_stack ++ [Execute],
-        %Request{
-          recipe: recipe,
-          inital_params: input_params,
-          executor_and_opts: executor_and_opts,
-          workflow_ctx: workflow_ctx
-        }
-      )
+    response = Pipeline.run(operons_stack ++ [Execute], initial_request)
 
     if response?, do: response, else: response.payload
   end

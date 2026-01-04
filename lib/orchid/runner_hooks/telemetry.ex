@@ -19,16 +19,13 @@ defmodule Orchid.Runner.Hooks.Telemetry do
 
         {:special, result} ->
           duration = System.monotonic_time() - start_time
-
-          :telemetry.execute([:orchid, :step, :special], %{duration: duration}, %{
-            meta
-            | special: result
-          })
+          meta = %{meta | special: result}
+          :telemetry.execute([:orchid, :step, :special], %{duration: duration}, meta)
 
           {:special, result}
 
         {:error, reason} ->
-          report_error(start_time, Map.put(meta, :reason, reason))
+          report_error(start_time, %{meta | reason: reason})
 
           {:error, reason}
       end
@@ -37,13 +34,13 @@ defmodule Orchid.Runner.Hooks.Telemetry do
       e ->
         report_error(
           start_time,
-          Map.merge(meta, %{kind: :error, reason: e, stacktrace: __STACKTRACE__})
+          %{meta | kind: :error, reason: e, stacktrace: __STACKTRACE__}
         )
 
         {:error, e}
     catch
       kind, reason ->
-        report_error(start_time, Map.merge(meta, %{kind: kind, reason: reason}))
+        report_error(start_time, %{meta | kind: kind, reason: reason})
 
         {:error, {kind, reason}}
     end

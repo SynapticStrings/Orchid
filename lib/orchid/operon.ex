@@ -5,7 +5,6 @@ defmodule Orchid.Operon do
             inital_params: [Orchid.Param.t()],
             assigns: map(),
             operon_options: keyword(),
-            executor_and_opts: {module(), keyword()},
             workflow_ctx: Orchid.WorkflowCtx.t()
           }
     defstruct [
@@ -13,7 +12,6 @@ defmodule Orchid.Operon do
       :inital_params,
       assigns: %{},
       operon_options: [],
-      executor_and_opts: {Orchid.Executor.Async, []},
       workflow_ctx: Orchid.WorkflowCtx.new()
     ]
   end
