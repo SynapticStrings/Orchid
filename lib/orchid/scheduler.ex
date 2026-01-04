@@ -204,10 +204,5 @@ defmodule Orchid.Scheduler do
 
   @spec get_results(Context.t()) :: Context.param_map()
   def get_results(%Context{params: params}), do: params
-
-  def get_results(%Context{params: params}, key),
-    do:
-      Enum.map(params, fn {k, v} -> if k == key, do: v, else: nil end)
-      |> Enum.reject(&is_nil/1)
-      |> Enum.into(%{})
+  def get_results(%Context{params: params}, key), do: Map.get(params, key)
 end

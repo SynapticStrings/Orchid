@@ -84,6 +84,7 @@ defmodule Orchid.SchedulerTest do
       {:ok, ctx} = Scheduler.build(recipe, [], Orchid.WorkflowCtx.new())
       assert Scheduler.done?(ctx)
       assert Scheduler.get_results(ctx) == %{}
+      assert Scheduler.get_results(ctx, :foo) == nil
     end
   end
 end

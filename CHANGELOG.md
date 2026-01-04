@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.1] - 2026-01-04
+
+> **Documentation & Refactoring**.
+> This release polishes the internal architecture, making the `WorkflowCtx` the single source of truth for configuration, and significantly improves internal documentation.
+
+### Changed
+
+- **Configuration Source of Truth**: `Orchid.run/3` now initializes `WorkflowCtx` earlier. Consequently, `Orchid.Operon.Request` no longer carries `executor_and_opts` directly; it is now dynamically resolved from `WorkflowCtx`. This allows Operons to swap Executors dynamically (e.g., switching to a GPU-optimized executor based on input).
+- **Scheduler Internals**:
+  - Reordered fields in `Orchid.Scheduler.Context` for better memory alignment (maybe).
+  - **Docs**: Added detailed explanation on why Orchid uses a mix of `List` (for deterministic order) and `MapSet` (for O(1) lookups) in the Scheduler context.
+- **Code Generation**: `Orchid.Runner` now uses `apply/3` to invoke step implementations. This reduces compile-time dependency warnings when creating dynamic workflows.
+
+### Fixed
+
+- **Execution History**: Fixed an inconsistency in `Scheduler.merge_result/3` where execution history tracking was slightly malformed (removed the index from history tuples).
+- **Typing**: Relaxed type specs for `telemetry_meta` and `assigns` in `Runner` to generic `map()` to accommodate more flexible plugin data.
+
 ## [0.5.0] - 2026-01-02
 
 > _Happy New Year!_
