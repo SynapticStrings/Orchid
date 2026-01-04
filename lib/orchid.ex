@@ -8,7 +8,7 @@ defmodule Orchid do
   alias Orchid.{Recipe, Pipeline, Scheduler, WorkflowCtx}
   alias Orchid.Operon.{Request, Response, Execute}
 
-  @allow_option_keys [:return_response, :operons_stack, :global_hooks_stack, :executor_and_opts]
+  @allow_config_keys [:return_response, :operons_stack, :global_hooks_stack, :executor_and_opts]
 
   @doc """
   Executes a workflow Recipe.
@@ -37,7 +37,7 @@ defmodule Orchid do
   @spec run(Recipe.t(), Scheduler.initial_params(), keyword()) ::
           Response.payload() | Response.t()
   def run(recipe, input_params, opts \\ []) do
-    initial_config = Keyword.filter(opts, fn {k, _v} -> k in @allow_option_keys end)
+    initial_config = Keyword.filter(opts, fn {k, _v} -> k in @allow_config_keys end)
 
     ctx =
       WorkflowCtx.new()

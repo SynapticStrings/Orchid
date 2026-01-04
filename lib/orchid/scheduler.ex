@@ -2,7 +2,7 @@ defmodule Orchid.Scheduler do
   @moduledoc """
   Scheduler is responsible for managing and scheduling the execution order of steps in the Recipe.
   """
-  alias Orchid.{WorkflowCtx, Recipe, Param, Step, Scheduler}
+  alias Orchid.{WorkflowCtx, Recipe, Param, Step}
 
   defmodule Context do
     @moduledoc """
@@ -27,8 +27,8 @@ defmodule Orchid.Scheduler do
             pending_steps: [{Step.t(), step_index()}],
             available_keys: MapSet.t(Step.io_key()),
             params: param_map(),
-            running_steps: MapSet.t(Step.t()),
-            history: [{Step.t(), step_index(), MapSet.t(Step.io_key())}],
+            running_steps: MapSet.t(step_index()),
+            history: [{Step.t(), MapSet.t(Step.output_keys())}],
             workflow_ctx: WorkflowCtx.t(),
             assigns: %{any() => any()}
           }
@@ -131,14 +131,9 @@ defmodule Orchid.Scheduler do
     do: MapSet.new(List.wrap(step_indices))
 
   @doc "After the Step is executed, merge the result back into the Context."
-  @spec merge_result(
-          Context.t(),
-          non_neg_integer(),
-          [Param.t()] | Param.t()
-        ) :: Context.t()
+  @spec merge_result(Context.t(), non_neg_integer(), [Param.t()] | Param.t()) :: Context.t()
   def merge_result(%Context{} = ctx, step_idx, output_params) do
-    new_pending = Enum.reject(ctx.pending_steps, fn {_, idx} -> idx == step_idx end)
-    new_running = MapSet.delete(ctx.running_steps, step_idx)
+    step_filter = fn {_, idx} -> idx == step_idx end
 
     new_params_map =
       case output_params do
@@ -149,23 +144,20 @@ defmodule Orchid.Scheduler do
           Map.new(output_params, fn %Param{name: n} = p -> {n, p} end)
       end
 
-    merged_params = Map.merge(ctx.params, new_params_map)
-
     new_keys = Map.keys(new_params_map)
-    updated_keys = MapSet.union(ctx.available_keys, MapSet.new(new_keys))
 
     %{
       ctx
-      | pending_steps: new_pending,
-        running_steps: new_running,
-        params: merged_params,
-        available_keys: updated_keys,
+      | pending_steps: Enum.reject(ctx.pending_steps, step_filter),
+        running_steps: MapSet.delete(ctx.running_steps, step_idx),
+        params: Map.merge(ctx.params, new_params_map),
+        available_keys: MapSet.union(ctx.available_keys, MapSet.new(new_keys)),
         history:
           ctx.history ++
             [
               ctx.pending_steps
-              |> Enum.filter(fn {_, idx} -> idx == step_idx end)
-              |> Enum.map(fn {step, idx} -> {step, idx, MapSet.new(new_keys)} end)
+              |> Enum.filter(step_filter)
+              |> Enum.map(fn {step, _idx} -> {step, MapSet.new(new_keys)} end)
             ]
     }
   end
@@ -176,12 +168,7 @@ defmodule Orchid.Scheduler do
   This is used in scenarios where after an external service crashes and re-assigned,
   but several steps' options still use the old references.
   """
-  @spec inject_opts(
-          Scheduler.Context.t(),
-          (Step.t() -> boolean()),
-          keyword()
-        ) ::
-          Scheduler.Context.t()
+  @spec inject_opts(Context.t(), (Step.t() -> boolean()), keyword()) :: Context.t()
   def inject_opts(%Context{} = ctx, selector, new_opts) do
     %{
       ctx
@@ -199,12 +186,12 @@ defmodule Orchid.Scheduler do
   def done?(%Context{pending_steps: []}), do: true
   def done?(%Context{}), do: false
 
-  @spec get_results(Context.t()) :: [Param.t()]
+  @spec get_results(Context.t()) :: Context.param_map()
   def get_results(%Context{params: params}), do: params
 
-  @spec get_results(Context.t(), atom()) :: [Param.t()]
   def get_results(%Context{params: params}, key),
     do:
       Enum.map(params, fn {k, v} -> if k == key, do: v, else: nil end)
       |> Enum.reject(&is_nil/1)
+      |> Enum.into(%{})
 end

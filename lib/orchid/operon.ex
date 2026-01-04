@@ -2,7 +2,7 @@ defmodule Orchid.Operon do
   defmodule Request do
     @type t :: %__MODULE__{
             recipe: Orchid.Recipe.t(),
-            inital_params: [Orchid.Param.t()],
+            inital_params: Orchid.Scheduler.initial_params(),
             assigns: map(),
             operon_options: keyword(),
             workflow_ctx: Orchid.WorkflowCtx.t()

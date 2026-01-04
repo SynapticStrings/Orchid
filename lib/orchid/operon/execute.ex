@@ -11,18 +11,15 @@ defmodule Orchid.Operon.Execute do
 
     # This may cause warn when use dialyzer, so I ignore it in `.dialyzer_ignore.exs`
     # But I don't known how to ignore it in ElixirLS.
-    case Scheduler.build(req.recipe, req.inital_params, req.workflow_ctx) do
-      {:ok, ctx} ->
-        %Response{
-          payload: apply(executor, :execute, [ctx, executor_opts]),
-          assigns: req.assigns
-        }
+    payload =
+      case Scheduler.build(req.recipe, req.inital_params, req.workflow_ctx) do
+        {:ok, ctx} ->
+          apply(executor, :execute, [ctx, executor_opts])
 
-      {:error, reason} ->
-        %Response{
-          payload: {:error, %Orchid.Error{reason: reason, kind: :logic_or_exception}},
-          assigns: req.assigns
-        }
-    end
+        {:error, reason} ->
+          {:error, %Orchid.Error{reason: reason, kind: :logic_or_exception}}
+      end
+
+    %Response{payload: payload, assigns: req.assigns}
   end
 end
