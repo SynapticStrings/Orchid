@@ -6,40 +6,63 @@ defmodule Orchid.Scheduler do
 
   defmodule Context do
     @moduledoc """
-    Provides the execution context for the Scheduler, including the recipe, pending steps,
-    available keys, parameters, running steps, execution history, workflow context, and additional assigns.
+    The state machine for workflow execution.
 
-    * `:recipe` - The Recipe being executed.
-    * `:pending_steps` - A list of tuples containing steps that have not yet been executed and their indices.
-    * `:available_keys` - A set of keys that are currently available for step execution.
-    * `:params` - A map of parameters available in the current context.
-    * `:running_steps` - A set of steps that are currently in execution.
-    * `:history` - A list of tuples recording the execution history of steps, including their indices and output keys.
-    * `:workflow_ctx` - The `Orchid.WorkflowCtx` struct associated with the execution.
-    * `:assigns` - A map for storing additional context-specific data.
+    It tracks the progress of a Recipe, including which steps are pending, running,
+    or completed, and holds the data (params) produced so far.
+
+    ## Data Structure Decisions
+
+    You might notice a mix of Lists and MapSets. This is intentional to balance
+    **deterministic execution** with **scheduling efficiency**:
+
+    * `:pending_steps` (List) - Kept as a list to preserve the **definition order**
+        from the Recipe. When multiple steps are ready simultaneously, Orchid prefers
+        to execute them in the order they were written. This ensures predictable behavior,
+        especially for the `Serial` executor.
+    * `:running_steps` (MapSet) - Used for **O(1) lookups**. The scheduler frequently
+        checks `member?/2` inside loops; a MapSet prevents this from becoming a performance bottleneck.
+    * `:available_keys` (MapSet) - Optimized for **Set Algebra**. Dependency resolution
+        relies heavily on subset checks (`subset?/2`), which MapSets handle efficiently.
+    * `:recipe` (Struct) - The Recipe being executed.
+    * `:params` (Map) - A map of parameters available in the current context.
+    * `:history` (List) - A list of tuples recording the execution history of steps, including their indices and output keys.
+    * `:workflow_ctx` (Struct) - The `Orchid.WorkflowCtx` struct associated with the execution.
+    * `:assigns` (Map) - A map for storing additional context-specific data.
     """
     alias Orchid.{Param, Step, Recipe, WorkflowCtx}
 
     @type param_map :: %{optional(atom()) => Param.t()}
     @type step_index :: non_neg_integer()
     @type t :: %__MODULE__{
+            # --- Static Config ---
             recipe: Recipe.t(),
-            pending_steps: [{Step.t(), step_index()}],
-            available_keys: MapSet.t(Step.io_key()),
-            params: param_map(),
-            running_steps: MapSet.t(step_index()),
-            history: [{Step.t(), MapSet.t(Step.output_keys())}],
             workflow_ctx: WorkflowCtx.t(),
+
+            # List: To maintain priority based on definition order.
+            pending_steps: [{Step.t(), step_index()}],
+
+            # MapSet: For fast subset checking (dependency resolution).
+            available_keys: MapSet.t(Step.io_key()),
+
+            # MapSet: For fast exclusion checks during scheduling loop.
+            running_steps: MapSet.t(step_index()),
+
+            # Map: For random access to data payloads.
+            params: param_map(),
+
+            # List: Append-only log of execution path.
+            history: [{Step.t(), MapSet.t(Step.output_keys())}],
             assigns: %{any() => any()}
           }
     defstruct [
       :recipe,
-      :pending_steps,
-      :available_keys,
-      :params,
-      :running_steps,
-      :history,
       :workflow_ctx,
+      :params,
+      :pending_steps,
+      :running_steps,
+      :available_keys,
+      :history,
       :assigns
     ]
   end
@@ -58,18 +81,16 @@ defmodule Orchid.Scheduler do
         [] ->
           %{}
 
-        [_ | _] ->
+        [%Param{} | _] ->
           Map.new(initial_params, fn param ->
             {Map.get(param, :name), param}
           end)
 
         %{} ->
           initial_params
-      end
+    end
 
-    initial_keys = Map.keys(initial_map)
-
-    case Recipe.validate_steps(recipe.steps, initial_keys) do
+    case Recipe.validate_steps(recipe.steps, Map.keys(initial_map)) do
       :ok -> do_build(recipe, initial_map, workflow_context)
       {:error, reason} -> {:error, reason}
     end
@@ -115,17 +136,15 @@ defmodule Orchid.Scheduler do
           Context.t()
   def mark_running_steps(ctx, step_indices, mode \\ :running)
 
-  def mark_running_steps(%Context{} = ctx, step_indices, :running),
-    do: %{
-      ctx
-      | running_steps: MapSet.union(ctx.running_steps, normalize_step_indices(step_indices))
-    }
+  def mark_running_steps(%Context{} = ctx, step_indices, :running) do
+    running_step = MapSet.union(ctx.running_steps, normalize_step_indices(step_indices))
+    %{ctx | running_steps: running_step}
+  end
 
-  def mark_running_steps(%Context{} = ctx, step_indices, :reattempt),
-    do: %{
-      ctx
-      | running_steps: MapSet.difference(ctx.running_steps, normalize_step_indices(step_indices))
-    }
+  def mark_running_steps(%Context{} = ctx, step_indices, :reattempt) do
+    running_step = MapSet.difference(ctx.running_steps, normalize_step_indices(step_indices))
+    %{ctx | running_steps: running_step}
+  end
 
   defp normalize_step_indices(step_indices),
     do: MapSet.new(List.wrap(step_indices))
@@ -146,19 +165,18 @@ defmodule Orchid.Scheduler do
 
     new_keys = Map.keys(new_params_map)
 
+    new_item =
+      ctx.pending_steps
+      |> Enum.filter(step_filter)
+      |> Enum.map(fn {step, _idx} -> {step, MapSet.new(new_keys)} end)
+
     %{
       ctx
       | pending_steps: Enum.reject(ctx.pending_steps, step_filter),
         running_steps: MapSet.delete(ctx.running_steps, step_idx),
         params: Map.merge(ctx.params, new_params_map),
         available_keys: MapSet.union(ctx.available_keys, MapSet.new(new_keys)),
-        history:
-          ctx.history ++
-            [
-              ctx.pending_steps
-              |> Enum.filter(step_filter)
-              |> Enum.map(fn {step, _idx} -> {step, MapSet.new(new_keys)} end)
-            ]
+        history: ctx.history ++ [new_item]
     }
   end
 
@@ -170,16 +188,14 @@ defmodule Orchid.Scheduler do
   """
   @spec inject_opts(Context.t(), (Step.t() -> boolean()), keyword()) :: Context.t()
   def inject_opts(%Context{} = ctx, selector, new_opts) do
-    %{
-      ctx
-      | pending_steps:
-          Recipe.walk(ctx.pending_steps, fn step ->
-            if(selector.(step),
-              do: step |> Step.ensure_full_step() |> Step.inject_options(new_opts),
-              else: step
-            )
-          end)
-    }
+    update_func = fn step ->
+      if(selector.(step),
+        do: step |> Step.ensure_full_step() |> Step.inject_options(new_opts),
+        else: step
+      )
+    end
+
+    %{ctx | pending_steps: Recipe.walk(ctx.pending_steps, update_func)}
   end
 
   @spec done?(Context.t()) :: boolean()

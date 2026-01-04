@@ -24,9 +24,9 @@ defmodule Orchid.Runner do
             step_opts: Orchid.Step.step_options(),
             inputs: [Orchid.Param.t()],
             recipe_opts: keyword(),
-            telemetry_meta: %{},
+            telemetry_meta: map(),
             workflow_ctx: Orchid.WorkflowCtx.t(),
-            assigns: %{}
+            assigns: map()
           }
     defstruct [
       :step_implementation,

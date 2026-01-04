@@ -108,6 +108,11 @@ defmodule Orchid.Step.NestedStep do
     prepare_final_results(res, output_map)
   end
 
+  @doc """
+  Checks if a given Step implementation or Step tuple represents a nested step.
+
+  It's NestedStep-agnostic and also works for custom step implementations that define `nested?/0`.
+  """
   @spec nested_check(Step.implementation() | Step.t()) :: boolean()
   def nested_check(step) when is_tuple(step) do
     {impl, _, _, _} = Step.ensure_full_step(step)

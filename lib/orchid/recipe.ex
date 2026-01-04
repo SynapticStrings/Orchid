@@ -22,7 +22,7 @@ defmodule Orchid.Recipe do
   """
 
   alias Orchid.{Recipe, Step}
-  alias Orchid.Step.NestedStep
+  import Orchid.Step.NestedStep, only: [nested_check: 1]
 
   @type t :: %__MODULE__{
           steps: [Step.t()],
@@ -145,7 +145,8 @@ defmodule Orchid.Recipe do
   Performs a deep traversal on a list of steps.
 
   This function applies `func` to every step in the tree. If a step is a `NestedStep`
-  (contains an inner recipe), it recursively traverses the inner steps as well.
+  or its contains an inner recipe(with `NestedStep.nested_check/1` returned true),
+  it recursively traverses the inner steps as well.
 
   It supports both standard step lists and indexed step lists (used by `Orchid.Scheduler`).
 
@@ -178,7 +179,7 @@ defmodule Orchid.Recipe do
   defp do_walk_step(step, func) do
     modified_step = func.(step)
 
-    if NestedStep.nested_check(modified_step) do
+    if nested_check(modified_step) do
       update_inner_recipe(modified_step, fn inner_recipe ->
         %{inner_recipe | steps: walk(inner_recipe.steps, func, :step)}
       end)
@@ -188,7 +189,7 @@ defmodule Orchid.Recipe do
   end
 
   defp do_walk_inner_recipe(step, func) do
-    if NestedStep.nested_check(step) do
+    if nested_check(step) do
       update_inner_recipe(step, fn inner_recipe ->
         new_recipe = func.(inner_recipe)
         %{new_recipe | steps: walk(new_recipe.steps, func, :inner_recipe)}
