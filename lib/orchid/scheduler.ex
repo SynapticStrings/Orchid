@@ -119,14 +119,13 @@ defmodule Orchid.Scheduler do
     end)
   end
 
-  defp dependencies_met?(step, available_keys) do
-    {_impl, in_keys, _out} = Step.extract_schema(step)
-
+  defp dependencies_met?({_impl, in_keys, _out, _opts}, available_keys) do
     in_keys
     |> Step.ID.normalize_keys_to_set()
     |> MapSet.subset?(available_keys)
   end
 
+  # TODO: Use readable ID
   @doc "Mark those steps that have started running(or remove when failed)."
   @spec mark_running_steps(
           Context.t(),

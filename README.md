@@ -238,11 +238,11 @@ No additional middleware has been introduced yet, but it will be added later.
 
 ## Roadmap
 
+- Using `Orchid.Step.ID.t` to replace index created via defination order
 - Return as Stream or PID & Implement Session for interruptible and recovery workflow
-  - [x] Core part
-  - [ ] Plugin part
+  - `:plugin`
 - Hydrate & dehydrate with param large payload
-  - [ ] Plugin part
+  - `:done`
 
 ## Libs
 

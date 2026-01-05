@@ -2,6 +2,8 @@ defmodule Orchid.Runner do
   @moduledoc """
   Run step.
   """
+  alias Orchid.{Step, WorkflowCtx}
+  alias Orchid.Runner.Hooks
 
   defmodule Context do
     @moduledoc """
@@ -42,14 +44,14 @@ defmodule Orchid.Runner do
   end
 
   @spec run(
-          Orchid.Step.t(),
+          Step.t(),
           Orchid.Scheduler.Context.param_map(),
           keyword(),
-          Orchid.WorkflowCtx.t(),
+          WorkflowCtx.t(),
           map()
         ) :: Orchid.Runner.Hook.hook_result()
   def run(step, ctx_params, recipe_opts, workflow_ctx, initial_assigns \\ %{}) do
-    {impl, in_keys, out_keys, step_opts} = Orchid.Step.ensure_full_step(step)
+    {impl, in_keys, out_keys, step_opts} = step
 
     initial_ctx = %Context{
       step_implementation: impl,
@@ -60,15 +62,15 @@ defmodule Orchid.Runner do
       recipe_opts: recipe_opts,
       telemetry_meta: %{impl: impl, in_keys: in_keys, out_keys: out_keys},
       workflow_ctx:
-        workflow_ctx |> Orchid.WorkflowCtx.add_step(Orchid.Step.ID.finger_print(step)),
+        workflow_ctx |> WorkflowCtx.add_depth(Step.ID.finger_print(step)),
       assigns: initial_assigns
     }
 
     hook_stack =
-      [Orchid.Runner.Hooks.Telemetry] ++
-        Orchid.WorkflowCtx.get_config(workflow_ctx, :global_hooks_stack, []) ++
+      [Hooks.Telemetry] ++
+        WorkflowCtx.get_config(workflow_ctx, :global_hooks_stack, []) ++
         Keyword.get(step_opts, :extra_hooks_stack, []) ++
-        [Orchid.Runner.Hooks.Core]
+        [Hooks.Core]
 
     run_pipeline(hook_stack, initial_ctx)
   end

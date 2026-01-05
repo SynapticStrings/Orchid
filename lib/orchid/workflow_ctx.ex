@@ -23,5 +23,5 @@ defmodule Orchid.WorkflowCtx do
   def merge_baggage(ctx, baggage),
     do: ctx.baggage |> Map.merge(Enum.into(baggage, %{})) |> then(&%{ctx | baggage: &1})
 
-  def add_step(%__MODULE__{path: path} = ctx, step_id), do: %{ctx | path: path ++ [step_id]}
+  def add_depth(%__MODULE__{path: path} = ctx, step_id), do: %{ctx | path: path ++ [step_id]}
 end
