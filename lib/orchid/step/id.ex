@@ -4,7 +4,7 @@ defmodule Orchid.Step.ID do
   """
   alias Orchid.Step
 
-  @type t :: integer() | Step.step_schema() | :root
+  @type t :: {Step.input_keys(), Step.output_keys()} | Step.step_schema() | :root
 
   @spec finger_print(Step.t(), headless? :: boolean()) :: t()
   def finger_print(step, headless? \\ true)
