@@ -19,7 +19,8 @@ defmodule Orchid.PipelineTest do
   end
 
   test "handles no sink" do
-    {:error, :no_sink_middleware} = Pipeline.run([], %Operon.Request{})
+    %Orchid.Operon.Response{payload: {:error, %Orchid.Error{reason: :no_sink_middleware}}} =
+      Pipeline.run([], %Operon.Request{})
   end
 
   test "propagates errors through stack" do
