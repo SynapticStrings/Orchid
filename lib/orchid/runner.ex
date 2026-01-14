@@ -70,7 +70,7 @@ defmodule Orchid.Runner do
       [Hooks.Telemetry] ++
         WorkflowCtx.get_config(workflow_ctx, :global_hooks_stack, []) ++
         Keyword.get(step_opts, :extra_hooks_stack, []) ++
-        [Hooks.Core]
+        [WorkflowCtx.get_config(workflow_ctx, :core_hook, Hooks.Core)]
 
     run_pipeline(hook_stack, initial_ctx)
   end

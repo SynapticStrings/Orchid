@@ -8,7 +8,7 @@ defmodule Orchid do
   alias Orchid.{Recipe, Pipeline, Scheduler, WorkflowCtx}
   alias Orchid.Operon.{Request, Response, Execute}
 
-  @allow_config_keys [:return_response, :operons_stack, :global_hooks_stack, :executor_and_opts]
+  @allow_config_keys [:return_response, :operons_stack, :global_hooks_stack, :executor_and_opts, :core_hook]
 
   @doc """
   Executes a workflow Recipe.
@@ -24,6 +24,7 @@ defmodule Orchid do
     to run before the execution phase. They are executed in the order provided.
   * `:global_hooks_stack` - (list)
   * `:executor_and_opts` - (tuple) Executor module and its options.
+  * `:core_hook` - (module) A Module for execute step.
   * `:baggage` - (enumerable) Custom options used by user/custome operons/hooks/etc.
 
   ### Examples
