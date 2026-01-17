@@ -90,11 +90,11 @@ defmodule Orchid.Executor.Async do
             new_ctx = Scheduler.merge_result(ctx, step_idx, outputs)
             loop(new_ctx, %{state | tasks: remaining_tasks})
 
-          {:special, _plugin_context} ->
+          {:special, plugin_context} ->
             cleanup_tasks(remaining_tasks)
 
             err = %Orchid.Error{
-              reason: :core_executor_not_support_special,
+              reason: {:core_executor_not_support_special, plugin_context},
               context: ctx,
               step_id: Orchid.Step.ID.finger_print(step),
               kind: :exception

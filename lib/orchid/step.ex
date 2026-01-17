@@ -176,7 +176,7 @@ defmodule Orchid.Step do
 
       def validate_options(_opts), do: :ok
 
-      import unquote(__MODULE__), only: [report: 3]
+      import unquote(__MODULE__), only: [report: 3, report: 2]
 
       defoverridable validate_options: 1
     end
