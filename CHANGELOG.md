@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.2] - 2026-01-17
+
+> **Robustness & Cleanup**.
+> This release focuses on standardizing return types, fixing edge cases in asynchronous execution, and cleaning up internal identifiers to be less dependent on list indices.
+
+### Fixed
+
+- **Async Executor**: Fixed an issue where `Orchid.Executor.Async` would discard the context payload when a step returned `{:special, context}`. It now correctly wraps the payload in the error reason `{:core_executor_not_support_special, context}`.
+- **Pipeline Consistency**: `Orchid.Pipeline.run/2` now consistently returns an `Orchid.Operon.Response` struct (wrapping the error) even when the middleware stack is empty or hits the sink, preventing format mismatch errors.
+
+### Added
+
+- **Custom Core Hook**: Added `:core_hook` support in `Orchid.WorkflowCtx` config. This allows replacing `Orchid.Runner.Hooks.Core` with a custom module, which is useful for specialized execution strategies or testing mocks.
+- **Step Comparison**: Added `Orchid.Step.ID.same?/2` to check if two steps share the same Input/Output interface.
+
+### Changed
+
+- **Recipe Validation**: `Orchid.Recipe.validate_steps/2` no longer includes the step index (`idx`) in `{:invalid_step_option, ...}` errors. This aligns with the roadmap goal of moving away from order-based identification.
+- **Internal ID Logic**: Refactored `Orchid.Step.ID.finger_print/2`. The `as_num?` option is replaced by `headless?`. It no longer returns an integer hash but simpler tuples (`{in, out}` or `{impl, in, out}`), making it more predictable for debugging.
+- **Context API**: Renamed `Orchid.WorkflowCtx.add_step/2` to `add_depth/2` to better reflect its purpose of tracking call stack depth in nested workflows.
+
 ## [0.5.1] - 2026-01-04
 
 > **Documentation & Refactoring**.
