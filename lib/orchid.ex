@@ -8,7 +8,13 @@ defmodule Orchid do
   alias Orchid.{Recipe, Pipeline, Scheduler, WorkflowCtx}
   alias Orchid.Operon.{Request, Response, Execute}
 
-  @allow_config_keys [:return_response, :operons_stack, :global_hooks_stack, :executor_and_opts, :core_hook]
+  @allow_config_keys [
+    :return_response,
+    :operons_stack,
+    :global_hooks_stack,
+    :executor_and_opts,
+    :core_hook
+  ]
 
   @doc """
   Executes a workflow Recipe.

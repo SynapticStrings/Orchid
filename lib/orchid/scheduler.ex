@@ -88,7 +88,7 @@ defmodule Orchid.Scheduler do
 
         %{} ->
           initial_params
-    end
+      end
 
     case Recipe.validate_steps(recipe.steps, Map.keys(initial_map)) do
       :ok -> do_build(recipe, initial_map, workflow_context)

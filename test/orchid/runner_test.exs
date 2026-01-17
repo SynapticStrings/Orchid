@@ -43,13 +43,15 @@ defmodule Orchid.RunnerTest do
 
     test "run pipelines will return error when no hooks exist" do
       step = {Bar, {:i1, :i2}, :o3, []}
+
       ctx_params = %{
         i1: Param.new(:i1, :void, nil),
         i2: Param.new(:i2, :void, nil)
       }
 
-      workflow_ctx = WorkflowCtx.new()
-      |> WorkflowCtx.merge_config(%{core_hook: PassThroughHook})
+      workflow_ctx =
+        WorkflowCtx.new()
+        |> WorkflowCtx.merge_config(%{core_hook: PassThroughHook})
 
       result = Orchid.Runner.run(step, ctx_params, [], workflow_ctx)
 

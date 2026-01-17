@@ -38,7 +38,10 @@ defmodule Orchid.StepIdTest do
     end
 
     test "it is underlying MapSet" do
-      assert MapSet.equal?(ID.normalize_keys_to_set(MapSet.new([:foo, :bar])), MapSet.new([:bar, :foo]))
+      assert MapSet.equal?(
+               ID.normalize_keys_to_set(MapSet.new([:foo, :bar])),
+               MapSet.new([:bar, :foo])
+             )
     end
   end
 end

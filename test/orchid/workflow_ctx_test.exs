@@ -11,6 +11,6 @@ defmodule Orchid.WorkflowCtxTest do
 
     assert Ctx.get_baggage(ctx, :foo) == :bar
 
-    assert Ctx.get_baggage(ctx, :bar) == :nil
+    assert Ctx.get_baggage(ctx, :bar) == nil
   end
 end

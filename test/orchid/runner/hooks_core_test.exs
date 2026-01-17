@@ -92,18 +92,23 @@ defmodule Orchid.Runner.HooksCoreTest do
       # single
       single_step = fn _, _ -> {:ok, [Param.new(:out, :void, nil)]} end
 
-      {:ok, %Param{}} = Core.call(
+      {:ok, %Param{}} =
+        Core.call(
           load_context({single_step, :inputs, [:out], []}, %{foo: Param.new(:inputs, :void, nil)}),
           fn _ -> {:error, :touch_fin} end
         )
 
       # multi
       # The Order is important
-      multi_step = fn _, _ -> {:ok, [Param.new(:o2, :void, :nil_1), Param.new(:o1, :void, :nil_2)]} end
+      multi_step = fn _, _ ->
+        {:ok, [Param.new(:o2, :void, :nil_1), Param.new(:o1, :void, :nil_2)]}
+      end
 
       {:ok, [%Param{}, %Param{}]} =
         Core.call(
-          load_context({multi_step, :inputs, [:_1, :_2], []}, %{foo: Param.new(:inputs, :void, nil)}),
+          load_context({multi_step, :inputs, [:_1, :_2], []}, %{
+            foo: Param.new(:inputs, :void, nil)
+          }),
           fn _ -> {:error, :touch_fin} end
         )
     end
