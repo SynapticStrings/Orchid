@@ -48,6 +48,7 @@ defmodule Orchid.Runner.Hooks.Core do
   defp align_output_names([%Param{} = param], out_key) when not is_tuple(out_key),
     do: %{param | name: out_key}
 
+  # for multiple outputs, we do not consider KVMap(Map like %{atom => param}, or keywords)
   defp align_output_names(params, out_keys) when is_list(params) and not is_tuple(out_keys),
     do: params |> Enum.zip_with(List.wrap(out_keys), fn param, key -> %{param | name: key} end)
 

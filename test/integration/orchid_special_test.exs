@@ -6,9 +6,7 @@ defmodule Orchid.Integration.SpecialTest do
   defmodule SpecialStep do
     use Orchid.Step
 
-    def run(_input, opts) do
-      report(opts, :Aha!)
-
+    def run(_input, _opts) do
       {:special, nil}
     end
   end
@@ -19,51 +17,36 @@ defmodule Orchid.Integration.SpecialTest do
     end
   end
 
-  setup do
-    :telemetry.attach_many(
-      "test-handler-for-special",
-      [
-        [:orchid, :step, :start],
-        [:orchid, :step, :done],
-        [:orchid, :step, :progress],
-        [:orchid, :step, :special]
-      ],
-      &TestHandler.handle_event/4,
-      self()
-    )
-
-    # build runner context
-    # {:ok,
-    #  %Orchid.Runner.Context{
-    #    step_implementation: SpecialStep,
-    #    in_keys: [:foo, :bar],
-    #    out_keys: {:a, :b, :c},
-    #    inputs: %{foo: Param.new(:foo, :void, nil), bar: Param.new(:bar, :void, nil)},
-    #    recipe_opts: [],
-    #    telemetry_meta: %{impl: SpecialStep, in_keys: [:foo, :bar], out_keys: {:a, :b, :c}},
-    #    workflow_ctx: WorkflowCtx.new(),
-    #    assigns: %{}
-    #  }}
-
-    :ok
-  end
-
   describe "runner can handle special" do
+    setup do
+      :telemetry.attach_many(
+        "test-handler-for-special",
+        [
+          [:orchid, :step, :start],
+          [:orchid, :step, :special]
+        ],
+        &TestHandler.handle_event/4,
+        self()
+      )
+
+      :ok
+    end
+
     # Orchid.Runner.Hooks.Core => do nothing
 
     # Orchid.Runner.Hooks.Telemetry =>
     # execute
     test "telemetry can send message when receive special" do
-      assert {:special, _} =
-               Orchid.Runner.run(
-                 {SpecialStep, [:foo, :bar], {:a, :b, :c}, []},
-                 %{foo: Param.new(:foo, :void, nil), bar: Param.new(:bar, :void, nil)},
-                 [],
-                 WorkflowCtx.new()
-               )
+      {:special, _} =
+        Orchid.Runner.run(
+          {SpecialStep, [:foo, :bar], {:a, :b, :c}, []},
+          %{foo: Param.new(:foo, :void, nil), bar: Param.new(:bar, :void, nil)},
+          [],
+          WorkflowCtx.new()
+        )
 
-      assert_receive {:telemetry_event, [:orchid, :step, :progress], %{progress: :Aha!}, meta}
-      assert meta.payload == nil
+      assert_receive {:telemetry_event, [:orchid, :step, :start], _, _meta}
+      assert_receive {:telemetry_event, [:orchid, :step, :special], _, _meta}
 
       :telemetry.detach("test-handler-for-special")
     end
