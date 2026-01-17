@@ -1,6 +1,6 @@
 defmodule Orchid.RecipeTest do
   use ExUnit.Case
-  alias Orchid.{Recipe, Step}
+  alias Orchid.{Recipe, Step, Param}
   alias Orchid.Step.NestedStep
 
   # 定义一些简单的 Step 用于测试
@@ -21,6 +21,33 @@ defmodule Orchid.RecipeTest do
     def nested?(), do: true
     @impl true
     def run(p, _), do: {:ok, p}
+  end
+
+  defmodule TestStepOpts do
+    use Orchid.Step
+
+    def validate_options(step_options) do
+      if Keyword.get(step_options, :foo) do
+        :ok
+      else
+        {:error, "`:foo` not exist"}
+      end
+    end
+
+    def run(_input, _step_options) do
+      {:ok, Param.new(:out, :void, nil)}
+    end
+  end
+
+  describe "validate" do
+    test "steps" do
+      steps = [{TestStepOpts, :in, :out}]
+
+      initial_keys = %{in: Param.new(:in, :void, nil)}
+
+      assert {:error, {:option_validation_failed, _}} =
+               Recipe.validate_steps(steps, initial_keys)
+    end
   end
 
   describe "assign_options/3 coverage" do

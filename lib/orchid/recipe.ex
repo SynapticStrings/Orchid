@@ -87,7 +87,7 @@ defmodule Orchid.Recipe do
   defp get_step_errors(steps) do
     steps
     |> Enum.with_index()
-    |> Enum.reduce([], fn {step, idx}, acc ->
+    |> Enum.reduce([], fn {step, _idx}, acc ->
       {impl, _, _, opts} = Orchid.Step.ensure_full_step(step)
 
       # 检查模块是否导出了 validate/1
@@ -95,7 +95,7 @@ defmodule Orchid.Recipe do
            function_exported?(impl, :validate_options, 1) do
         case impl.validate_options(opts) do
           :ok -> acc
-          {:error, reason} -> [{:invalid_step_option, idx, impl, reason} | acc]
+          {:error, reason} -> [{:invalid_step_option, impl, reason} | acc]
         end
       else
         acc
