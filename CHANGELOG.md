@@ -24,7 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Recipe Validation**: `Orchid.Recipe.validate_steps/2` no longer includes the step index (`idx`) in `{:invalid_step_option, ...}` errors. This aligns with the roadmap goal of moving away from order-based identification.
 - **Internal ID Logic**: Refactored `Orchid.Step.ID.finger_print/2`. The `as_num?` option is replaced by `headless?`. It no longer returns an integer hash but simpler tuples (`{in, out}` or `{impl, in, out}`), making it more predictable for debugging.
-- **Context API**: Renamed `Orchid.WorkflowCtx.add_step/2` to `add_depth/2` to better reflect its purpose of tracking call stack depth in nested workflows.
+- **Context API**: Renamed Orchid.WorkflowCtx's `add_step/2` to `add_depth/2` to better reflect its purpose of tracking call stack depth in nested workflows.
 
 ## [0.5.1] - 2026-01-04
 
