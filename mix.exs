@@ -45,7 +45,7 @@ defmodule Orchid.MixProject do
     [
       {:telemetry, "~> 1.3"},
       {:dialyxir, "~> 1.0", only: :dev, runtime: false, optional: true},
-      {:ex_doc, "~> 0.39", only: :dev, runtime: false, warn_if_outdated: true}
+      {:ex_doc, "~> 0.40", only: :dev, runtime: false, warn_if_outdated: true}
     ]
   end
 
