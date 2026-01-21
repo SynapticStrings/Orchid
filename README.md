@@ -1,5 +1,7 @@
 # Orchid
 
+[![codecov](https://codecov.io/gh/SynapticStrings/Orchid/graph/badge.svg?token=7RCC5ERU71)](https://codecov.io/gh/SynapticStrings/Orchid) ![GitHub License](https://img.shields.io/github/license/SynapticStrings/Orchid?style=flat) ![GitHub commit activity](https://img.shields.io/github/commit-activity/w/SynapticStrings/Orchid?style=flat)
+
 ![img](assets/HeroImage.jpg)
 
 Orchid is an Elixir-based workflow orchestration engine inspired by a [personal project](https://ges233.github.io/2025/03/Qy-Editor-demo/)(written in Chinese).
