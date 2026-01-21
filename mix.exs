@@ -21,8 +21,13 @@ defmodule Orchid.MixProject do
         "A lightweight and extensible workflow orchestration engine, written in Elixir.",
       package: package(),
       source_url: "https://github.com/SynapticStrings/Orchid",
-      docs: docs()
+      docs: docs(),
+      test_coverage: [tool: ExCoveralls],
     ]
+  end
+
+  def cli do
+    [preferred_envs: [coveralls: :test, "coveralls.github": :test, "coveralls.json": :test]]
   end
 
   def application do
@@ -44,8 +49,9 @@ defmodule Orchid.MixProject do
   defp deps do
     [
       {:telemetry, "~> 1.3"},
-      {:dialyxir, "~> 1.0", only: :dev, runtime: false, optional: true},
-      {:ex_doc, "~> 0.40", only: :dev, runtime: false, warn_if_outdated: true}
+      {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false, optional: true},
+      {:ex_doc, "~> 0.40", only: :dev, runtime: false, warn_if_outdated: true},
+      {:excoveralls, "~> 0.18.5", only: [:dev, :test], runtime: false, optional: true}
     ]
   end
 
