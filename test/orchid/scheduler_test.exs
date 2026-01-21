@@ -13,11 +13,13 @@ defmodule Orchid.SchedulerTest do
   alias Orchid.{Scheduler, Recipe, Param}
 
   describe "build/2" do
-    test "initializes context with valid recipe" do
+    test "initializes context with valid recipe or steps" do
       steps = [{DummyStep, :input, :output}]
       recipe = Recipe.new(steps)
-      initial_params = [%Param{name: :input, type: :test, payload: "data"}]
+      param = %Param{name: :input, type: :test, payload: "data"}
+      initial_params = [param]
       {:ok, ctx} = Scheduler.build(recipe, initial_params, Orchid.WorkflowCtx.new())
+      {:ok, _} = Scheduler.build(steps, param, Orchid.WorkflowCtx.new())
       assert length(ctx.pending_steps) == 1
       assert MapSet.member?(ctx.available_keys, :input)
       assert ctx.params[:input].payload == "data"
