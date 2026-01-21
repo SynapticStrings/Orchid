@@ -73,10 +73,6 @@ defmodule Orchid.Scheduler do
   @doc "Initialize scheduler context."
   @spec build(Recipe.t() | [Step.t()], initial_params(), WorkflowCtx.t()) ::
           {:ok, Context.t()} | {:error, term()}
-  def build(steps, initial_params, workflow_context) when is_list(steps) do
-    build(Recipe.new(steps), initial_params, workflow_context)
-  end
-
   # I don't know how to convince Dialyzer that this function can return `{:ok, context}`.
   def build(%Recipe{} = recipe, initial_params, workflow_context) do
     initial_map =
