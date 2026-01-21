@@ -71,9 +71,9 @@ defmodule Orchid.Scheduler do
   @type initial_params :: [Param.t()] | Context.param_map()
 
   @doc "Initialize scheduler context."
-  @spec build(Recipe.t(), initial_params(), WorkflowCtx.t()) ::
+  @spec build(Recipe.t() | [Step.t()], initial_params(), WorkflowCtx.t()) ::
           {:ok, Context.t()} | {:error, term()}
-  def build([steps], initial_params, workflow_context) do
+  def build(steps, initial_params, workflow_context) when is_list(steps) do
     build(Recipe.new(steps), initial_params, workflow_context)
   end
 
