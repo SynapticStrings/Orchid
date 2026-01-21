@@ -1,5 +1,16 @@
 defmodule Orchid.Executor.Async do
-  # record opts into moduledoc
+  @moduledoc """
+  Asynchronous Executor, implementing the behaviour of `Orchid.Executor`.
+
+  It executes the steps within a Recipe concurrently, respecting a maximum
+  concurrency limit. It automatically identifies steps that are ready to run
+  (whose dependencies are satisfied) and launches them in parallel using Elixir Tasks.
+
+  ## Options
+
+    * `:concurrency` - The maximum number of steps to run simultaneously.
+      Defaults to `System.schedulers_online()`.
+  """
   @behaviour Orchid.Executor
   alias Orchid.Scheduler
 

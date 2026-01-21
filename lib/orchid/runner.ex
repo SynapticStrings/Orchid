@@ -1,7 +1,5 @@
 defmodule Orchid.Runner do
-  @moduledoc """
-  Run step.
-  """
+  @moduledoc "Run step."
   alias Orchid.{Step, WorkflowCtx}
   alias Orchid.Runner.Hooks
 

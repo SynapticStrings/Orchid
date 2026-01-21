@@ -1,4 +1,6 @@
 defmodule Orchid.Operon.Execute do
+  @moduledoc "Execute recipe."
+
   @behaviour Orchid.Operon
 
   alias Orchid.{Scheduler, WorkflowCtx}
