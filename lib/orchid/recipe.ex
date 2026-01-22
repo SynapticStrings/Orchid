@@ -41,11 +41,9 @@ defmodule Orchid.Recipe do
   """
   @spec new([Step.t()], keyword()) :: t()
   def new(steps, opts \\ []) do
-    %__MODULE__{
-      steps: steps,
-      name: Keyword.get(opts, :name),
-      opts: opts
-    }
+    {name, new_opts} = Keyword.pop(opts, :name, nil)
+
+    %__MODULE__{steps: steps, name: name, opts: new_opts}
   end
 
   @doc """
