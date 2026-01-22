@@ -6,6 +6,8 @@ defmodule Orchid.Step do
   data (wrapped in `Orchid.Param`), performing a specific task, and returning
   new data.
 
+  It focuses solely on processing logic, unaware of the larger workflow context.
+
   ### Usage
 
   To define a step, `use Orchid.Step` and implement the `c:run/2` callback:

@@ -15,11 +15,6 @@ defmodule Orchid.RunnerTest do
     def call(ctx, next), do: next.(ctx)
   end
 
-  # TODO: seperate into
-  # building runner context
-  # and
-  # run pipelines
-  # two parts
   describe "run/3" do
     setup do
       [

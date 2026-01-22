@@ -1,6 +1,9 @@
 defmodule Orchid.Param do
   @moduledoc """
-  Defines the standard data unit for sequence parameters.
+  The standard unit of data exchange.
+
+  Every step receives and returns Param structs (or lists/tuples of them).
+  It carries the payload and metadata.
 
   The purpose of this module is to abstract parameter handling and define a consistent
   interface for data exchange. This standardization allows developers using `Orchid`

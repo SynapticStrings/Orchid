@@ -34,7 +34,6 @@ defmodule Orchid.Executor.SerialTest do
     {:error, %Orchid.Error{reason: :failed}} = Serial.execute(ctx, [])
   end
 
-  # TODO:
   test "can return stuck" do
     # Here I am.
     broken_ctx = %Orchid.Scheduler.Context{

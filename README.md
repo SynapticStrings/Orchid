@@ -1,6 +1,6 @@
 # Orchid
 
-[![codecov](https://codecov.io/gh/SynapticStrings/Orchid/graph/badge.svg?token=7RCC5ERU71)](https://codecov.io/gh/SynapticStrings/Orchid) ![GitHub License](https://img.shields.io/github/license/SynapticStrings/Orchid?style=flat) ![GitHub commit activity](https://img.shields.io/github/commit-activity/w/SynapticStrings/Orchid?style=flat)
+[![Hex.pm](https://img.shields.io/hexpm/v/orchid.svg)](https://hex.pm/packages/orchid) ![GitHub License](https://img.shields.io/github/license/SynapticStrings/Orchid?style=flat) [![codecov](https://codecov.io/gh/SynapticStrings/Orchid/graph/badge.svg?token=7RCC5ERU71)](https://codecov.io/gh/SynapticStrings/Orchid) ![GitHub commit activity](https://img.shields.io/github/commit-activity/w/SynapticStrings/Orchid?style=flat)
 
 ![img](assets/HeroImage.jpg)
 
@@ -51,6 +51,7 @@ defmodule Barista.Grind do
   def run(beans, opts) do
     amount = Param.get_payload(beans)
     IO.puts("⚙️  Grinding #{amount}g beans...")
+    # You need write `{:ok, res}` or `{:error, term}` explicitly.
     {:ok, Param.new(:powder, :solid, amount * Keyword.get(opts, :ratio, 1))}
   end
 end
@@ -117,29 +118,13 @@ IO.inspect(Param.get_payload(results[:coffee]))
 
 ## Core Components
 
-### Defination
-
-- `Orchid.Param`: The standard unit of data exchange. Every step receives and returns Param structs (or lists/tuples of them). It carries the payload and metadata.
-- `Orchid.Step`: An atomic unit of work. It focuses solely on processing logic, unaware of the larger workflow context.
-- `Orchid.Recipe`: The blueprint that describes what needs to be done and the data dependencies between steps.
-
-### Orchestration
-
-Mainly handled by the `Orchid.Scheduler` module.
-
-### Execution
-
-Recipe-level execution is the responsibility of the `Orchid.Executor` behavior.
-
-In step-level, function `Orchid.Runner.run/4` will handle it.
-
 ### Architecture
 
 ![Overview](assets/Orchid_arch_and_dataflow.png)
 
 ### Advanced Usage
 
-### Executors
+#### Executors
 
 Currently, orchid includes two executors:
 
@@ -152,13 +137,13 @@ As business complexity increases dramatically (e.g., external resource monitorin
 
 However, in some cases, considering business complexity, a hook mechanism has been introduced.
 
-### Layered Hooks
+#### Layered Hooks
 
 Orchid employs an onion-like execution model (similar to Rack or Plug middleware), where hooks wrap around the core logic.
 
 *Note: This refers to the runtime call stack, distinct from the 'Onion Architecture' design pattern which concerns static code dependencies and domain boundaries.*
 
-#### Step Level (Hook)
+##### Step Level (Hook)
 
 Within `Orchid.Runner`, which is responsible for executing steps, data flows like an onion from the outer layers through the inner layers and back to the outer layers.
 
@@ -200,7 +185,7 @@ Currently, Runner has two hooks:
 - `Orchid.Runner.Hooks.Telemetry` for telemetry
 - `Orchid.Runner.Hooks.Core` for executing the step
 
-#### Vertical-propagated Context
+##### Vertical-propagated Context
 
 Allows propagating global data deeply into nested steps.
 
@@ -210,7 +195,7 @@ Originally designed to track the context of nested executions.
 Orchid.run(recipe, initial_params, baggage: %{foo: :bar})
 ```
 
-#### Pipeline Middleware (Operons)
+##### Pipeline Middleware (Operons)
 
 Similar to hooks, data is also processed in an onion-like flow.
 
@@ -230,21 +215,13 @@ defmodule QyPersist do
 end
 ```
 
-The execution is handled by `Orchid.Pipeline`  which calls a series of middleware conforming to the `Orchid.Operon` protocol.
+The execution is handled by `Orchid.Pipeline` which calls a series of middleware conforming to the `Orchid.Operon` protocol.
 
 However, the difference is that we define two structs: `Orchid.Operon.Request` and `Orchid.Operon.Response`.
 
 The transformation module is `Orchid.Operon.Execute`, which wraps the Executor.
 
 No additional middleware has been introduced yet, but it will be added later.
-
-## Roadmap
-
-- Using `Orchid.Step.ID.t` to replace index created via defination order
-- Return as Stream or PID & Implement Session for interruptible and recovery workflow
-  - `:plugin`
-- Hydrate & dehydrate with param large payload
-  - `:done`
 
 ## Libs
 

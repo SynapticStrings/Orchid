@@ -22,7 +22,7 @@ defmodule Orchid.MixProject do
       package: package(),
       source_url: "https://github.com/SynapticStrings/Orchid",
       docs: docs(),
-      test_coverage: [tool: ExCoveralls],
+      test_coverage: [tool: ExCoveralls]
     ]
   end
 
@@ -59,7 +59,44 @@ defmodule Orchid.MixProject do
     [
       main: "readme",
       extras: ["README.md", "CHANGELOG.md"],
-      assets: %{"assets" => "assets"}
+      assets: %{"assets" => "assets"},
+      groups_for_modules: groups_for_modules()
+    ]
+  end
+
+  def groups_for_modules do
+    [
+      Data: [Orchid.Param, Orchid.Repo],
+      "Dataflow Declaration": [
+        Orchid.Step,
+        Orchid.Recipe,
+        Orchid.Step.NestedStep
+      ],
+      Orchestration: [
+        Orchid.Scheduler,
+        Orchid.Scheduler.Context,
+        Orchid.Recipe.Graph
+      ],
+      "Dataflow-level Middleware": [
+        Orchid.Pipeline,
+        Orchid.Operon,
+        Orchid.Operon.Request,
+        Orchid.Operon.Response,
+        Orchid.Operon.Execute
+      ],
+      "Dataflow-Level Executor": [
+        Orchid.Executor,
+        Orchid.Executor.Async,
+        Orchid.Executor.Serial
+      ],
+      "Step-level Executor": [Orchid.Runner, Orchid.Runner.Context],
+      "Step-level Middleware": [
+        Orchid.Runner.Hook,
+        Orchid.Runner.Hooks.Core,
+        Orchid.Runner.Hooks.Telemetry
+      ],
+      "Context Pass-through": [Orchid.WorkflowCtx],
+      Inspection: [Orchid.Step.ID]
     ]
   end
 end
