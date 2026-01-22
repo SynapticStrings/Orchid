@@ -200,13 +200,9 @@ defmodule Orchid.Recipe do
   defp update_inner_recipe(step, updater) do
     {impl, in_k, out_k, opts} = Step.ensure_full_step(step)
 
-    case Keyword.get(opts, :recipe) do
-      %Recipe{} = r ->
-        {impl, in_k, out_k, Keyword.put(opts, :recipe, updater.(r))}
+    r = Keyword.fetch!(opts, :recipe)
 
-      _ ->
-        step
-    end
+    {impl, in_k, out_k, Keyword.put(opts, :recipe, updater.(r))}
   end
 
   defp do_match(step, selector) when is_atom(selector) or is_function(selector, 2) do

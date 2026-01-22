@@ -33,4 +33,19 @@ defmodule Orchid.Executor.SerialTest do
     {:ok, ctx} = Scheduler.build(recipe, initial, Orchid.WorkflowCtx.new())
     {:error, %Orchid.Error{reason: :failed}} = Serial.execute(ctx, [])
   end
+
+  # TODO:
+  test "can return stuck" do
+    # Here I am.
+    broken_ctx = %Orchid.Scheduler.Context{
+      recipe: %Orchid.Recipe{},
+      pending_steps: [{{SuccessStep, :input, :mid, []}, 0}],
+      available_keys: MapSet.new([]),
+      running_steps: MapSet.new(),
+      workflow_ctx: Orchid.WorkflowCtx.new(),
+      params: %{}
+    }
+
+    {:error, %Orchid.Error{reason: :stuck}} = Serial.execute(broken_ctx, [])
+  end
 end

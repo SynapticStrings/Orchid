@@ -1,4 +1,4 @@
-defmodule Orchid.Runner.HooksCoreTest do
+defmodule Orchid.RunnerHooks.CoreTest do
   use ExUnit.Case
 
   alias Orchid.Param

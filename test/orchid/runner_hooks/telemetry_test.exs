@@ -1,4 +1,4 @@
-defmodule Orchid.TelemetryTest do
+defmodule Orchid.RunnerHooks.TelemetryTest do
   use ExUnit.Case
 
   defmodule ReportingStep do
@@ -37,8 +37,14 @@ defmodule Orchid.TelemetryTest do
   end
 
   setup do
-    :telemetry.attach_many(
-      "test-handler",
+    handler_id = "test-handler-#{inspect(self())}"
+
+    on_exit(fn ->
+      :telemetry.detach(handler_id)
+    end)
+
+    :ok = :telemetry.attach_many(
+      handler_id,
       [
         [:orchid, :step, :start],
         [:orchid, :step, :done],
@@ -75,7 +81,23 @@ defmodule Orchid.TelemetryTest do
     Orchid.run(recipe3, initial)
 
     assert_receive {:telemetry_event, [:orchid, :step, :exception], %{duration: _}, _}
+  end
 
-    :telemetry.detach("test-handler")
+  defmodule TelemetryBlocker do
+    @behaviour Orchid.Runner.Hook
+
+    def call(ctx, next_fn) do
+      next_fn.(%{
+        ctx
+        | step_opts: Keyword.reject(ctx.step_opts, fn {k, _} -> k == :__reporter_ctx__ end)
+      })
+    end
+  end
+
+  test "orchid can run well without telemetry" do
+    # Only used to increase coverage.
+    recipe = Orchid.Recipe.new([{ReportingStep, :in, :out}])
+    initial = [Orchid.Param.new(:in, :string, "Hi")]
+    Orchid.run(recipe, initial, global_hooks_stack: [TelemetryBlocker])
   end
 end
