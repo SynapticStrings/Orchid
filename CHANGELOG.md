@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.3] - 2026-01-23
+
+This release improves the developer experience with syntactic sugar for workflow execution, reorganizes documentation for better readability, and significantly boosts test coverage.
+
+### Added
+
+- **Execution Sugar**: `Orchid.run/3` now accepts a raw list of steps (`[Step.t()]`). It automatically wraps them into a `Recipe` internally, reducing boilerplate for simple scripts or tests.
+- **Single Param Input**: `Orchid.Scheduler.build/3` now accepts a single `Orchid.Param` struct as `initial_params`, automatically wrapping it into the required map structure.
+- **CI/CD**: Integrated Codecov for test coverage reporting.
+
+### Documentation
+
+- **Module Grouping**: Configured `groups_for_modules` in `mix.exs`. HexDocs are now organized into logical categories (Dataflow Declaration, Orchestration, Executors, etc.) instead of a flat list.
+- **Moduledocs**: Added missing documentation for `Orchid.Executor.Async`, `Orchid.Param`, and `Orchid.Operon.Execute`.
+- **Badges**: Added Hex.pm, License, and Codecov badges to `README.md`.
+
+### Changed
+
+- **Internal Safety**: In `Orchid.Recipe`, strict key fetching (`Keyword.fetch!`) is now used when updating inner recipes for `NestedStep`, ensuring configuration errors are caught early.
+
 ## [0.5.2] - 2026-01-17
 
 > **Robustness & Cleanup**.

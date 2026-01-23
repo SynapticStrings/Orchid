@@ -4,7 +4,7 @@ defmodule Orchid.MixProject do
   def project do
     [
       app: :orchid,
-      version: "0.5.2",
+      version: "0.5.3",
       build_path: "_build",
       deps_path: "deps",
       lockfile: "mix.lock",

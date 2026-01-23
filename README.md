@@ -51,7 +51,7 @@ defmodule Barista.Grind do
   def run(beans, opts) do
     amount = Param.get_payload(beans)
     IO.puts("⚙️  Grinding #{amount}g beans...")
-    # You need write `{:ok, res}` or `{:error, term}` explicitly.
+    # You need use `{:ok, res}` or `{:error, term}` explicitly.
     {:ok, Param.new(:powder, :solid, amount * Keyword.get(opts, :ratio, 1))}
   end
 end
@@ -116,15 +116,13 @@ IO.inspect(Param.get_payload(results[:coffee]))
 # => "Cup of latte"
 ```
 
-## Core Components
-
-### Architecture
+## Architecture
 
 ![Overview](assets/Orchid_arch_and_dataflow.png)
 
-### Advanced Usage
+## Advanced Usage
 
-#### Executors
+### Executors
 
 Currently, orchid includes two executors:
 
@@ -137,13 +135,13 @@ As business complexity increases dramatically (e.g., external resource monitorin
 
 However, in some cases, considering business complexity, a hook mechanism has been introduced.
 
-#### Layered Hooks
+### Layered Hooks
 
 Orchid employs an onion-like execution model (similar to Rack or Plug middleware), where hooks wrap around the core logic.
 
 *Note: This refers to the runtime call stack, distinct from the 'Onion Architecture' design pattern which concerns static code dependencies and domain boundaries.*
 
-##### Step Level (Hook)
+#### Step Level (Hook)
 
 Within `Orchid.Runner`, which is responsible for executing steps, data flows like an onion from the outer layers through the inner layers and back to the outer layers.
 
@@ -185,7 +183,7 @@ Currently, Runner has two hooks:
 - `Orchid.Runner.Hooks.Telemetry` for telemetry
 - `Orchid.Runner.Hooks.Core` for executing the step
 
-##### Vertical-propagated Context
+#### Vertical-propagated Context
 
 Allows propagating global data deeply into nested steps.
 
@@ -195,7 +193,7 @@ Originally designed to track the context of nested executions.
 Orchid.run(recipe, initial_params, baggage: %{foo: :bar})
 ```
 
-##### Pipeline Middleware (Operons)
+#### Pipeline Middleware (Operons)
 
 Similar to hooks, data is also processed in an onion-like flow.
 
