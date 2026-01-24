@@ -83,9 +83,7 @@ defmodule Orchid.Recipe do
 
   @spec get_step_errors([Step.t()]) :: [] | [term()]
   defp get_step_errors(steps) do
-    steps
-    |> Enum.with_index()
-    |> Enum.reduce([], fn {step, _idx}, acc ->
+    Enum.reduce(steps, [], fn step, acc ->
       {impl, _, _, opts} = Orchid.Step.ensure_full_step(step)
 
       if is_atom(impl) and Code.ensure_loaded?(impl) and

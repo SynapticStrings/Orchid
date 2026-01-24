@@ -137,7 +137,8 @@ defmodule Orchid.RecipeTest do
     test "assign_options penetrates into nested recipes" do
       inner_recipe =
         Recipe.new([
-          {TestStepB, :in, :out}
+          {TestStepB, :in, :mid},
+          {fn _, _ -> Orchid.Param.new(:out, :void, :nil) end, :mid, :out}
         ])
 
       middle_steps = [
@@ -160,6 +161,7 @@ defmodule Orchid.RecipeTest do
       {_, _, _, opts2} = hd(middle.steps)
       inner = opts2[:recipe]
 
+      # Order not changed
       {impl, _, _, final_opts} = hd(inner.steps)
 
       assert impl == TestStepB
