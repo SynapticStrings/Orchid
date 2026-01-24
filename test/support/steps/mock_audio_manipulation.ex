@@ -2,6 +2,10 @@ defmodule Orchid.TestSteps.Denoise do
   use Orchid.Step
   alias Orchid.Param
 
+  def validate_options(step_options) do
+    {:ok, step_options}
+  end
+
   def run(input_param, _opts) do
     raw_data = Param.get_payload(input_param)
     processed = Enum.map(raw_data, &(&1 <> "_denoised"))

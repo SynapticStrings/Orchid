@@ -88,11 +88,13 @@ defmodule Orchid.Recipe do
     |> Enum.reduce([], fn {step, _idx}, acc ->
       {impl, _, _, opts} = Orchid.Step.ensure_full_step(step)
 
-      # 检查模块是否导出了 validate/1
       if is_atom(impl) and Code.ensure_loaded?(impl) and
            function_exported?(impl, :validate_options, 1) do
         case impl.validate_options(opts) do
           :ok -> acc
+          # Allow NimbleOption's format
+          # though not transform validated data
+          {:ok, _} -> acc
           {:error, reason} -> [{:invalid_step_option, impl, reason} | acc]
         end
       else
