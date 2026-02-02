@@ -30,6 +30,27 @@ defmodule Orchid.Runner.Hooks.Core do
     do: Keyword.get(opts, get_workflow_ctx_key(), WorkflowCtx.new())
 
   # include mono, list and tuple
+  # and map
+  defp align_output_names(params, out_key) when is_map(params) and not is_struct(params) do
+    target_keys =
+      cond do
+        is_tuple(out_key) -> Tuple.to_list(out_key)
+        is_list(out_key) -> out_key
+        true -> [out_key]
+      end
+
+    results =
+      Enum.map(target_keys, fn key ->
+        case Map.fetch(params, key) do
+          {:ok, val} -> val
+          :error ->
+            raise ArgumentError, "Step output missing key: #{inspect(key)}. Available: #{inspect(Map.keys(params))}"
+        end
+      end)
+
+    if is_atom(out_key), do: hd(results), else: results
+  end
+
   defp align_output_names(param, out_key) when is_tuple(param) and is_tuple(out_key),
     do: align_output_names(Tuple.to_list(param), Tuple.to_list(out_key))
 
@@ -48,9 +69,29 @@ defmodule Orchid.Runner.Hooks.Core do
   defp align_output_names([%Param{} = param], out_key) when not is_tuple(out_key),
     do: %{param | name: out_key}
 
-  # for multiple outputs, we do not consider KVMap(Map like %{atom => param}, or keywords)
+  defp align_output_names([%Param{} | _] = params, out_key) when is_atom(out_key),
+    do: do_align_output_names(params, out_key)
+
+  defp align_output_names([%Param{} | _] = params, [out_key]) when is_atom(out_key),
+    do: do_align_output_names(params, out_key)
+
   defp align_output_names(params, out_keys) when is_list(params) and not is_tuple(out_keys),
     do: params |> Enum.zip_with(List.wrap(out_keys), fn param, key -> %{param | name: key} end)
+
+  defp do_align_output_names([%Param{} | _] = params, out_key) when not is_tuple(out_key) do
+    case Enum.find(params, fn p -> p.name == out_key end) do
+      %Param{} = match ->
+        match
+
+      nil ->
+        raise ArgumentError,
+              "Ambiguous step output: Step returned multiple params #{
+                inspect(Enum.map(params, & &1.name))
+              } but only one output key #{
+                inspect(out_key)
+              } is defined, and no param matched that name."
+    end
+  end
 
   defp run_step(impl, inputs, opts) when is_atom(impl),
     do:

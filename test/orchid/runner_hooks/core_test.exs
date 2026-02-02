@@ -18,6 +18,12 @@ defmodule Orchid.RunnerHooks.CoreTest do
     }
   end
 
+  defp build_ctx(out_keys, return_value) do
+    dummy_impl = fn _inputs, _opts -> {:ok, return_value} end
+
+    load_context({dummy_impl, [], out_keys, []}, [])
+  end
+
   describe "call/2 implement behavoir" do
     test "contains call/2" do
       assert function_exported?(Core, :call, 2)
@@ -112,10 +118,95 @@ defmodule Orchid.RunnerHooks.CoreTest do
           fn _ -> {:error, :touch_fin} end
         )
     end
+
+    test "nested recipe without explicit io map" do
+      alias Orchid.Step.NestedStep, as: Nested
+
+      alias Orchid.{Param, Recipe}
+      alias Orchid.TestSteps.{Denoise, PitchFix, Mix}
+
+      child_recipe =
+      Recipe.new([
+        {Denoise, :child_raw, :child_clean},
+        {PitchFix, :child_clean, :child_tuned}
+      ])
+
+    main_recipe1 =
+      Recipe.new([
+        {
+          Nested,
+          :child_raw,
+          :child_tuned,
+          [recipe: child_recipe]
+        },
+        {Mix, [:child_tuned, :bgm], :final_mix}
+      ])
+
+    main_recipe2 =
+      Recipe.new([
+        {
+          Nested,
+          :child_raw,
+          [:child_tuned],
+          [recipe: child_recipe]
+        },
+        {Mix, [:child_tuned, :bgm], :final_mix}
+      ])
+
+    initial_params = [
+      Param.new(:child_raw, :audio, ["Vocal1"]),
+      Param.new(:bgm, :audio, ["Beat1"])
+    ]
+
+    assert {:ok, results} = Orchid.run(main_recipe1, initial_params)
+    assert {:ok, _results} = Orchid.run(main_recipe2, initial_params)
+
+    final = results[:final_mix]
+    payload = Param.get_payload(final)
+
+    expected = ["Mix[Vocal1_denoised_tuned + Beat1]"]
+    assert payload == expected
+    end
+
+    test "[Error] Raises ArgumentError on ambiguous multiple returns" do
+      raw_output = [
+        Param.new(:foo, :string, "a"),
+        Param.new(:bar, :string, "b")
+      ]
+
+      ctx = build_ctx(:baz, raw_output)
+
+      assert_raise ArgumentError, ~r/Ambiguous step output/, fn ->
+        Core.call(ctx, fn _ -> :ok end)
+      end
+    end
+
+    test "[New Feature] Supports Map output directly" do
+      raw_output = %{
+        target: Param.new(:target, :string, "success")
+      }
+
+      ctx = build_ctx({:target}, raw_output)
+
+      {:ok, [result]} = Core.call(ctx, fn _ -> :ok end)
+
+      assert result.payload == "success"
+    end
+
+    test "Scenario 5: [New Feature] Raises error if Map key missing" do
+      raw_output = %{
+        other: Param.new(:other, :string, "val")
+      }
+
+      ctx = build_ctx(:missing_key, raw_output)
+
+      assert_raise ArgumentError, ~r/Step output missing key/, fn ->
+        Core.call(ctx, fn _ -> :ok end)
+      end
+    end
   end
 
   describe "running step" do
-    # test "normal_steps"
 
     test "invalid_step_implementation" do
       assert {:error, {:invalid_step_implementation, _}} =
