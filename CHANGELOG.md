@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.4] - 2025-02-02
+
+### Added
+
+- Support for Steps returning a Map `%{key => param}` directly.
+- `Orchid.Recipe`: Support `{:ok, opts}` return value in `validate_options/1` callback (friendly to NimbleOptions).
+
+### Fixed
+
+- **Single Step Runner**: Fixed a bug where returning multiple params in a Step list could lead to incorrect output mapping.
+- **Single Step Runner**: Now raises `ArgumentError` when a Step returns multiple params but none match the requested output key name (preventing ambiguity).
+
 ## [0.5.3] - 2026-01-23
 
 This release improves the developer experience with syntactic sugar for workflow execution, reorganizes documentation for better readability, and significantly boosts test coverage.
