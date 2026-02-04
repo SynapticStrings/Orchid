@@ -43,16 +43,24 @@ defmodule Orchid.RunnerHooks.TelemetryTest do
       :telemetry.detach(handler_id)
     end)
 
-    :ok = :telemetry.attach_many(
-      handler_id,
-      [
-        [:orchid, :step, :start],
-        [:orchid, :step, :done],
-        [:orchid, :step, :progress],
-        [:orchid, :step, :exception]
-      ],
-      &TestHandler.handle_event/4,
-      self()
+    :ok =
+      :telemetry.attach_many(
+        handler_id,
+        [
+          [:orchid, :step, :start],
+          [:orchid, :step, :done],
+          [:orchid, :step, :progress],
+          [:orchid, :step, :exception]
+        ],
+        &TestHandler.handle_event/4,
+        self()
+      )
+
+    :telemetry.attach(
+      "orchid-step-exception-logger",
+      [:orchid, :step, :exception],
+      &Orchid.Runner.Hooks.Telemetry.error_handler/4,
+      %{}
     )
 
     :ok
