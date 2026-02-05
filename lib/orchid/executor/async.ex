@@ -83,7 +83,7 @@ defmodule Orchid.Executor.Async do
             Orchid.Runner.run(step, ctx.params, state.recipe.opts, ctx.workflow_ctx)
           end)
 
-        Map.put(acc_tasks, task.ref, {step, idx})
+        Map.put(acc_tasks, task.ref, {task, step, idx})
       end)
 
     {updated_ctx, %{state | tasks: new_tasks}}
@@ -92,7 +92,7 @@ defmodule Orchid.Executor.Async do
   defp wait_for_result(ctx, state) do
     receive do
       {ref, result} when is_reference(ref) ->
-        {{step, step_idx}, remaining_tasks} = Map.pop(state.tasks, ref)
+        {{_task, step, step_idx}, remaining_tasks} = Map.pop(state.tasks, ref)
         # MUST do this to avoid receiving :DOWN message later
         Process.demonitor(ref, [:flush])
 
@@ -130,7 +130,7 @@ defmodule Orchid.Executor.Async do
         # caught task crash
         # it requires consider whether the race condition would impact the executor
         # (although in current project it would just crash together and return {:error, blabla})
-        {{step, _step_idx}, remaining_tasks} = Map.pop(state.tasks, ref)
+        {{_task, step, _step_idx}, remaining_tasks} = Map.pop(state.tasks, ref)
         cleanup_tasks(remaining_tasks)
 
         err = %Orchid.Error{
@@ -147,7 +147,7 @@ defmodule Orchid.Executor.Async do
   # Sends a shutdown signal to ALL concurrent tasks
   defp cleanup_tasks(tasks) do
     tasks
-    |> Enum.each(fn {_ref, {task, _idx}} ->
+    |> Enum.each(fn {_ref, {task, _step, _idx}} ->
       Task.shutdown(task, :brutal_kill)
 
       :ok
