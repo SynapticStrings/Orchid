@@ -13,7 +13,7 @@ defmodule Orchid.NestedTest do
       ])
 
     main_recipe =
-      Recipe.new([
+      [
         {
           Nested,
           :parent_raw,
@@ -25,7 +25,7 @@ defmodule Orchid.NestedTest do
           ]
         },
         {Mix, [:parent_result, :bgm], :final_mix}
-      ])
+      ] |> Recipe.new()
 
     initial_params = [
       Param.new(:parent_raw, :audio, ["Vocal1"]),

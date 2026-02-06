@@ -1,8 +1,9 @@
 defmodule SleepStep do
   use Orchid.Step
 
-  def run(param, _opts) do
-    Process.sleep(1000)
+  def run(param, opts) do
+    Process.sleep(Keyword.get(opts, :sleep, 1000))
+
     {:ok, %Orchid.Param{name: param.name, payload: param.payload + 1}}
   end
 end
@@ -11,6 +12,8 @@ defmodule Orchid.Executor.AsyncTest do
   use ExUnit.Case
   alias Orchid.Scheduler
   alias Orchid.{Executor.Async, Recipe, Param}
+  alias Orchid.Step.NestedStep, as: Nested
+  alias Orchid.TestSteps.{Denoise, PitchFix, Mix}
 
   test "executes independent steps concurrently" do
     steps1 = [
@@ -44,6 +47,45 @@ defmodule Orchid.Executor.AsyncTest do
     recipe = Recipe.new(steps)
     initial = [%Param{name: :input, payload: 1}]
     {:ok, ctx} = Scheduler.build(recipe, initial, Orchid.WorkflowCtx.new())
+    {:error, %Orchid.Error{}} = Async.execute(ctx, [])
+  end
+
+  test "a complex test" do
+    inner_recipe =
+      Recipe.new([
+        {Denoise, :raw, :clean},
+        {PitchFix, :clean, :tuned},
+        {Mix, [:tuned, :bgm], :mix}
+      ])
+
+    main_recipe =
+      [
+        {Nested, [:raw1, :bgm], :mix1,
+         recipe: inner_recipe, input_map: %{raw1: :raw, bgm: :bgm}, output_map: %{mix: :mix1}},
+        {Nested, [:raw2, :bgm], :mix2,
+         recipe: inner_recipe, input_map: %{raw2: :raw, bgm: :bgm}, output_map: %{mix: :mix2}},
+        {fn param, _ ->
+           res = param |> Param.get_payload() |> hd() |> String.to_integer()
+           {:ok, Orchid.Param.new(:any, :any, res)}
+         end, :raw1, :mid1},
+         {ErrorStep, :raw1, :mid2},
+        {SleepStep, :mid1, :void, [sleep: 10000]}
+      ]
+      |> Recipe.new()
+
+    initial = [
+      %Param{name: :raw1, payload: ["1"]},
+      %Param{name: :raw2, payload: ["2"]},
+      %Param{name: :bgm, payload: ["Beat"]}
+    ]
+
+    {:ok, ctx} =
+      Scheduler.build(
+        main_recipe,
+        initial,
+        Orchid.WorkflowCtx.new()
+      )
+
     {:error, %Orchid.Error{}} = Async.execute(ctx, [])
   end
 end
