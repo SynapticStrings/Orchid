@@ -38,7 +38,7 @@ It can explained clearly with just one picture.
 
 ![Orchid facade(mannual)](assets/Orchid_facade.jpg)
 
-### Definate Steps
+### Define Steps
 
 Create modules that use `Orchid.Step`, or simply function with 2 arities.
 
@@ -124,16 +124,97 @@ IO.inspect(Param.get_payload(results[:coffee]))
 
 ### Executors
 
-Currently, orchid includes two executors:
+Orchid includes two built-in executors:
 
 - `Orchid.Executor.Serial`: Runs steps one by one. Good for debugging.
 - `Orchid.Executor.Async`: Runs independent steps in parallel based on the dependency graph.
 
-Due to the atomic nature of Step operations, no further behavior-adapter design has been implemented.
+You can switch executors via the `:executor_and_opts` option passed to `Orchid.run/3`.
 
-As business complexity increases dramatically (e.g., external resource monitoring, more fault-tolerant business environments), custom Executors are encouraged.
+```elixir
+# Run sequentially
+Orchid.run(recipe, inputs, executor_and_opts: {Orchid.Executor.Serial, []})
 
-However, in some cases, considering business complexity, a hook mechanism has been introduced.
+# Run concurrently with a limit of 4 tasks
+Orchid.run(recipe, inputs, executor_and_opts: {Orchid.Executor.Async, [concurrency: 4]})
+```
+
+As business complexity increases dramatically (e.g., external resource monitoring, more fault-tolerant business environments, execute as stream), custom Executors implementing the `Orchid.Executor` behaviour are encouraged.
+
+### Nested Steps (NestedRecipe)
+
+You can treat an entire `Recipe` as a single Step within a parent workflow. This is achieved via `Orchid.Step.NestedStep`.
+
+#### Implicit Mapping (Recommended)
+
+If the input/output keys in the parent step definition match the keys expected/produced by the inner recipe, you don't need to write any mapping configuration. Orchid will handle the data passing automatically.
+
+```elixir
+alias Orchid.Step.NestedStep, as: Nested
+
+# 1. Define the inner recipe
+# It expects :child_raw and produces :child_tuned
+child_recipe =
+  Recipe.new([
+    {Denoise, :child_raw, :child_clean},
+    {PitchFix, :child_clean, :child_tuned}
+  ])
+
+# 2. Use it in the parent recipe
+# Notice the keys match the inner recipe's interface
+main_recipe =
+  Recipe.new([
+    {Nested, :child_raw, :child_tuned, [recipe: child_recipe]},
+    {Mix, [:child_tuned, :bgm], :final_mix}
+  ])
+
+# Inputs match the keys defined in the parent step
+initial_params = [
+  Param.new(:child_raw, :audio, ["Vocal1"]),
+  Param.new(:bgm, :audio, ["Beat1"])
+]
+
+{:ok, results} = Orchid.run(main_recipe, initial_params)
+```
+
+#### Explicit Mapping
+
+It also supports parameter mapping to adapt names between the parent and child contexts.
+
+If the parent context uses different names for the parameters, you can use `:input_map` and `:output_map` to bridge the gap.
+
+```elixir
+# Define an inner recipe
+inner_steps = [
+  {Barista.Grind, :inner_beans, :inner_powder}
+]
+inner_recipe = Orchid.Recipe.new(inner_steps)
+
+# Use it in a parent recipe
+parent_steps = [
+  # Map :parent_beans -> :inner_beans for input
+  # Map :inner_powder -> :ground_beans for output
+  {Orchid.Step.NestedStep, :parent_beans, :ground_beans,
+   [
+     recipe: inner_recipe,
+     input_map: %{parent_beans: :inner_beans},
+     output_map: %{inner_powder: :ground_beans}
+   ]},
+   
+  {Barista.Brew, [:ground_beans, :water], :coffee}
+]
+
+Orchid.run(Orchid.Recipe.new(parent_steps), inputs)
+```
+
+It also works:
+
+```elixir
+parent_steps = [
+  {Orchid.Step.NestedStep, :inner_beans, :inner_powder, [recipe: inner_recipe]},
+  {Barista.Brew, [:ground_beans, :water], :coffee}
+]
+```
 
 ### Layered Hooks
 
@@ -174,28 +255,43 @@ defmodule MyHook do
 end
 ```
 
-Therefore, the order and definition of Hooks need careful consideration.
-
-To run additional Hooks, they must be configured in the step's `opts[:extra_hooks_stack]`.
-
-Currently, Runner has two hooks:
-
-- `Orchid.Runner.Hooks.Telemetry` for telemetry
-- `Orchid.Runner.Hooks.Core` for executing the step
-
-#### Vertical-propagated Context
-
-Allows propagating global data deeply into nested steps.
-
-Originally designed to track the context of nested executions.
+To run additional Hooks, configure them in the step's options:
 
 ```elixir
-Orchid.run(recipe, initial_params, baggage: %{foo: :bar})
+{MyStep, :input, :output, [extra_hooks_stack: [MyHook, AnotherHook]]}
 ```
 
-#### Pipeline Middleware (Operons)
+Or globally for the recipe:
 
-Similar to hooks, data is also processed in an onion-like flow.
+```elixir
+Orchid.run(recipe, inputs, global_hooks_stack: [GlobalHook])
+```
+
+Currently, the default Runner hooks are:
+- `Orchid.Runner.Hooks.Telemetry` for telemetry
+- `Orchid.Runner.Hooks.Core` for executing the step logic
+
+### Vertical-propagated Context (Baggage)
+
+Allows propagating global data deeply into nested steps. This is useful for tracing or passing configuration without explicitly threading it through every step definition.
+
+```elixir
+# Pass baggage at runtime
+Orchid.run(recipe, inputs, baggage: %{transaction_id: 123, trace_id: "abc"})
+
+# Access baggage inside a step
+def run(input, opts) do
+  # Extract the WorkflowCtx injected by the Core hook
+  ctx = Orchid.Runner.Hooks.Core.extract_workflow_ctx(opts)
+  transaction_id = Orchid.WorkflowCtx.get_baggage(ctx, :transaction_id)
+  
+  # ... logic ...
+end
+```
+
+### Pipeline Middleware (Operons)
+
+Similar to hooks, data is also processed in an onion-like flow, but at the Recipe level.
 
 It has a somewhat peculiar name called "Operon" (may be changed later).
 
@@ -215,11 +311,13 @@ end
 
 The execution is handled by `Orchid.Pipeline` which calls a series of middleware conforming to the `Orchid.Operon` protocol.
 
-However, the difference is that we define two structs: `Orchid.Operon.Request` and `Orchid.Operon.Response`.
+Configure Operons via the `:operons_stack` option:
 
-The transformation module is `Orchid.Operon.Execute`, which wraps the Executor.
+```elixir
+Orchid.run(recipe, inputs, operons_stack: [QyPersist])
+```
 
-No additional middleware has been introduced yet, but it will be added later.
+The default terminal Operon is `Orchid.Operon.Execute`, which wraps the Executor.
 
 ## Libs
 
