@@ -207,15 +207,6 @@ parent_steps = [
 Orchid.run(Orchid.Recipe.new(parent_steps), inputs)
 ```
 
-It also works:
-
-```elixir
-parent_steps = [
-  {Orchid.Step.NestedStep, :inner_beans, :inner_powder, [recipe: inner_recipe]},
-  {Barista.Brew, [:ground_beans, :water], :coffee}
-]
-```
-
 ### Layered Hooks
 
 Orchid employs an onion-like execution model (similar to Rack or Plug middleware), where hooks wrap around the core logic.
