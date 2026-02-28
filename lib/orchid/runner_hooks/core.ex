@@ -29,9 +29,12 @@ defmodule Orchid.Runner.Hooks.Core do
   def extract_workflow_ctx(opts),
     do: Keyword.get(opts, get_workflow_ctx_key(), WorkflowCtx.new())
 
-  # include mono, list and tuple
-  # and map
-  defp align_output_names(params, out_key) when is_map(params) and not is_struct(params) do
+  @doc """
+  Align Orchid's step output names.
+
+  Used for some bypass hook.
+  """
+  def align_output_names(params, out_key) when is_map(params) and not is_struct(params) do
     target_keys =
       cond do
         is_tuple(out_key) -> Tuple.to_list(out_key)
@@ -42,40 +45,43 @@ defmodule Orchid.Runner.Hooks.Core do
     results =
       Enum.map(target_keys, fn key ->
         case Map.fetch(params, key) do
-          {:ok, val} -> val
+          {:ok, val} ->
+            val
+
           :error ->
-            raise ArgumentError, "Step output missing key: #{inspect(key)}. Available: #{inspect(Map.keys(params))}"
+            raise ArgumentError,
+                  "Step output missing key: #{inspect(key)}. Available: #{inspect(Map.keys(params))}"
         end
       end)
 
     if is_atom(out_key), do: hd(results), else: results
   end
 
-  defp align_output_names(param, out_key) when is_tuple(param) and is_tuple(out_key),
+  def align_output_names(param, out_key) when is_tuple(param) and is_tuple(out_key),
     do: align_output_names(Tuple.to_list(param), Tuple.to_list(out_key))
 
-  defp align_output_names(param, out_key) when is_tuple(param),
+  def align_output_names(param, out_key) when is_tuple(param),
     do: align_output_names(Tuple.to_list(param), out_key)
 
-  defp align_output_names(param, out_key) when is_tuple(out_key),
+  def align_output_names(param, out_key) when is_tuple(out_key),
     do: align_output_names(param, Tuple.to_list(out_key))
 
-  defp align_output_names(%Param{} = param, out_key) when is_atom(out_key),
+  def align_output_names(%Param{} = param, out_key) when is_atom(out_key),
     do: %{param | name: out_key}
 
-  defp align_output_names(%Param{} = param, [out_key]) when is_atom(out_key),
+  def align_output_names(%Param{} = param, [out_key]) when is_atom(out_key),
     do: %{param | name: out_key}
 
-  defp align_output_names([%Param{} = param], out_key) when not is_tuple(out_key),
+  def align_output_names([%Param{} = param], out_key) when not is_tuple(out_key),
     do: %{param | name: out_key}
 
-  defp align_output_names([%Param{} | _] = params, out_key) when is_atom(out_key),
+  def align_output_names([%Param{} | _] = params, out_key) when is_atom(out_key),
     do: do_align_output_names(params, out_key)
 
-  defp align_output_names([%Param{} | _] = params, [out_key]) when is_atom(out_key),
+  def align_output_names([%Param{} | _] = params, [out_key]) when is_atom(out_key),
     do: do_align_output_names(params, out_key)
 
-  defp align_output_names(params, out_keys) when is_list(params) and not is_tuple(out_keys),
+  def align_output_names(params, out_keys) when is_list(params) and not is_tuple(out_keys),
     do: params |> Enum.zip_with(List.wrap(out_keys), fn param, key -> %{param | name: key} end)
 
   defp do_align_output_names([%Param{} | _] = params, out_key) when not is_tuple(out_key) do
@@ -85,11 +91,7 @@ defmodule Orchid.Runner.Hooks.Core do
 
       nil ->
         raise ArgumentError,
-              "Ambiguous step output: Step returned multiple params #{
-                inspect(Enum.map(params, & &1.name))
-              } but only one output key #{
-                inspect(out_key)
-              } is defined, and no param matched that name."
+              "Ambiguous step output: Step returned multiple params #{inspect(Enum.map(params, & &1.name))} but only one output key #{inspect(out_key)} is defined, and no param matched that name."
     end
   end
 
