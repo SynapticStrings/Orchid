@@ -31,7 +31,7 @@ defmodule Orchid.Runner.Hooks.Telemetry do
           {:error, reason}
       end
     rescue
-      # Remember register linster during development
+      # Remember register listener during development
       e ->
         report_error(
           start_time,

@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.6] - 2025-02-12
+
+### Changed
+
+- **Core Hook**: Enhanced `align_output_names/2` logic in `Orchid.Runner.Hooks.Core`. The runner now automatically renames the returned `Param` struct to match the output key defined in the Recipe. This improvement ensures smoother data flow, especially for **Implicit Mapping** in Nested Steps, allowing inner steps to be reused more flexibly without manual renaming.
+
+#### Documentation
+
+- **Refactor**: Major update to `README.md`.
+    - Added detailed sections and examples for **Nested Steps** (covering both Implicit and Explicit mapping).
+    - Clarified usage of **Executors** (Serial vs. Async).
+    - Expanded explanations for **Layered Hooks** and **Pipeline Middleware (Operons)**.
+- **Fixes**: Corrected multiple typos (e.g., `Definate` -> `Define`, `mannual` -> `manual`) throughout the documentation and code comments.
+
 ## [0.5.5] - 2025-02-11
 
 ### Added
