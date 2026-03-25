@@ -40,6 +40,7 @@ defmodule Orchid.Step.ID do
   @spec normalize_keys_to_set(nil | atom() | list() | tuple() | MapSet.t()) :: MapSet.t()
   def normalize_keys_to_set(nil), do: MapSet.new()
   def normalize_keys_to_set(atom) when is_atom(atom), do: MapSet.new([atom])
+  def normalize_keys_to_set(binary) when is_binary(binary), do: MapSet.new([binary])
   def normalize_keys_to_set(list) when is_list(list), do: MapSet.new(list)
   def normalize_keys_to_set(tuple) when is_tuple(tuple), do: MapSet.new(Tuple.to_list(tuple))
   def normalize_keys_to_set(mapset), do: mapset

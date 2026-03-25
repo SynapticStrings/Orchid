@@ -32,7 +32,7 @@ defmodule Orchid.Scheduler do
     """
     alias Orchid.{Param, Step, Recipe, WorkflowCtx}
 
-    @type param_map :: %{optional(atom()) => Param.t()}
+    @type param_map :: %{optional(atom() | binary()) => Param.t()}
     @type step_index :: non_neg_integer()
     @type t :: %__MODULE__{
             # --- Static Config ---

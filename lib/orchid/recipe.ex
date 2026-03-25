@@ -55,7 +55,7 @@ defmodule Orchid.Recipe do
   2. **Missing Inputs**: Checks if all steps have their required input keys satisfied (either by initial params or previous steps).
   3. **Cyclic Dependencies**: Checks if the graph contains any cycles.
   """
-  @spec validate_steps([Step.t()], [atom()]) :: :ok | {:error, term()}
+  @spec validate_steps([Step.t()], [Step.io_key()]) :: :ok | {:error, term()}
   def validate_steps(steps, initial_keys) do
     with [] <- get_step_errors(steps),
          :ok <- detect_missing_inputs(steps, initial_keys),

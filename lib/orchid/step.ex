@@ -58,7 +58,14 @@ defmodule Orchid.Step do
           | function()
           | nil
 
-  @type io_key :: atom() | [atom()] | tuple() | MapSet.t()
+  @type io_key ::
+          atom()
+          | binary()
+          | [atom()]
+          | [binary()]
+          | tuple()
+          | MapSet.t(atom())
+          | MapSet.t(binary())
   @type input_keys :: io_key()
   @type output_keys :: io_key()
   @type input :: tuple() | Param.t() | [Param.t()]

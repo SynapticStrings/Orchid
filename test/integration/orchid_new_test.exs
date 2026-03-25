@@ -229,13 +229,13 @@ defmodule OrchidIntegrationTest do
 
       # Recipe without Grind – Brew would fail because :powder is missing
       steps = [
-        {Brew, [:powder, :water], :coffee}
+        {Brew, [:powder, :water], "coffee"}
       ]
 
       recipe = Orchid.Recipe.new(steps)
 
       # InjectGrindOperon prepends a Grind step that produces :powder
-      assert {:ok, %{coffee: coffee}} =
+      assert {:ok, %{"coffee" => coffee}} =
                Orchid.run(recipe, inputs,
                  operons_stack: [InjectGrindOperon]
                )
@@ -246,8 +246,8 @@ defmodule OrchidIntegrationTest do
 
   describe "baggage propagation" do
     test "baggage is accessible inside steps" do
-      inputs = [Orchid.Param.new(:dummy, :any, nil)]
-      steps = [{BaggageStep, :dummy, :trace}]
+      inputs = [Orchid.Param.new("dummy", :any, nil)]
+      steps = [{BaggageStep, "dummy", :trace}]
       recipe = Orchid.Recipe.new(steps)
 
       assert {:ok, %{trace: trace_param}} =
@@ -259,26 +259,26 @@ defmodule OrchidIntegrationTest do
 
   describe "error handling" do
     test "step failure returns Orchid.Error with reason and step id" do
-      inputs = [Orchid.Param.new(:dummy, :any, nil)]
-      steps = [{ErrorStep, :dummy, :result}]
+      inputs = [Orchid.Param.new("dummy", :any, nil)]
+      steps = [{ErrorStep, "dummy", "result"}]
       recipe = Orchid.Recipe.new(steps)
 
       assert {:error, %Orchid.Error{reason: "oops", step_id: step_id}} =
                Orchid.run(recipe, inputs)
 
-      assert step_id == {MapSet.new([:dummy]), MapSet.new([:result])}
+      assert step_id == {MapSet.new(["dummy"]), MapSet.new(["result"])}
     end
 
     test "missing input validation fails with {:error, {:missing_inputs, _}}" do
-      steps = [{Grind, :beans, :powder}]
-      # No input for :beans
+      steps = [{Grind, "beans", "powder"}]
+      # No input for "beans"
       assert {:error, %Orchid.Error{reason: {:missing_inputs, _}}} = Orchid.run(steps, [])
     end
 
     test "cyclic dependency validation fails with {:error, {:cyclic, _}}" do
       steps = [
-        {Grind, :b, :a},
-        {Grind, :a, :b}
+        {Grind, "b", "a"},
+        {Grind, "a", "b"}
       ]
       assert {:error, %Orchid.Error{reason: {:cyclic, _}}} = Orchid.run(steps, [])
     end
@@ -287,15 +287,15 @@ defmodule OrchidIntegrationTest do
   describe "option assignment" do
     test "Recipe.assign_options modifies step options" do
       steps = [
-        {Grind, :beans, :powder, [ratio: 1]}
+        {Grind, "beans", "powder", [ratio: 1]}
       ]
       recipe = Orchid.Recipe.new(steps)
 
       # Change ratio to 2
       recipe2 = Orchid.Recipe.assign_options(recipe, Grind, ratio: 2)
 
-      inputs = [Orchid.Param.new(:beans, :raw, 10)]
-      assert {:ok, %{powder: powder}} = Orchid.run(recipe2, inputs)
+      inputs = [Orchid.Param.new("beans", :raw, 10)]
+      assert {:ok, %{"powder" => powder}} = Orchid.run(recipe2, inputs)
       assert Orchid.Param.get_payload(powder) == 20
     end
   end
@@ -303,27 +303,27 @@ defmodule OrchidIntegrationTest do
   describe "tuple input / output" do
     test "step receives input keys as tuple but requires list inputs" do
       inputs = [
-        Orchid.Param.new(:a, :integer, 3),
-        Orchid.Param.new(:b, :integer, 5)
+        Orchid.Param.new("a", :integer, 3),
+        Orchid.Param.new("b", :integer, 5)
       ]
 
       steps = [
-        {TupleStep, {:a, :b}, :sum}
+        {TupleStep, {"a", "b"}, "sum"}
       ]
 
       recipe = Orchid.Recipe.new(steps)
-      assert {:ok, %{sum: sum}} = Orchid.run(recipe, inputs)
+      assert {:ok, %{"sum" => sum}} = Orchid.run(recipe, inputs)
       assert Orchid.Param.get_payload(sum) == 8
     end
   end
 
   describe "return_response option" do
     test "when true, returns full Response struct instead of payload" do
-      inputs = [Orchid.Param.new(:beans, :raw, 20)]
-      steps = [{Grind, :beans, :powder}]
+      inputs = [Orchid.Param.new("beans", :raw, 20)]
+      steps = [{Grind, "beans", "powder"}]
       recipe = Orchid.Recipe.new(steps)
 
-      assert %Orchid.Operon.Response{payload: {:ok, %{powder: _}}} =
+      assert %Orchid.Operon.Response{payload: {:ok, %{"powder" => _}}} =
                Orchid.run(recipe, inputs, return_response: true)
     end
   end

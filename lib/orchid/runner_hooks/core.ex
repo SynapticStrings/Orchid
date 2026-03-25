@@ -3,6 +3,8 @@ defmodule Orchid.Runner.Hooks.Core do
 
   alias Orchid.{Param, WorkflowCtx}
 
+  defguardp is_single_key(key) when is_atom(key) or is_binary(key)
+
   @spec call(Orchid.Runner.Context.t(), Orchid.Runner.Hook.next_fn()) ::
           Orchid.Runner.Hook.hook_result()
   def call(ctx, _next) do
@@ -54,7 +56,7 @@ defmodule Orchid.Runner.Hooks.Core do
         end
       end)
 
-    if is_atom(out_key), do: hd(results), else: results
+    if is_single_key(out_key), do: hd(results), else: results
   end
 
   def align_output_names(param, out_key) when is_tuple(param) and is_tuple(out_key),
@@ -66,19 +68,19 @@ defmodule Orchid.Runner.Hooks.Core do
   def align_output_names(param, out_key) when is_tuple(out_key),
     do: align_output_names(param, Tuple.to_list(out_key))
 
-  def align_output_names(%Param{} = param, out_key) when is_atom(out_key),
+  def align_output_names(%Param{} = param, out_key) when is_single_key(out_key),
     do: %{param | name: out_key}
 
-  def align_output_names(%Param{} = param, [out_key]) when is_atom(out_key),
+  def align_output_names(%Param{} = param, [out_key]) when is_single_key(out_key),
     do: %{param | name: out_key}
 
   def align_output_names([%Param{} = param], out_key) when not is_tuple(out_key),
     do: %{param | name: out_key}
 
-  def align_output_names([%Param{} | _] = params, out_key) when is_atom(out_key),
+  def align_output_names([%Param{} | _] = params, out_key) when is_single_key(out_key),
     do: do_align_output_names(params, out_key)
 
-  def align_output_names([%Param{} | _] = params, [out_key]) when is_atom(out_key),
+  def align_output_names([%Param{} | _] = params, [out_key]) when is_single_key(out_key),
     do: do_align_output_names(params, out_key)
 
   def align_output_names(params, out_keys) when is_list(params) and not is_tuple(out_keys),
