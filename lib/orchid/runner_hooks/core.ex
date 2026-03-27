@@ -68,19 +68,22 @@ defmodule Orchid.Runner.Hooks.Core do
   def align_output_names(param, out_key) when is_tuple(out_key),
     do: align_output_names(param, Tuple.to_list(out_key))
 
-  def align_output_names(%Param{} = param, out_key) when is_single_key(out_key),
+  def align_output_names([%Param{} = param], [out_key]) when is_single_key(out_key),
     do: %{param | name: out_key}
 
   def align_output_names(%Param{} = param, [out_key]) when is_single_key(out_key),
     do: %{param | name: out_key}
 
-  def align_output_names([%Param{} = param], out_key) when not is_tuple(out_key),
+  def align_output_names([%Param{} = param], out_key) when is_single_key(out_key),
     do: %{param | name: out_key}
 
-  def align_output_names([%Param{} | _] = params, out_key) when is_single_key(out_key),
-    do: do_align_output_names(params, out_key)
+  def align_output_names(%Param{} = param, out_key) when is_single_key(out_key),
+    do: %{param | name: out_key}
 
   def align_output_names([%Param{} | _] = params, [out_key]) when is_single_key(out_key),
+    do: do_align_output_names(params, out_key)
+
+  def align_output_names([%Param{} | _] = params, out_key) when is_single_key(out_key),
     do: do_align_output_names(params, out_key)
 
   def align_output_names(params, out_keys) when is_list(params) and not is_tuple(out_keys),

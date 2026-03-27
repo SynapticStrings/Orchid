@@ -119,20 +119,7 @@ defmodule Orchid.RunnerHooks.CoreTest do
         )
     end
 
-    test "[Error] Raises ArgumentError on ambiguous multiple returns" do
-      raw_output = [
-        Param.new(:foo, :string, "a"),
-        Param.new(:bar, :string, "b")
-      ]
-
-      ctx = build_ctx(:baz, raw_output)
-
-      assert_raise ArgumentError, ~r/Ambiguous step output/, fn ->
-        Core.call(ctx, fn _ -> :ok end)
-      end
-    end
-
-    test "[New Feature] Supports Map output directly" do
+    test "Supports Map output directly" do
       raw_output = %{
         target: Param.new(:target, :string, "success")
       }
@@ -144,7 +131,7 @@ defmodule Orchid.RunnerHooks.CoreTest do
       assert result.payload == "success"
     end
 
-    test "Scenario 5: [New Feature] Raises error if Map key missing" do
+    test "Scenario 5: Raises error if Map key missing" do
       raw_output = %{
         other: Param.new(:other, :string, "val")
       }
@@ -152,6 +139,19 @@ defmodule Orchid.RunnerHooks.CoreTest do
       ctx = build_ctx(:missing_key, raw_output)
 
       assert_raise ArgumentError, ~r/Step output missing key/, fn ->
+        Core.call(ctx, fn _ -> :ok end)
+      end
+    end
+
+    test "[Error] Raises ArgumentError on ambiguous multiple returns" do
+      raw_output = [
+        Param.new(:foo, :string, "a"),
+        Param.new(:bar, :string, "b")
+      ]
+
+      ctx = build_ctx(:baz, raw_output)
+
+      assert_raise ArgumentError, ~r/Ambiguous step output/, fn ->
         Core.call(ctx, fn _ -> :ok end)
       end
     end
