@@ -1,8 +1,8 @@
 # See https://chat.deepseek.com/share/zd94ty8o0ulu18mgh1 to view the conversation that led to this code.
 # It's has some modifications to the original code, but it should be mostly the same.
 # Powered by DeepSeek (https://deepseek.com) in 12th Feb, 2026(before Spring Festival).
-
-defmodule OrchidIntegrationTest do
+# Changed key into nibary
+defmodule OrchidBinaryKeyTest do
   use ExUnit.Case, async: true
 
   # ----------------------------------------------------------------------------
@@ -30,6 +30,17 @@ defmodule OrchidIntegrationTest do
       p = Param.get_payload(powder)
       w = Param.get_payload(water)
       {:ok, Param.new(:coffee, :liquid, "Cup of #{style} (#{p}g / #{w}ml)")}
+    end
+  end
+
+  defmodule Distribution do
+    use Orchid.Step
+    alias Orchid.Param
+
+    @impl true
+    def run(coffee, _opts) do
+      p = Param.get_payload(coffee)
+      {:ok, [Param.new(:coffee, :liquid, p <> "(part1)"), Param.new(:coffee, :liquid, p <> "(part2)")]}
     end
   end
 
@@ -105,7 +116,8 @@ defmodule OrchidIntegrationTest do
       # Steps defined out of order – Orchid must topologically sort them
       steps = [
         {Brew, [:powder, :water], :coffee, [style: :latte]},
-        {Grind, :beans, :powder, [ratio: 1]}
+        {Grind, :beans, :powder, [ratio: 1]},
+        {Distribution, :coffee, [:coffee1, :coffee2]}
       ]
 
       recipe = Orchid.Recipe.new(steps, name: :morning_coffee)
