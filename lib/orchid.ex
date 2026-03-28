@@ -66,7 +66,7 @@ defmodule Orchid do
 
     initial_request = %Request{
       recipe: recipe,
-      inital_params: input_params,
+      initial_params: input_params,
       workflow_ctx: workflow_ctx
     }
 

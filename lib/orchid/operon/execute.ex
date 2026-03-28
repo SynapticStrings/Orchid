@@ -14,7 +14,7 @@ defmodule Orchid.Operon.Execute do
     # This may cause warn when use dialyzer, so I ignore it in `.dialyzer_ignore.exs`
     # But I don't known how to ignore it in ElixirLS.
     payload =
-      case Scheduler.build(req.recipe, req.inital_params, req.workflow_ctx) do
+      case Scheduler.build(req.recipe, req.initial_params, req.workflow_ctx) do
         {:ok, ctx} ->
           apply(executor, :execute, [ctx, executor_opts])
 

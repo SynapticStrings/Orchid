@@ -14,7 +14,7 @@ defmodule Orchid.PipelineTest do
 
   test "runs operon stack" do
     operons = [DummyOperon, Operon.Execute]
-    req = %Operon.Request{recipe: Recipe.new([]), inital_params: []}
+    req = %Operon.Request{recipe: Recipe.new([]), initial_params: []}
     %Operon.Response{payload: {:ok, _}} = Pipeline.run(operons, req)
   end
 
@@ -25,7 +25,7 @@ defmodule Orchid.PipelineTest do
 
   test "propagates errors through stack" do
     operons = [ErrorOperon]
-    req = %Operon.Request{recipe: Recipe.new([]), inital_params: []}
+    req = %Operon.Request{recipe: Recipe.new([]), initial_params: []}
     %Operon.Response{payload: {:error, :failed}} = Pipeline.run(operons, req)
   end
 end
