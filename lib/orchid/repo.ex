@@ -21,7 +21,8 @@ defmodule Orchid.Repo do
 
   defmodule Blob do
     # Used for content-addressed storage
-    @callback exists?(store :: Orchid.Repo.store_ref(), key()) :: boolean()
+
+    @callback exists?(store :: Orchid.Repo.store_ref(), Orchid.Repo.key()) :: boolean()
   end
 
   defmodule GC do
@@ -31,12 +32,15 @@ defmodule Orchid.Repo do
   defmodule Pickle do
     # Yeah, Python's pickle
     # How to ensure its safety?
+    @type serialized :: term()
 
     # opts: delete content in storage when serialization done?
     @callback serialize(store :: Orchid.Repo.store_ref(), condition :: :whole | {:partial, condition :: term()}, opts :: keyword())
-              :: {:ok, serialized :: term()} | {:error, reason :: term()}
+              :: {:ok, serialized()} | {:error, reason :: term()}
 
-    @callback deserialize(store :: Orchid.Repo.store_ref(), serialized :: term()) :: :ok | {:error, reason :: term()}
+    # May required c:validate/1
+
+    @callback deserialize(store :: Orchid.Repo.store_ref(), serialized()) :: :ok | {:error, reason :: term()}
   end
 
   # defmodule Native do
