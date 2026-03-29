@@ -1,50 +1,98 @@
 defmodule Orchid.Repo do
   @moduledoc """
-  Defines the behaviour of the data warehouse.
-  Used to store large volumes of data unsuitable for direct transmission via
-  Param (such as audio waveforms or model weights).
+  Behaviour for pluggable key-value storage adapters.
 
-  Implementation within Orchid is not envisaged, though other applications
-  may implement this protocol and invoke it via custom hooks/operons/plugins.
+  Provides the minimal contract shared by every store used in the Orchid
+  ecosystem: write a value, read it back.  Domain-specific extensions
+  (existence checks, deletion, garbage collection, bulk export) are
+  defined as separate optional behaviours under `Orchid.Repo.*`.
+
+  ## Store Reference
+
+  Every callback receives an opaque `store_ref` as its first argument.
+  The concrete type is determined by the adapter (an ETS tid, a map of
+  connection options, a PID, etc.).  Callers obtain the reference from
+  the adapter's own `init/1` or equivalent.
+
+  ## Composition with Extension Behaviours
+
+  Adapters declare the capabilities they support:
+
+      defmodule MyApp.BlobStore do
+        @behaviour Orchid.Repo
+        @behaviour Orchid.Repo.ContentAddressable
+        # implements get/2, put/3, exists?/2
+      end
+
+      defmodule MyApp.MetaStore do
+        @behaviour Orchid.Repo
+        @behaviour Orchid.Repo.Deletable
+        @behaviour Orchid.Repo.GC
+        # implements get/2, put/3, delete/2, garbage_collect/2
+      end
   """
-  # Integrate OrchidStratum's design.
 
   @type store_ref :: term()
   @type key :: binary()
   @type value :: term()
 
-  @callback put(store_ref(), key(), value()) :: :ok
+  @doc "Persists `value` under `key`. Must be idempotent."
+  @callback put(store :: store_ref(), key(), value()) :: :ok
 
-  @callback get(store_ref(), key()) :: {:ok, value()} | :miss
+  @doc """
+  Retrieves the value associated with `key`.
 
-  @callback delete(store_ref(), key()) :: :ok
+  Returns `{:ok, value}` on a hit, or `:miss` if no entry exists.
+  """
+  @callback get(store :: store_ref(), key()) :: {:ok, value()} | :miss
 
-  defmodule Blob do
-    # Used for content-addressed storage
+  # ── Optional extension behaviours ──────────────────────────────
 
+  defmodule Deletable do
+    @moduledoc """
+    Optional behaviour for adapters that support point deletion.
+
+    Content-addressable blob stores may intentionally omit this;
+    meta/index stores typically implement it.
+    """
+    @callback delete(store :: Orchid.Repo.store_ref(), Orchid.Repo.key()) :: :ok
+  end
+
+  defmodule ContentAddressable do
+    @moduledoc """
+    Optional behaviour for adapters that can answer cheap existence
+    queries without deserialising the stored value.
+
+    Used by cache-hit verification in OrchidStratum's BypassHook.
+    """
     @callback exists?(store :: Orchid.Repo.store_ref(), Orchid.Repo.key()) :: boolean()
   end
 
   defmodule GC do
-    @callback garbage_collect(store :: Orchid.Repo.store_ref(), opts :: term()) :: :ok
+    @moduledoc """
+    Optional behaviour for adapters that support garbage collection
+    (TTL expiry, LRU eviction, capacity-based pruning, etc.).
+    """
+    @callback garbage_collect(store :: Orchid.Repo.store_ref(), opts :: keyword()) :: :ok
   end
 
-  defmodule Pickle do
-    # Yeah, Python's pickle
-    # How to ensure its safety?
-    @type serialized :: term()
+  defmodule Transferable do
+    @moduledoc """
+    Optional behaviour for bulk export / import of store contents.
 
-    # opts: delete content in storage when serialization done?
-    @callback serialize(store :: Orchid.Repo.store_ref(), condition :: :whole | {:partial, condition :: term()}, opts :: keyword())
-              :: {:ok, serialized()} | {:error, reason :: term()}
+    Safety note: adapters **must** implement `validate/1` and callers
+    **must** call it before `import/2` when the serialized payload
+    crosses a trust boundary.
+    """
+    @type serialized :: binary()
+    @type scope :: :all | {:keys, [Orchid.Repo.key()]}
 
-    # May required c:validate/1
+    @callback export(store :: Orchid.Repo.store_ref(), scope(), opts :: keyword()) ::
+                {:ok, serialized()} | {:error, term()}
 
-    @callback deserialize(store :: Orchid.Repo.store_ref(), serialized()) :: :ok | {:error, reason :: term()}
+    @callback import(store :: Orchid.Repo.store_ref(), serialized()) ::
+                :ok | {:error, term()}
+
+    @callback validate(serialized()) :: :ok | {:error, term()}
   end
-
-  # defmodule Native do
-  #   # Implement some zero-copy feature with NIF
-  #   # maybe...
-  # end
 end
