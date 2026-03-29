@@ -85,7 +85,7 @@ defmodule Orchid.Repo do
     crosses a trust boundary.
     """
     @type serialized :: binary()
-    @type scope :: :all | {:keys, [Orchid.Repo.key()]}
+    @type scope :: :all | {:keys, [Orchid.Repo.key()]} | {:condition, term()}
 
     @callback export(store :: Orchid.Repo.store_ref(), scope(), opts :: keyword()) ::
                 {:ok, serialized()} | {:error, term()}
