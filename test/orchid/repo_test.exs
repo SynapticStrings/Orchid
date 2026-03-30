@@ -1,21 +1,37 @@
 defmodule Orchid.RepoTest do
   use ExUnit.Case
 
+  import Orchid.Repo
+
   defmodule MockRepo do
     @behaviour Orchid.Repo
 
-    # use Agent
+    use Agent
 
-    # def init(_init_args), do: %{}
+    def start(inst) do
+      Agent.start_link(fn -> %{} end, name: inst)
+    end
 
-    # def put(old, key, value), do: Map.put(old, key, value)
+    def put(repo, key, value) do
+      Agent.update(repo, &Map.put(&1, key, val))
 
-    # def get(repo, key), do: Map.get(repo, key, :miss)
+      :ok
+    end
+
+    def get(repo, key) do
+      Agent.get(repo, fn map ->
+        case Map.fetch(map, key) do
+          {:ok, val} -> {:ok, val}
+          :error -> :miss
+        end)
+    end
   end
 
-  # setup block
+  test "dispatch_store/3" do
+    repo = MockRepo.start(:mock_orchid_repo)
 
-  test "dispatch_store/3", _repo do
-    # ...
+    :ok = dispatch_store({MockRepo, repo}, :put, ["Foo", :bar])
+
+    assert {:ok, :bar} == dispatch_store({MockRepo, repo}, :get, ["Foo"])
   end
 end
