@@ -23,7 +23,8 @@ defmodule Orchid.RepoTest do
         case Map.fetch(map, key) do
           {:ok, val} -> {:ok, val}
           :error -> :miss
-        end)
+        end
+      end)
     end
   end
 
