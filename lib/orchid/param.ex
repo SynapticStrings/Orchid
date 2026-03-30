@@ -27,7 +27,9 @@ defmodule Orchid.Param do
 
   @type name :: term()
   @type param_type :: atom() | module()
-  @type ref_payload :: {:ref, module() | pid(), term()}
+  # Combine with Orchid.Repo
+  # apply(module, :get, [ref | key])
+  @type ref_payload :: {:ref, {module(), ref :: term()}, term()}
   @type raw_payload :: any() | nil
   @type payload :: raw_payload() | ref_payload()
 

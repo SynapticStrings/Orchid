@@ -5,7 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.6.0]  
+## [0.6.1] - 2023-03-30
+
+### Added
+
+- **Orchid.Repo**: Added a helper funtion `Orchid.Repo.dispatch_store/3`.
+
+### Changed
+
+- **Type Annotation**: Move `t:Orchid.Param.ref_payload/0`'s second item into `{module, ref}`.
+
+## [0.6.0] - 2026-03-29
   
 ### Breaking Changes  
   

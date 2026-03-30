@@ -46,6 +46,13 @@ defmodule Orchid.Repo do
   """
   @callback get(store :: store_ref(), key()) :: {:ok, value()} | :miss
 
+  @doc """
+  Resolves a {Module, instance} store configuration tuple and dispatches
+  the given function call, prepending the instance as the first argument.
+  """
+  def dispatch_store({repo_mod, instance}, fun, args),
+    do: apply(repo_mod, fun, [instance | args])
+
   # ── Optional extension behaviours ──────────────────────────────
 
   defmodule Deletable do
