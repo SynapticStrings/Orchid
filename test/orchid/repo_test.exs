@@ -29,10 +29,10 @@ defmodule Orchid.RepoTest do
   end
 
   test "dispatch_store/3" do
-    repo = MockRepo.start(:mock_orchid_repo)
+    {:ok, _repo} = MockRepo.start(:mock_orchid_repo)
 
-    :ok = dispatch_store({MockRepo, repo}, :put, ["Foo", :bar])
+    :ok = dispatch_store({MockRepo, :mock_orchid_repo}, :put, ["Foo", :bar])
 
-    assert {:ok, :bar} == dispatch_store({MockRepo, repo}, :get, ["Foo"])
+    assert {:ok, :bar} == dispatch_store({MockRepo, :mock_orchid_repo}, :get, ["Foo"])
   end
 end
