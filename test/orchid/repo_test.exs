@@ -12,7 +12,7 @@ defmodule Orchid.RepoTest do
       Agent.start_link(fn -> %{} end, name: inst)
     end
 
-    def put(repo, key, value) do
+    def put(repo, key, val) do
       Agent.update(repo, &Map.put(&1, key, val))
 
       :ok
