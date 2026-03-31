@@ -12,7 +12,7 @@ defmodule Orchid.Runner.Hooks.Core do
     final_opts =
       Keyword.merge(ctx.step_opts, ctx.recipe_opts) |> inject_workflow_ctx(ctx.workflow_ctx)
 
-    case run_step(ctx.step_implementation, ctx.inputs, final_opts) do
+    case run_step(ctx.step_implementation, maybe_resolve_inputs(ctx.inputs), final_opts) do
       {:ok, raw_output} ->
         renamed = align_output_names(raw_output, ctx.out_keys)
         {:ok, renamed}
@@ -99,6 +99,11 @@ defmodule Orchid.Runner.Hooks.Core do
               "Ambiguous step output: Step returned multiple params #{inspect(Enum.map(params, & &1.name))} but only one output key #{inspect(out_key)} is defined, and no param matched that name."
     end
   end
+
+  defp maybe_resolve_inputs(%Orchid.Param{payload: {:ref, conf, key}} = input), do: %{input | payload: Orchid.Repo.dispatch_store(conf, :get, key)}
+  defp maybe_resolve_inputs(%Orchid.Param{} = input), do: input
+  defp maybe_resolve_inputs(params) when is_list(params), do: Enum.map(params, &maybe_resolve_inputs/1)
+  defp maybe_resolve_inputs(params) when is_map(params), do: Enum.map(params, fn {k, v} -> {k, maybe_resolve_inputs(v)} end)
 
   defp run_step(impl, inputs, opts) when is_atom(impl),
     do:
