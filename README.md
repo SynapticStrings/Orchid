@@ -306,3 +306,9 @@ The default terminal Operon is `Orchid.Operon.Execute`, which wraps the Executor
 
 * [`OrchidSymbiont`](https://hex.pm/packages/orchid_symbiont)
   * Let Orchid can execute steps where required HEAVY service(Ortex service(via NxServing), ErlPort, NIF, HTTP request, etc.).
+* [`OrchidStratum`](https://hex.pm/packages/orchid_stratum)
+  * Deterministic content-addressable caching layer. Automatically dehydrates heavy payloads into lightweight references between workflow transitions, then hydrates on demand. Pluggable storage backends (ETS, Mnesia, custom out-of-core).
+* [`OrchidIntervention`](https://hex.pm/packages/orchid_intervention)
+  * Declaratively inject, override, or short-circuit step outputs in an Orchid DAG — without touching the graph structure. Supports `:input` injection and `:override` shortcuts with custom merge strategies.
+* [`Oi`](https://hex.pm/packages/oi)
+  * Lightweight DSL glue layer between Orchid and OrchidSymbiont. Provides `use Oi.Step` with manifest/routine macros, `graph do ... end` flowgraph syntax, and adapters that wire OrchidIntervention and OrchidSymbiont into the execution pipeline.
