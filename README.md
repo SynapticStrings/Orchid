@@ -34,10 +34,6 @@ Well, let's make a cup of coffee to see how Orchid works.
 
 We will define a process where beans are ground into powder, and then brewed with water. Notice how we can control the brewing style using opts.
 
-It can explained clearly with just one picture.
-
-![Orchid facade(mannual)](assets/Orchid_facade.jpg)
-
 ### Define Steps
 
 Create modules that use `Orchid.Step`, or simply function with 2 arities.
@@ -115,10 +111,6 @@ Execute the recipe. Orchid automatically resolves dependencies: `Grind` runs fir
 IO.inspect(Param.get_payload(results[:coffee]))
 # => "Cup of latte"
 ```
-
-## Architecture
-
-![Overview](assets/Orchid_arch_and_dataflow.png)
 
 ## Advanced Usage
 
