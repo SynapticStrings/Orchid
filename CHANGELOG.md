@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.3] - 2026-08-26
+
+### Fixed
+
+- **Core Hook**: Fixed `{:ref, store, key}` input hydration in `Orchid.Runner.Hooks.Core.maybe_resolve_inputs/1`. The clause previously called `Orchid.Repo.dispatch_store/3` with a non-list third argument (crashing with `ArgumentError: not a proper list`) and never unwrapped the `{:ok, payload}` result. Ref payloads — e.g. dehydrated by orchid_stratum's `BypassHook` — are now resolved to their raw payloads at the innermost layer for every step, cached or not; a missing blob raises instead of leaking the ref downstream.
+- **Core Hook**: `maybe_resolve_inputs/1` no longer corrupts map-shaped inputs into keyword lists (`Enum.map/2` → `Map.new/1`).
+
 ## [0.6.2] - 2026-07-07
 
 ### Updated

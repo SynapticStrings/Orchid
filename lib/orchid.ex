@@ -60,6 +60,7 @@ defmodule Orchid do
   def run_with_ctx(steps, input_params, workflow_ctx) when is_list(steps) do
     run_with_ctx(Recipe.new(steps), input_params, workflow_ctx)
   end
+
   def run_with_ctx(recipe, input_params, workflow_ctx) do
     response? = WorkflowCtx.get_config(workflow_ctx, :return_response, false)
     operons_stack = WorkflowCtx.get_config(workflow_ctx, :operons_stack, [])

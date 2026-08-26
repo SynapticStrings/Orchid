@@ -68,7 +68,7 @@ defmodule Orchid.Executor.AsyncTest do
            res = param |> Param.get_payload() |> hd() |> String.to_integer()
            {:ok, Orchid.Param.new(:any, :any, res)}
          end, :raw1, :mid1},
-         {ErrorStep, :raw1, :mid2},
+        {ErrorStep, :raw1, :mid2},
         {SleepStep, :mid1, :void, [sleep: 10000]}
       ]
       |> Recipe.new()

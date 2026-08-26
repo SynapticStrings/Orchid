@@ -1,7 +1,7 @@
 defmodule Orchid.Runner.Hooks.Core do
   @behaviour Orchid.Runner.Hook
 
-  alias Orchid.{Param, WorkflowCtx}
+  alias Orchid.{Param, Repo, WorkflowCtx}
 
   defguardp is_single_key(key) when is_atom(key) or is_binary(key)
 
@@ -100,10 +100,25 @@ defmodule Orchid.Runner.Hooks.Core do
     end
   end
 
-  defp maybe_resolve_inputs(%Orchid.Param{payload: {:ref, conf, key}} = input), do: %{input | payload: Orchid.Repo.dispatch_store(conf, :get, key)}
-  defp maybe_resolve_inputs(%Orchid.Param{} = input), do: input
-  defp maybe_resolve_inputs(params) when is_list(params), do: Enum.map(params, &maybe_resolve_inputs/1)
-  defp maybe_resolve_inputs(params) when is_map(params), do: Enum.map(params, fn {k, v} -> {k, maybe_resolve_inputs(v)} end)
+  # Ref payloads (`{:ref, store_conf, key}` — e.g. dehydrated by
+  # orchid_stratum's BypassHook) are resolved here, at the innermost
+  # layer, so every step sees raw payloads whether or not it opted into
+  # caching. A missing blob is a hard failure, matching the stratum
+  # hook's own hydration contract.
+  defp maybe_resolve_inputs(%Param{payload: {:ref, conf, key}} = input) do
+    case Repo.dispatch_store(conf, :get, [key]) do
+      {:ok, payload} -> %{input | payload: payload}
+      :miss -> raise "Hydration failed! Blob #{inspect(key)} missing from #{inspect(conf)}"
+    end
+  end
+
+  defp maybe_resolve_inputs(%Param{} = input), do: input
+
+  defp maybe_resolve_inputs(params) when is_list(params),
+    do: Enum.map(params, &maybe_resolve_inputs/1)
+
+  defp maybe_resolve_inputs(params) when is_map(params),
+    do: Map.new(params, fn {k, v} -> {k, maybe_resolve_inputs(v)} end)
 
   defp run_step(impl, inputs, opts) when is_atom(impl),
     do:

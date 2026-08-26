@@ -64,6 +64,7 @@ defmodule OrchidTest do
     step1 = fn _, _ -> {:ok, Param.new(:mid, :string) |> Param.set_payload("Mid")} end
     step2 = fn _, _ -> {:ok, Param.new(:fin, :string) |> Param.set_payload("Fin")} end
 
-    {:ok, _res} = Orchid.run([{step1, :in, :mid}, {step2, :mid, :fin}], Param.new(:in, :string, "In"))
+    {:ok, _res} =
+      Orchid.run([{step1, :in, :mid}, {step2, :mid, :fin}], Param.new(:in, :string, "In"))
   end
 end

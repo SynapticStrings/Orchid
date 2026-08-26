@@ -138,7 +138,7 @@ defmodule Orchid.RecipeTest do
       inner_recipe =
         Recipe.new([
           {TestStepB, :in, :mid},
-          {fn _, _ -> Orchid.Param.new(:out, :void, :nil) end, :mid, :out}
+          {fn _, _ -> Orchid.Param.new(:out, :void, nil) end, :mid, :out}
         ])
 
       middle_steps = [

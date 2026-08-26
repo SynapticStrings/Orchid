@@ -158,7 +158,6 @@ defmodule Orchid.RunnerHooks.CoreTest do
   end
 
   describe "running step" do
-
     test "invalid_step_implementation" do
       assert {:error, {:invalid_step_implementation, _}} =
                Core.call(
@@ -171,6 +170,80 @@ defmodule Orchid.RunnerHooks.CoreTest do
                  load_context({"可真有意思。", :i, :o, []}, %{i: Param.new(:inputs, :void, nil)}),
                  fn _ -> {nil, :void} end
                )
+    end
+  end
+
+  defmodule RefStore do
+    @behaviour Orchid.Repo
+
+    use Agent
+
+    def start_link(_), do: Agent.start_link(fn -> %{} end)
+
+    def put(repo, key, val), do: Agent.update(repo, &Map.put(&1, key, val))
+
+    def get(repo, key) do
+      case Agent.get(repo, &Map.fetch(&1, key)) do
+        {:ok, val} -> {:ok, val}
+        :error -> :miss
+      end
+    end
+  end
+
+  describe "ref payload hydration" do
+    setup do
+      {:ok, store} = RefStore.start_link(nil)
+      :ok = Orchid.Repo.dispatch_store({RefStore, store}, :put, ["hash-a", 42])
+      :ok = Orchid.Repo.dispatch_store({RefStore, store}, :put, ["hash-b", "raw"])
+      %{store: {RefStore, store}}
+    end
+
+    test "ref payloads in map inputs are resolved before the step runs", %{store: store} do
+      echo = fn inputs, _opts -> {:ok, inputs} end
+
+      {:ok, %Param{payload: 42}} =
+        Core.call(
+          load_context({echo, :foo, :foo, []}, %{
+            foo: Param.new(:foo, :void, {:ref, store, "hash-a"})
+          }),
+          fn _ -> {:error, :touch_fin} end
+        )
+    end
+
+    test "ref payloads in list inputs are resolved", %{store: store} do
+      echo = fn inputs, _opts -> {:ok, inputs} end
+
+      {:ok, [%Param{payload: 42}, %Param{payload: "raw"}]} =
+        Core.call(
+          load_context({echo, :inputs, [:a, :b], []}, [
+            Param.new(:a, :void, {:ref, store, "hash-a"}),
+            Param.new(:b, :void, {:ref, store, "hash-b"})
+          ]),
+          fn _ -> {:error, :touch_fin} end
+        )
+    end
+
+    test "a bare ref param input is resolved", %{store: store} do
+      echo = fn inputs, _opts -> {:ok, inputs} end
+
+      {:ok, %Param{payload: "raw"}} =
+        Core.call(
+          load_context({echo, :in, :out, []}, Param.new(:in, :void, {:ref, store, "hash-b"})),
+          fn _ -> {:error, :touch_fin} end
+        )
+    end
+
+    test "a missing blob raises instead of leaking the ref", %{store: store} do
+      echo = fn inputs, _opts -> {:ok, inputs} end
+
+      assert_raise RuntimeError, ~r/Hydration failed/, fn ->
+        Core.call(
+          load_context({echo, :foo, :foo, []}, %{
+            foo: Param.new(:foo, :void, {:ref, store, "missing"})
+          }),
+          fn _ -> {:error, :touch_fin} end
+        )
+      end
     end
   end
 end

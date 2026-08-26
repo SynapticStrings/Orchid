@@ -14,7 +14,8 @@ defmodule Orchid.RunnerHooks.TelemetryTest do
     use Orchid.Step
 
     def run(_, opts) do
-      report(opts, 40)  # Noise without payload
+      # Noise without payload
+      report(opts, 40)
       report(opts, 40, "Normal")
 
       raise "error"

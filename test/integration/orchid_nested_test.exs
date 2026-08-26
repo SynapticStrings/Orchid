@@ -109,7 +109,10 @@ defmodule Orchid.NestedTest do
       Recipe.new([
         {Denoise, :child_raw, :child_clean},
         {PitchFix, :child_clean, :child_tuned_pre},
-        {fn _, _ -> raise "Err"; {:error, :void} end, :child_tuned_pre, :child_tuned}
+        {fn _, _ ->
+           raise "Err"
+           {:error, :void}
+         end, :child_tuned_pre, :child_tuned}
       ])
 
     main_recipe =
@@ -138,7 +141,7 @@ defmodule Orchid.NestedTest do
     child_recipe2 =
       Recipe.new([
         {Denoise, :child_raw, :child_clean},
-        {PitchFix, :child_clean, :child_tuned_pre},
+        {PitchFix, :child_clean, :child_tuned_pre}
       ])
 
     main_recipe2 =
@@ -157,8 +160,9 @@ defmodule Orchid.NestedTest do
       ]
       |> Recipe.new()
 
-      assert {:error, %Orchid.Error{}} = Orchid.run(main_recipe2, initial_params)
+    assert {:error, %Orchid.Error{}} = Orchid.run(main_recipe2, initial_params)
 
-      assert %Orchid.Operon.Response{} = Orchid.run(main_recipe2, initial_params, return_response: true)
+    assert %Orchid.Operon.Response{} =
+             Orchid.run(main_recipe2, initial_params, return_response: true)
   end
 end

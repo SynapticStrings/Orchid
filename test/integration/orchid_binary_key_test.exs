@@ -40,7 +40,9 @@ defmodule OrchidBinaryKeyTest do
     @impl true
     def run(coffee, _opts) do
       p = Param.get_payload(coffee)
-      {:ok, [Param.new(:coffee, :liquid, p <> "(part1)"), Param.new(:coffee, :liquid, p <> "(part2)")]}
+
+      {:ok,
+       [Param.new(:coffee, :liquid, p <> "(part1)"), Param.new(:coffee, :liquid, p <> "(part2)")]}
     end
   end
 
@@ -123,9 +125,7 @@ defmodule OrchidBinaryKeyTest do
       recipe = Orchid.Recipe.new(steps, name: :morning_coffee)
 
       assert {:ok, results} =
-               Orchid.run(recipe, inputs,
-                 executor_and_opts: {Orchid.Executor.Serial, []}
-               )
+               Orchid.run(recipe, inputs, executor_and_opts: {Orchid.Executor.Serial, []})
 
       assert %{coffee: coffee} = results
       assert Orchid.Param.get_payload(coffee) =~ "Cup of latte (20g / 200ml)"
@@ -212,7 +212,9 @@ defmodule OrchidBinaryKeyTest do
 
       # Hook sends message to the test process
       # Make sure Runner and linster are in same process so we receive the message
-      assert {:ok, %{powder: _}} = Orchid.run(recipe, inputs, executor_and_opts: {Orchid.Executor.Serial, []})
+      assert {:ok, %{powder: _}} =
+               Orchid.run(recipe, inputs, executor_and_opts: {Orchid.Executor.Serial, []})
+
       assert_receive {:hook_called, Grind}
     end
 
@@ -226,7 +228,10 @@ defmodule OrchidBinaryKeyTest do
       recipe = Orchid.Recipe.new(steps)
 
       assert {:ok, %{powder: _}} =
-               Orchid.run(recipe, inputs, global_hooks_stack: [CaptureHook], executor_and_opts: {Orchid.Executor.Serial, []})
+               Orchid.run(recipe, inputs,
+                 global_hooks_stack: [CaptureHook],
+                 executor_and_opts: {Orchid.Executor.Serial, []}
+               )
 
       assert_receive {:hook_called, Grind}
     end
@@ -248,9 +253,7 @@ defmodule OrchidBinaryKeyTest do
 
       # InjectGrindOperon prepends a Grind step that produces :powder
       assert {:ok, %{"coffee" => coffee}} =
-               Orchid.run(recipe, inputs,
-                 operons_stack: [InjectGrindOperon]
-               )
+               Orchid.run(recipe, inputs, operons_stack: [InjectGrindOperon])
 
       assert Orchid.Param.get_payload(coffee) =~ "Cup of espresso (60g / 600ml)"
     end
@@ -292,6 +295,7 @@ defmodule OrchidBinaryKeyTest do
         {Grind, "b", "a"},
         {Grind, "a", "b"}
       ]
+
       assert {:error, %Orchid.Error{reason: {:cyclic, _}}} = Orchid.run(steps, [])
     end
   end
@@ -301,6 +305,7 @@ defmodule OrchidBinaryKeyTest do
       steps = [
         {Grind, "beans", "powder", [ratio: 1]}
       ]
+
       recipe = Orchid.Recipe.new(steps)
 
       # Change ratio to 2
